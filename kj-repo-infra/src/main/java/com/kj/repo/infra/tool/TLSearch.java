@@ -87,7 +87,7 @@ public class TLSearch {
             }
             if (file.getName().endsWith(".zip") || file.getName().endsWith(".jar")) {
                 try {
-                    TLPack.entry(file, e -> {
+                    TLZipFile.entry(file, e -> {
                         if (e.getName().indexOf(name) >= 0) {
                             System.out.println(file.getAbsolutePath() + "###" + e.getName());
                         }
@@ -103,7 +103,7 @@ public class TLSearch {
         TLSearch.traverse(new FileNode(file), t -> true, t -> {
             try {
                 if (file.getName().endsWith(".zip") || file.getName().endsWith(".jar")) {
-                    TLPack.entry(file, (e, i) -> {
+                    TLZipFile.entry(file, (e, i) -> {
                         if (Joiner.on("\n").join(TLStream.readLines(i)).indexOf(text) > 0) {
                             System.out.print(file.getAbsolutePath() + "###" + e.getName());
                         }

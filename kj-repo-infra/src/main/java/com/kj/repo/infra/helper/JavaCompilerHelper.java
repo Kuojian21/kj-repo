@@ -1,4 +1,4 @@
-package com.kj.repo.infra.tool;
+package com.kj.repo.infra.helper;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,9 +21,9 @@ import javax.tools.ToolProvider;
 /**
  * @author kuojian21
  */
-public class TLJavaCompiler {
+public class JavaCompilerHelper {
 
-	private static Logger logger = LoggerFactory.getLogger(TLJavaCompiler.class);
+	private static Logger logger = LoggerFactory.getLogger(JavaCompilerHelper.class);
 	private static JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 	private static StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
 	private static URLClassLoader classLoader;

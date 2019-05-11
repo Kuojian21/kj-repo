@@ -20,18 +20,17 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.kj.repo.infra.savor.Savor;
 
 import lombok.Data;
 
 /**
  * @author kuojian21
  */
-@SuppressWarnings({"checkstyle:HiddenField", "checkstyle:ParameterNumber", "unchecked"})
+@SuppressWarnings({"checkstyle:HiddenField", "checkstyle:ParameterNumber"})
 public class TLJson {
     public static final ConcurrentMap<Class<?>, Model> FILEDMAPS = Maps.newConcurrentMap();
 
-    private static Logger logger = LoggerFactory.getLogger(Savor.class);
+    private static Logger logger = LoggerFactory.getLogger(TLJson.class);
 
     public static String toJson(Object obj) {
         if (obj == null) {
@@ -87,12 +86,13 @@ public class TLJson {
             } catch (Exception e) {
                 logger.error("", e);
             }
-            Map<String, PropertyDescriptor> descriptorMap =
-                    descriptors.stream().collect(Collectors.toMap(FeatureDescriptor::getName, d -> d));
+            Map<String, PropertyDescriptor> descriptorMap = descriptors.stream()
+                    .collect(Collectors.toMap(FeatureDescriptor::getName, d -> d));
             List<Property> properties = Arrays.stream(clazz.getDeclaredFields())
                     .filter(f -> !Modifier.isStatic(f.getModifiers()) && !Modifier.isFinal(f.getModifiers()))
                     .map(f -> new Property(f, descriptorMap.get(f.getName()))).collect(Collectors.toList());
-            Map<String, Property> propertyMap = properties.stream().collect(Collectors.toMap(Property::getName, p -> p));
+            Map<String, Property> propertyMap = properties.stream()
+                    .collect(Collectors.toMap(Property::getName, p -> p));
             descriptorMap.forEach((k, v) -> {
                 if (propertyMap.putIfAbsent(k, new Property(v)) != null) {
                     properties.add(propertyMap.get(k));
@@ -134,7 +134,6 @@ public class TLJson {
             this.type = descriptor.getPropertyType();
             this.descriptor = descriptor;
         }
-
 
         public Object get(Object obj) {
             try {

@@ -9,7 +9,7 @@ import java.util.zip.ZipFile;
 /**
  * @author kuojian21
  */
-public class TLPack {
+public class TLZipFile {
 
     public static void entry(File file, Consumer<ZipEntry> consumer) throws Exception {
         ZipFile zFile = null;
