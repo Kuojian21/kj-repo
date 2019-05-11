@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+       http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <aop:config proxy-target-class="true"/>
+    <context:annotation-config/>
+    <context:component-scan base-package="com.kj.repo.spring.web">
+        <!--<context:exclude-filter type="assignable" expression=""/>-->
+    </context:component-scan>
+
+    <mvc:annotation-driven>
+        <mvc:argument-resolvers>
+            <bean class="com.kj.repo.spring.web.resolver.MyHandlerMethodArgumentResolver"/>
+        </mvc:argument-resolvers>
+        <mvc:message-converters>
+            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"/>
+            <bean class="org.springframework.http.converter.ByteArrayHttpMessageConverter"/>
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter"/>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
+    <mvc:resources location="WEB-INF/error/" mapping="/*.html"/>
+    <mvc:interceptors>
+        <bean class="com.kj.repo.spring.web.interceptor.MyHandlerInterceptor"/>
+    </mvc:interceptors>
+
+    <bean id="encodingFilter"
+          class="org.springframework.web.filter.CharacterEncodingFilter">
+        <property name="encoding" value="utf-8"/>
+        <property name="forceEncoding" value="false"/>
+    </bean>
+    <bean id="requestContextFilter"
+          class="org.springframework.web.filter.RequestContextFilter">
+        <property name="threadContextInheritable" value="true"/>
+    </bean>
+
+    <bean id="appFilters"
+          class="org.springframework.security.web.FilterChainProxy">
+        <security:filter-chain-map
+                request-matcher="ant">
+            <security:filter-chain
+                    filters="encodingFilter,requestContextFilter" pattern="/**"/>
+        </security:filter-chain-map>
+    </bean>
+
+    <bean id="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- 512M -->
+        <property name="maxUploadSizePerFile" value="536870912"/>
+        <!-- 200KB -->
+        <property name="maxInMemorySize" value="204800"/>
+    </bean>
+
+    <bean id="jspViewResolver"
+          class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="viewClass"
+                  value="org.springframework.web.servlet.view.JstlView"/>
+        <property name="prefix" value="/WEB-INF/views/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <bean id="exceptionHandlerExceptionResolver"
+          class="org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver"/>
+
+    <!--<bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">-->
+    <!--<property name="staticMethod" value=""/>-->
+    <!--<property name="arguments">-->
+    <!--<list>-->
+    <!--<value>api</value>-->
+    <!--</list>-->
+    <!--</property>-->
+    <!--</bean>-->
+
+</beans>
