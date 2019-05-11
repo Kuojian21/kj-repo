@@ -22,39 +22,6 @@ import com.google.common.collect.Lists;
  */
 public class TLSearch {
 
-    private static class Holder {
-
-        static AtomicLong count = new AtomicLong(0);
-        static AtomicBoolean shutdown = new AtomicBoolean(false);
-        static ExecutorService service = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
-                Runtime.getRuntime().availableProcessors(), 0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>(4096), new ThreadPoolExecutor.CallerRunsPolicy());
-
-        static {
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                try {
-                    shutdown.set(true);
-                    service.shutdown();
-                    service.awaitTermination(3, TimeUnit.MINUTES);
-                } catch (Exception e) {
-
-                }
-            }));
-        }
-
-        static void submit(Runnable runnable) {
-            if (shutdown.get()) {
-                throw new RuntimeException();
-            }
-            Holder.count.incrementAndGet();
-            service.submit(() -> {
-                runnable.run();
-                Holder.count.decrementAndGet();
-            });
-        }
-
-    }
-
     public static <T> void traverse(Node<T> node, Predicate<T> predicate, Consumer<T> consumer) {
         if (node == null) {
             return;
@@ -119,6 +86,53 @@ public class TLSearch {
         });
     }
 
+    public interface Node<T> {
+
+        List<Node<T>> getChilds();
+
+        NodeType type();
+
+        T get();
+
+        enum NodeType {
+            LEAF, COMP
+        }
+
+    }
+
+    private static class Holder {
+
+        static AtomicLong count = new AtomicLong(0);
+        static AtomicBoolean shutdown = new AtomicBoolean(false);
+        static ExecutorService service = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
+                Runtime.getRuntime().availableProcessors(), 0L, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(4096), new ThreadPoolExecutor.CallerRunsPolicy());
+
+        static {
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    shutdown.set(true);
+                    service.shutdown();
+                    service.awaitTermination(3, TimeUnit.MINUTES);
+                } catch (Exception e) {
+
+                }
+            }));
+        }
+
+        static void submit(Runnable runnable) {
+            if (shutdown.get()) {
+                throw new RuntimeException();
+            }
+            Holder.count.incrementAndGet();
+            service.submit(() -> {
+                runnable.run();
+                Holder.count.decrementAndGet();
+            });
+        }
+
+    }
+
     public static class FileNode implements Node<File> {
 
         private final File file;
@@ -157,20 +171,6 @@ public class TLSearch {
         @Override
         public File get() {
             return this.file;
-        }
-
-    }
-
-    public interface Node<T> {
-
-        List<Node<T>> getChilds();
-
-        NodeType type();
-
-        T get();
-
-        enum NodeType {
-            LEAF, COMP
         }
 
     }

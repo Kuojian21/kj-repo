@@ -8,10 +8,10 @@ import com.kj.repo.infra.helper.ZxingHelper;
 
 public class TeZxingHelper {
 
-	public static void main(String[] args) throws IOException {
-		ZxingHelper.matrix("https://www.lmlc.com");
-		Files.write(ZxingHelper.matrix("https://www.lmlc.com"),
-				Paths.get(System.getProperty("user.home") + "/text.jpg").toFile());
-	}
+    public static void main(String[] args) throws IOException {
+        ZxingHelper.matrix("https://www.lmlc.com");
+        Files.write(ZxingHelper.matrix("https://www.lmlc.com"),
+                Paths.get(System.getProperty("user.home") + "/text.jpg").toFile());
+    }
 
 }

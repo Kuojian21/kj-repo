@@ -7,10 +7,10 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisSentinelPool;
 
 public class TePLJedis {
-	public static void main(String[] args) throws Exception {
-		Jedis jedis = PLJedis.Jedis
-				.jedis(new JedisSentinelPool("master", Sets.newHashSet("ip:port", "ip:port"), "password"), Jedis.class);
-		jedis.get("");
-		System.exit(0);
-	}
+    public static void main(String[] args) throws Exception {
+        Jedis jedis = PLJedis.Jedis
+                .jedis(new JedisSentinelPool("master", Sets.newHashSet("ip:port", "ip:port"), "password"), Jedis.class);
+        jedis.get("");
+        System.exit(0);
+    }
 }

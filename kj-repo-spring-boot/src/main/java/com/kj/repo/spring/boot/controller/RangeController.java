@@ -27,12 +27,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class RangeController {
 
-    private Logger logger = LoggerFactory.getLogger(RangeController.class);
-
     List<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
     int chunksize = 1024 * 1024 * 1024;
     long size = 0;
     int chunk = 0;
+    private Logger logger = LoggerFactory.getLogger(RangeController.class);
 
     @PostConstruct
     public void init() throws IOException {

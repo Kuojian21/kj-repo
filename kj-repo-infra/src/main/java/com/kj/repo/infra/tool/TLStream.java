@@ -11,28 +11,26 @@ import java.util.List;
 import com.google.common.collect.Lists;
 
 /**
- * 
  * @author kuojian21
- *
  */
 public class TLStream {
 
-	public static byte[] readBytes(String path, String... file) throws IOException {
-		return Files.readAllBytes(Paths.get(path, file));
-	}
+    public static byte[] readBytes(String path, String... file) throws IOException {
+        return Files.readAllBytes(Paths.get(path, file));
+    }
 
-	public static List<String> readLines(String path, String... file) throws IOException {
-		return Files.readAllLines(Paths.get(path, file));
-	}
+    public static List<String> readLines(String path, String... file) throws IOException {
+        return Files.readAllLines(Paths.get(path, file));
+    }
 
-	public static List<String> readLines(InputStream is) throws IOException {
-		List<String> lines = Lists.newArrayList();
-		BufferedReader br = new BufferedReader(new InputStreamReader(is));
-		String line = null;
-		while ((line = br.readLine()) != null) {
-			lines.add(line);
-		}
-		return lines;
-	}
+    public static List<String> readLines(InputStream is) throws IOException {
+        List<String> lines = Lists.newArrayList();
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        String line = null;
+        while ((line = br.readLine()) != null) {
+            lines.add(line);
+        }
+        return lines;
+    }
 
 }

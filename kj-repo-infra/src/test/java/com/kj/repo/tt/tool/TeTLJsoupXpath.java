@@ -18,42 +18,42 @@ import com.kj.repo.infra.tool.TLJsoupXpath;
 
 public class TeTLJsoupXpath {
 
-	public static void git() throws FileNotFoundException, XpathSyntaxErrorException, IOException {
-		String xpath = "//a[@class='project']/@href";
-		Set<String> sets = Sets.newHashSet();
-		for (File file : new File("/Users/kuojian21/kj/git/html").listFiles()) {
-			List<Object> objs = TLJsoupXpath.xpath(Joiner.on("\n").join(Files.readAllLines(Paths.get(file.toURI()))))
-					.sel(xpath);
-			for (Object obj : objs) {
-				sets.add(obj.toString());
-			}
-		}
-		for (String s : sets.stream().sorted().collect(Collectors.toList())) {
-			System.out.println(s.substring(1));
-		}
-	}
+    public static void git() throws FileNotFoundException, XpathSyntaxErrorException, IOException {
+        String xpath = "//a[@class='project']/@href";
+        Set<String> sets = Sets.newHashSet();
+        for (File file : new File("/Users/kuojian21/kj/git/html").listFiles()) {
+            List<Object> objs = TLJsoupXpath.xpath(Joiner.on("\n").join(Files.readAllLines(Paths.get(file.toURI()))))
+                    .sel(xpath);
+            for (Object obj : objs) {
+                sets.add(obj.toString());
+            }
+        }
+        for (String s : sets.stream().sorted().collect(Collectors.toList())) {
+            System.out.println(s.substring(1));
+        }
+    }
 
-	public static void m() throws FileNotFoundException, XpathSyntaxErrorException, IOException {
-		String xpath = "//tr";
-		Set<String> sets = Sets.newHashSet();
-		File file = new File("/Users/kuojian21/kj/m.list");
-		List<JXNode> objs = TLJsoupXpath.xpath(Joiner.on("\n").join(Files.readAllLines(Paths.get(file.toURI()))))
-				.selN(xpath);
-		for (JXNode obj : objs) {
-			List<JXNode> o = obj.sel("//td");
-			if (o.isEmpty()) {
-				continue;
-			}
-			sets.add(o.get(0).asElement().textNodes().get(0).text().trim() + "/"
-					+ o.get(1).asElement().textNodes().get(0).text().trim());
-		}
-		for (String s : sets.stream().sorted().collect(Collectors.toList())) {
-			System.out.println(s);
-		}
-	}
+    public static void m() throws FileNotFoundException, XpathSyntaxErrorException, IOException {
+        String xpath = "//tr";
+        Set<String> sets = Sets.newHashSet();
+        File file = new File("/Users/kuojian21/kj/m.list");
+        List<JXNode> objs = TLJsoupXpath.xpath(Joiner.on("\n").join(Files.readAllLines(Paths.get(file.toURI()))))
+                .selN(xpath);
+        for (JXNode obj : objs) {
+            List<JXNode> o = obj.sel("//td");
+            if (o.isEmpty()) {
+                continue;
+            }
+            sets.add(o.get(0).asElement().textNodes().get(0).text().trim() + "/"
+                    + o.get(1).asElement().textNodes().get(0).text().trim());
+        }
+        for (String s : sets.stream().sorted().collect(Collectors.toList())) {
+            System.out.println(s);
+        }
+    }
 
-	public static void main(String[] args) throws FileNotFoundException, IOException, XpathSyntaxErrorException {
-		m();
-	}
+    public static void main(String[] args) throws FileNotFoundException, IOException, XpathSyntaxErrorException {
+        m();
+    }
 
 }

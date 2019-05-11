@@ -18,31 +18,29 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 /**
- * 
  * @author kuojian21
- *
  */
 public class ZxingHelper {
 
-	private static Logger logger = LoggerFactory.getLogger(ZxingHelper.class);
-	private static final MultiFormatWriter WRITER = new MultiFormatWriter();
+    private static final MultiFormatWriter WRITER = new MultiFormatWriter();
+    private static Logger logger = LoggerFactory.getLogger(ZxingHelper.class);
 
-	public static byte[] matrix(String content) {
-		try {
-			Map<EncodeHintType, Object> hints = Maps.newHashMap();
-			hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
-			hints.put(EncodeHintType.CHARACTER_SET, "utf-8");
-			hints.put(EncodeHintType.MARGIN, 1);
-			BitMatrix bitMatrix = WRITER.encode(content, BarcodeFormat.QR_CODE, 300, 300, hints);
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			BufferedOutputStream bos = new BufferedOutputStream(baos);
-			MatrixToImageWriter.writeToStream(bitMatrix, "jpg", bos);
-			bos.close();
-			return baos.toByteArray();
-		} catch (WriterException | IOException e) {
-			logger.error("", e);
-			return null;
-		}
-	}
+    public static byte[] matrix(String content) {
+        try {
+            Map<EncodeHintType, Object> hints = Maps.newHashMap();
+            hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
+            hints.put(EncodeHintType.CHARACTER_SET, "utf-8");
+            hints.put(EncodeHintType.MARGIN, 1);
+            BitMatrix bitMatrix = WRITER.encode(content, BarcodeFormat.QR_CODE, 300, 300, hints);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            BufferedOutputStream bos = new BufferedOutputStream(baos);
+            MatrixToImageWriter.writeToStream(bitMatrix, "jpg", bos);
+            bos.close();
+            return baos.toByteArray();
+        } catch (WriterException | IOException e) {
+            logger.error("", e);
+            return null;
+        }
+    }
 
 }

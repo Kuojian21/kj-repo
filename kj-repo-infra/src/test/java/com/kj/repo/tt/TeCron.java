@@ -14,7 +14,7 @@ import com.cronutils.model.time.ExecutionTime;
 
 public class TeCron {
     public static void main(String[] args) {
-    	Cron cron = CronBuilder.cron(CronDefinitionBuilder.instanceDefinitionFor(UNIX)) //
+        Cron cron = CronBuilder.cron(CronDefinitionBuilder.instanceDefinitionFor(UNIX)) //
                 .withHour(FieldExpressionFactory.always()) //
                 .withMinute(FieldExpressionFactory.every(2)) //
                 .instance() //

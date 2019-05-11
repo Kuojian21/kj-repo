@@ -21,23 +21,23 @@ import com.kj.repo.infra.base.ResultInfo;
  */
 @ControllerAdvice
 public class ControllerExceptionAdvice {
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	@InitBinder
-	public void initBinder(WebDataBinder binder) {
-	}
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+    }
 
-	@ModelAttribute
-	public void modelAttribute(Model model) {
-		model.addAttribute("author", "kj");
-	}
+    @ModelAttribute
+    public void modelAttribute(Model model) {
+        model.addAttribute("author", "kj");
+    }
 
-	@ExceptionHandler(Throwable.class)
-	@ResponseBody
-	@ResponseStatus(HttpStatus.OK)
-	public ResultInfo<Void> exceptionHandler(HttpServletRequest request, Throwable t) {
-		logger.info("", t);
-		return ResultInfo.fail("exception");
-	}
+    @ExceptionHandler(Throwable.class)
+    @ResponseBody
+    @ResponseStatus(HttpStatus.OK)
+    public ResultInfo<Void> exceptionHandler(HttpServletRequest request, Throwable t) {
+        logger.info("", t);
+        return ResultInfo.fail("exception");
+    }
 
 }
