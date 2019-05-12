@@ -8,7 +8,7 @@ import com.google.common.collect.Lists;
 /**
  * @author kuojian21
  */
-public class Algorithm {
+public class Cartesian {
 
     public static <T> List<List<T>> cartesian(List<List<T>> objs) {
         List<List<T>> result = Lists.newArrayList();

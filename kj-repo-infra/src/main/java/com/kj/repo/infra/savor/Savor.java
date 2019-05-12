@@ -748,6 +748,7 @@ public abstract class Savor<T> {
         private final CONN conn;
         private final Map<String, Object> master = Maps.newHashMap();
         private final List<ParamsBuilder> others = Lists.newArrayList();
+
         private ParamsBuilder(CONN conn) {
             super();
             this.conn = conn;

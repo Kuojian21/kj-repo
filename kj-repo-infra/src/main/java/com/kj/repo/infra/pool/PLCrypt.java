@@ -94,6 +94,7 @@ public abstract class PLCrypt<T, R> {
         private final String padding;
         private final int keysize;
         private final String transformation;
+
         private Transformation(String algorithm, String mode, String padding, int keysize) {
             this.algorithm = algorithm;
             this.mode = mode;
@@ -406,6 +407,7 @@ public abstract class PLCrypt<T, R> {
 
             private final String name;
             private final int keysize;
+
             private Crypt(String name, int keysize) {
                 this.name = name;
                 this.keysize = keysize;

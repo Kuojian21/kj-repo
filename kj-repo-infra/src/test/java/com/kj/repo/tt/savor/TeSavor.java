@@ -16,7 +16,7 @@ import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
-import com.kj.repo.infra.algorithm.Algorithm;
+import com.kj.repo.infra.algorithm.Cartesian;
 import com.kj.repo.infra.helper.SavorHelper;
 import com.kj.repo.infra.savor.Savor;
 import com.kj.repo.infra.savor.Savor.TimeInsert;
@@ -38,7 +38,7 @@ public class TeSavor {
     }
 
     public static void cartesian(String[] args) {
-        List<List<Integer>> result = Algorithm.cartesian(Lists.newArrayList(Lists.newArrayList(1, 2, 3, 4),
+        List<List<Integer>> result = Cartesian.cartesian(Lists.newArrayList(Lists.newArrayList(1, 2, 3, 4),
                 Lists.newArrayList(5, 6, 7, 8), Lists.newArrayList(9, 10, 11, 12)));
         for (List<Integer> l : result) {
             System.out.println(l);
