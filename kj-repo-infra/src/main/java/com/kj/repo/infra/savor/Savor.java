@@ -79,11 +79,15 @@ public abstract class Savor<T> {
     }
 
     public int insert(List<T> objs) {
+        return this.insert(objs, true);
+    }
+
+    public int insert(List<T> objs, boolean ignore) {
         if (objs == null || objs.isEmpty()) {
             return 0;
         }
         return this.update(this.shard(objs).entrySet().stream()
-                .map(e -> SqlHelper.insert(this.model, e.getKey(), e.getValue(), true)));
+                .map(e -> SqlHelper.insert(this.model, e.getKey(), e.getValue(), ignore)));
     }
 
     public int upsert(List<T> objs, List<String> names) {
@@ -160,8 +164,8 @@ public abstract class Savor<T> {
         Map<String, List<Param>> tParams = params.master;
         Property property = this.model.getShardProperty();
         if (property == null) {
-            return Helper.newHashMap(new ShardHolder(update ? this.getWriter() : this.getReader(), this.model.table),
-                    params);
+            return Helper.newHashMap(
+                    new ShardHolder(update ? this.getWriter() : this.getReader(), this.model.getTable()), params);
         }
         List<Param> paramList = tParams.get(property.getName());
         if (paramList == null || params.getConn() == ParamsBuilder.CONN.OR) {
@@ -180,8 +184,7 @@ public abstract class Savor<T> {
                             .map(e -> Tuple.tuple(this.shard().apply(e, update), e))
                             .collect(Collectors.groupingBy(Tuple::getX)).entrySet().stream()
                             .collect(Collectors.toMap(Map.Entry::getKey,
-                                    e -> params.copy().addMaster(property.getName(), Lists.newArrayList(new Param(property,
-                                            Param.OP.IN,
+                                    e -> params.copy(property.getName(), Lists.newArrayList(new Param(property, Param.OP.IN,
                                             e.getValue().stream().map(Tuple::getY).collect(Collectors.toList()))))));
                 default:
                     return this.shards(update).stream().collect(Collectors.toMap(t -> t, t -> params));
@@ -195,7 +198,7 @@ public abstract class Savor<T> {
     protected Map<ShardHolder, List<T>> shard(List<T> objs) {
         Property property = this.model.getShardProperty();
         if (property == null) {
-            return Helper.newHashMap(new ShardHolder(this.getWriter(), this.model.table), objs);
+            return Helper.newHashMap(new ShardHolder(this.getWriter(), this.model.getTable()), objs);
         } else {
             return objs.stream()
                     .collect(Collectors.groupingBy(o -> this.shard().apply(property.getOrInsertDef(o), true)));
@@ -375,7 +378,7 @@ public abstract class Savor<T> {
 
         public static SqlParams delete(ShardHolder holder, ParamsBuilder.Params params) {
             StringBuilder sql = new StringBuilder();
-            sql.append("delete from ").append(holder.getTable()).append("\n").append(params.getWhere());
+            sql.append("delete from ").append(holder.getTable()).append("\n").append(params.getWhere(true));
             return SqlParams.model(holder.template, sql, Helper.paramMap(params));
         }
 
@@ -389,7 +392,7 @@ public abstract class Savor<T> {
                     .append(Joiner.on(",")
                             .join(values.values.values().stream().sorted(Comparator.comparing(Value::getVName))
                                     .map(Value::getExpr).collect(Collectors.toList())))
-                    .append("\n").append(params.getWhere());
+                    .append("\n").append(params.getWhere(true));
             return SqlParams.model(holder.template, sql, Helper.valueMap(Helper.paramMap(params), values));
         }
 
@@ -409,7 +412,7 @@ public abstract class Savor<T> {
                             return property.getColumn();
                         }).collect(Collectors.toList())));
             }
-            sql.append(" from ").append(holder.getTable()).append(params.getWhere());
+            sql.append(" from ").append(holder.getTable()).append(params.getWhere(true));
             if (!CollectionUtils.isEmpty(groups)) {
                 sql.append(" group by ").append(Joiner.on(",").join(groups.stream().map(String::trim).sorted()
                         .map(g -> model.getProperty(g).getColumn()).collect(Collectors.toList())));
@@ -425,7 +428,7 @@ public abstract class Savor<T> {
                                 t = " DESC ";
                             }
                             if (p == null) {
-                                return o + t;
+                                return s[0] + t;
                             }
                             return p.getColumn() + t;
                         }).collect(Collectors.toList())));
@@ -598,6 +601,36 @@ public abstract class Savor<T> {
      * @author kuojian21
      */
     @Data
+    public static class ShardHolder {
+        private final NamedParameterJdbcTemplate template;
+        private final String table;
+
+        public ShardHolder(NamedParameterJdbcTemplate template, String table) {
+            super();
+            this.template = template;
+            this.table = table;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other instanceof ShardHolder) {
+                ShardHolder o = (ShardHolder) other;
+                return this.table.equals(o.table) && this.template.equals(o.template);
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return this.table.hashCode() / 2 + this.template.hashCode() / 2;
+        }
+
+    }
+
+    /**
+     * @author kuojian21
+     */
+    @Data
     public static class Expr {
         private final String vName;
         private final String expr;
@@ -713,36 +746,6 @@ public abstract class Savor<T> {
     /**
      * @author kuojian21
      */
-    @Data
-    public static class ShardHolder {
-        private final NamedParameterJdbcTemplate template;
-        private final String table;
-
-        public ShardHolder(NamedParameterJdbcTemplate template, String table) {
-            super();
-            this.template = template;
-            this.table = table;
-        }
-
-        @Override
-        public boolean equals(Object other) {
-            if (other instanceof ShardHolder) {
-                ShardHolder o = (ShardHolder) other;
-                return this.table.equals(o.table) && this.template.equals(o.template);
-            }
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            return this.table.hashCode() / 2 + this.template.hashCode() / 2;
-        }
-
-    }
-
-    /**
-     * @author kuojian21
-     */
     public static class ParamsBuilder {
 
         private final CONN conn;
@@ -844,9 +847,7 @@ public abstract class Savor<T> {
                         tParams.others.putAll(p.getMaster());
                         tParams.others.putAll(p.getOthers());
                     });
-            if (!exprs.isEmpty()) {
-                tParams.where.append(" where ").append(Joiner.on(" " + this.conn.name() + " ").join(exprs));
-            }
+            tParams.where.append(Joiner.on(" " + this.conn.name() + " ").join(exprs));
             return tParams;
         }
 
@@ -883,13 +884,20 @@ public abstract class Savor<T> {
                 this.others = others;
             }
 
-            public Params copy() {
-                return new Params(this.conn, this.where, Maps.newHashMap(this.master), this.others);
+            public Params copy(String name, List<Param> paramList) {
+                Map<String, List<Param>> m = Maps.newHashMap(this.master);
+                m.put(name, paramList);
+                return new Params(this.conn, this.where, m, this.others);
             }
 
-            public Params addMaster(String name, List<Param> paramList) {
-                this.master.put(name, paramList);
-                return this;
+            public String getWhere(boolean includeWhere) {
+                if (this.where.length() <= 0) {
+                    return "";
+                }
+                if (includeWhere) {
+                    return " where " + this.where.toString();
+                }
+                return this.where.toString();
             }
 
         }
