@@ -44,6 +44,8 @@ import lombok.EqualsAndHashCode;
 public abstract class Savor<T> {
 
     private static final String NEW_VALUE_SUFFIX = "$newValueSuffix$";
+    private static final String VAR_LIMIT = "$limit$";
+    private static final String VAR_OFFSET = "$offset$";
     private static Logger logger = LoggerFactory.getLogger(Savor.class);
     private final Class<T> clazz;
     private final RowMapper<T> rowMapper;
@@ -194,6 +196,7 @@ public abstract class Savor<T> {
         }
 
     }
+
 
     protected Map<ShardHolder, List<T>> shard(List<T> objs) {
         Property property = this.model.getShardProperty();
@@ -433,12 +436,16 @@ public abstract class Savor<T> {
                             return p.getColumn() + t;
                         }).collect(Collectors.toList())));
             }
+            Map<String, Object> paramMap = Helper.paramMap(params);
             if (offset != null) {
-                sql.append(" limit ").append(offset).append(",").append(limit == null ? 1 : limit);
+                paramMap.put(VAR_OFFSET, offset);
+                paramMap.put(VAR_LIMIT, limit == null ? 1 : limit);
+                sql.append(" limit :").append(VAR_OFFSET).append(",:").append(VAR_LIMIT);
             } else if (limit != null) {
-                sql.append(" limit ").append(limit);
+                paramMap.put(VAR_LIMIT, limit);
+                sql.append(" limit :").append(VAR_LIMIT);
             }
-            return SqlParams.model(holder.template, sql, Helper.paramMap(params));
+            return SqlParams.model(holder.template, sql, paramMap);
         }
 
     }
@@ -615,14 +622,14 @@ public abstract class Savor<T> {
         public boolean equals(Object other) {
             if (other instanceof ShardHolder) {
                 ShardHolder o = (ShardHolder) other;
-                return this.table.equals(o.table) && this.template.equals(o.template);
+                return this.table.equals(o.table) /*&& this.template.equals(o.template)*/;
             }
             return false;
         }
 
         @Override
         public int hashCode() {
-            return this.table.hashCode() / 2 + this.template.hashCode() / 2;
+            return this.table.hashCode() /*/ 2 + this.template.hashCode() / 2*/;
         }
 
     }
