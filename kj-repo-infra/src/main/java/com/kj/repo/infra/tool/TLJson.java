@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import lombok.Data;
 
@@ -29,6 +31,8 @@ import lombok.Data;
 @SuppressWarnings({"checkstyle:HiddenField", "checkstyle:ParameterNumber"})
 public class TLJson {
     public static final ConcurrentMap<Class<?>, Model> FILEDMAPS = Maps.newConcurrentMap();
+    public static final Set<Class<?>> PRIME_CLASSES =
+            Sets.newHashSet(Long.class, Integer.class, Short.class, Byte.class, Float.class, Double.class, Boolean.class, Character.class);
 
     private static Logger logger = LoggerFactory.getLogger(TLJson.class);
 
@@ -51,7 +55,7 @@ public class TLJson {
             sb.append(Joiner.on(",")
                     .join(((Collection<?>) obj).stream().map(TLJson::toJson).collect(Collectors.toList())));
             sb.append("]");
-        } else if (clazz.isPrimitive()) {
+        } else if (clazz.isPrimitive() || PRIME_CLASSES.contains(clazz)) {
             sb.append(obj.toString());
         } else if (clazz.equals(String.class)) {
             sb.append("\"");
