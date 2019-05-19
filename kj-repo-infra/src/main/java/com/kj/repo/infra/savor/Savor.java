@@ -34,8 +34,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 /**
  * @author kuojian21
@@ -43,9 +42,6 @@ import lombok.EqualsAndHashCode;
 @SuppressWarnings({"checkstyle:HiddenField", "checkstyle:ParameterNumber", "unchecked"})
 public abstract class Savor<T> {
 
-    private static final String NEW_VALUE_SUFFIX = "$newValueSuffix$";
-    private static final String VAR_LIMIT = "$limit$";
-    private static final String VAR_OFFSET = "$offset$";
     private static Logger logger = LoggerFactory.getLogger(Savor.class);
     private final Class<T> clazz;
     private final RowMapper<T> rowMapper;
@@ -65,6 +61,7 @@ public abstract class Savor<T> {
     }
 
     public int update(SqlParams sqlParams) {
+        logger.info("sql:{}", sqlParams.getSql());
         return sqlParams.jdbcTemplate.update(sqlParams.getSql().toString(), sqlParams.getParams());
     }
 
@@ -73,6 +70,7 @@ public abstract class Savor<T> {
     }
 
     public <R> List<R> select(SqlParams sqlParams, RowMapper<R> rowMapper) {
+        logger.info("sql:{}", sqlParams.getSql());
         return sqlParams.jdbcTemplate.query(sqlParams.getSql().toString(), sqlParams.getParams(), rowMapper);
     }
 
@@ -92,7 +90,7 @@ public abstract class Savor<T> {
                 .map(e -> SqlHelper.insert(this.model, e.getKey(), e.getValue(), ignore)));
     }
 
-    public int upsert(List<T> objs, List<String> names) {
+    public int upsert(List<T> objs, Collection<String> names) {
         if (objs == null || objs.isEmpty()) {
             return 0;
         }
@@ -145,16 +143,16 @@ public abstract class Savor<T> {
         return this.select(null, params, orders, offset, limit, this.getRowMapper());
     }
 
-    public <R> List<R> select(List<String> columns, Map<String, Object> params, RowMapper<R> rowMapper) {
+    public <R> List<R> select(Collection<String> columns, Map<String, Object> params, RowMapper<R> rowMapper) {
         return this.select(columns, params, null, null, null, rowMapper);
     }
 
-    public <R> List<R> select(List<String> columns, Map<String, Object> params, List<String> orders, Integer offset,
-                              Integer limit, RowMapper<R> rowMapper) {
+    public <R> List<R> select(Collection<String> columns, Map<String, Object> params, List<String> orders,
+                              Integer offset, Integer limit, RowMapper<R> rowMapper) {
         return this.select(columns, ParamsBuilder.ofAnd().with(params), null, orders, offset, limit, rowMapper);
     }
 
-    public <R> List<R> select(List<String> columns, ParamsBuilder paramsBuilder, List<String> groups,
+    public <R> List<R> select(Collection<String> columns, ParamsBuilder paramsBuilder, List<String> groups,
                               List<String> orders, Integer offset, Integer limit, RowMapper<R> rowMapper) {
         return this.select(this.shard(paramsBuilder, false).entrySet().stream().map(
                 e -> SqlHelper.select(this.model, e.getKey(), columns, e.getValue(), groups, orders, offset, limit)),
@@ -171,7 +169,7 @@ public abstract class Savor<T> {
         }
         List<Param> paramList = tParams.get(property.getName());
         if (paramList == null || params.getConn() == ParamsBuilder.CONN.OR) {
-            ShardHolder holder = this.shard().apply(null, update);
+            ShardHolder holder = this.shardWrap().apply(null, update);
             if (holder != null) {
                 return Helper.newHashMap(holder, params);
             }
@@ -180,10 +178,10 @@ public abstract class Savor<T> {
             Param param = paramList.get(0);
             switch (param.op) {
                 case EQ:
-                    return Helper.newHashMap(this.shard().apply(param.getValue(), update), params);
+                    return Helper.newHashMap(this.shardWrap().apply(param.getValue(), update), params);
                 case IN:
                     return ((Collection<?>) param.getValue()).stream()
-                            .map(e -> Tuple.tuple(this.shard().apply(e, update), e))
+                            .map(e -> Tuple.tuple(this.shardWrap().apply(e, update), e))
                             .collect(Collectors.groupingBy(Tuple::getX)).entrySet().stream()
                             .collect(Collectors.toMap(Map.Entry::getKey,
                                     e -> params.copy(property.getName(), Lists.newArrayList(new Param(property, Param.OP.IN,
@@ -197,14 +195,13 @@ public abstract class Savor<T> {
 
     }
 
-
     protected Map<ShardHolder, List<T>> shard(List<T> objs) {
         Property property = this.model.getShardProperty();
         if (property == null) {
             return Helper.newHashMap(new ShardHolder(this.getWriter(), this.model.getTable()), objs);
         } else {
             return objs.stream()
-                    .collect(Collectors.groupingBy(o -> this.shard().apply(property.getOrInsertDef(o), true)));
+                    .collect(Collectors.groupingBy(o -> this.shardWrap().apply(property.getOrInsertDef(o), true)));
         }
     }
 
@@ -228,6 +225,10 @@ public abstract class Savor<T> {
         throw new RuntimeException("not supported");
     }
 
+    protected BiFunction<Object, Boolean, ShardHolder> shardWrap() {
+        return (v, b) -> this.shard().apply(this.model.shardProperty.cast(v), b);
+    }
+
     public abstract NamedParameterJdbcTemplate getReader();
 
     public abstract NamedParameterJdbcTemplate getWriter();
@@ -238,7 +239,9 @@ public abstract class Savor<T> {
     @Target(ElementType.TYPE)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface Shard {
-        String table() default "";
+        String table()
+
+                default "";
 
         String shardKey() default "";
     }
@@ -332,8 +335,8 @@ public abstract class Savor<T> {
             return paramMap;
         }
 
-        public static Map<String, Object> valueMap(Map<String, Object> paramMap, ValuesBuilder.Values values) {
-            values.values.values().forEach(v -> paramMap.put(v.getVName(), v.getValue()));
+        public static Map<String, Object> valueMap(Map<String, Object> paramMap, Map<String, Value> values) {
+            values.values().forEach(v -> paramMap.put(v.getVName(), v.getValue()));
             return paramMap;
         }
     }
@@ -342,6 +345,9 @@ public abstract class Savor<T> {
      * @author kuojian21
      */
     public static class SqlHelper {
+
+        private static final String VAR_LIMIT = "$limit$";
+        private static final String VAR_OFFSET = "$offset$";
 
         public static <T> SqlParams insert(Model model, ShardHolder holder, List<T> objs, boolean ignore) {
             StringBuilder sql = new StringBuilder();
@@ -367,7 +373,7 @@ public abstract class Savor<T> {
         }
 
         public static <T> SqlParams upsert(Model model, ShardHolder holder, List<T> objs, ValuesBuilder.Values values) {
-            if (CollectionUtils.isEmpty(values.values)) {
+            if (CollectionUtils.isEmpty(values.getValues())) {
                 return SqlHelper.insert(model, holder, objs, true);
             }
             SqlParams sqlParams = SqlHelper.insert(model, holder, objs, false);
@@ -375,7 +381,7 @@ public abstract class Savor<T> {
                     .append(Joiner.on(",")
                             .join(values.values.entrySet().stream().sorted(Comparator.comparing(Map.Entry::getKey))
                                     .map(e -> e.getValue().getExpr()).collect(Collectors.toList())));
-            Helper.valueMap(sqlParams.getParams(), values);
+            Helper.valueMap(sqlParams.getParams(), values.getValues());
             return sqlParams;
         }
 
@@ -386,34 +392,33 @@ public abstract class Savor<T> {
         }
 
         public static SqlParams update(ShardHolder holder, ValuesBuilder.Values values, ParamsBuilder.Params params) {
-            if (CollectionUtils.isEmpty(values.values)) {
+            if (CollectionUtils.isEmpty(values.getValues())) {
                 logger.error("invalid syntax");
                 throw new RuntimeException("invalid syntax");
             }
             StringBuilder sql = new StringBuilder();
             sql.append("update ").append(holder.getTable()).append("\n").append(" set ")
                     .append(Joiner.on(",")
-                            .join(values.values.values().stream().sorted(Comparator.comparing(Value::getVName))
+                            .join(values.getValues().values().stream().sorted(Comparator.comparing(Value::getVName))
                                     .map(Value::getExpr).collect(Collectors.toList())))
                     .append("\n").append(params.getWhere(true));
-            return SqlParams.model(holder.template, sql, Helper.valueMap(Helper.paramMap(params), values));
+            return SqlParams.model(holder.template, sql, Helper.valueMap(Helper.paramMap(params), values.getValues()));
         }
 
-        public static SqlParams select(Model model, ShardHolder holder, List<String> columns,
+        public static SqlParams select(Model model, ShardHolder holder, Collection<String> columns,
                                        ParamsBuilder.Params params, List<String> groups, List<String> orders, Integer offset, Integer limit) {
             StringBuilder sql = new StringBuilder();
             sql.append("select ");
             if (CollectionUtils.isEmpty(columns)) {
                 sql.append("*");
             } else {
-                sql.append(
-                        Joiner.on(",").join(Lists.newArrayList(columns).stream().map(String::trim).sorted().map(n -> {
-                            Property property = model.getProperty(n);
-                            if (property == null) {
-                                return n;
-                            }
-                            return property.getColumn();
-                        }).collect(Collectors.toList())));
+                sql.append(Joiner.on(",").join(columns.stream().map(String::trim).sorted().map(n -> {
+                    Property property = model.getProperty(n);
+                    if (property == null) {
+                        return n;
+                    }
+                    return property.getColumn();
+                }).collect(Collectors.toList())));
             }
             sql.append(" from ").append(holder.getTable()).append(params.getWhere(true));
             if (!CollectionUtils.isEmpty(groups)) {
@@ -427,7 +432,7 @@ public abstract class Savor<T> {
                             s[0] = s[0].trim();
                             Property p = model.getProperty(s[0]);
                             String t = " ASC ";
-                            if (s.length == 2 && s[1].toUpperCase().startsWith("D")) {
+                            if (s.length == 2 && s[1].toUpperCase().equals("DESC")) {
                                 t = " DESC ";
                             }
                             if (p == null) {
@@ -453,7 +458,7 @@ public abstract class Savor<T> {
     /**
      * @author kuojian21
      */
-    @Data
+    @Getter
     public static class SqlParams {
         private final NamedParameterJdbcTemplate jdbcTemplate;
         private final StringBuilder sql;
@@ -476,7 +481,7 @@ public abstract class Savor<T> {
     /**
      * @author kuojian21
      */
-    @Data
+    @Getter
     public static class Model {
         private final String name;
         private final String table;
@@ -489,9 +494,14 @@ public abstract class Savor<T> {
         public Model(Class<?> clazz) {
             super();
             this.name = clazz.getSimpleName();
-            this.properties = Collections.unmodifiableList(Arrays.stream(clazz.getDeclaredFields())
+            Model pModel = Object.class.equals(clazz.getSuperclass()) ? null : ModelHelper.model(clazz.getSuperclass());
+            List<Property> tProperties = Arrays.stream(clazz.getDeclaredFields())
                     .filter(f -> !Modifier.isStatic(f.getModifiers()) && !Modifier.isFinal(f.getModifiers()))
-                    .map(Property::new).collect(Collectors.toList()));
+                    .map(Property::new).collect(Collectors.toList());
+            if (pModel != null) {
+                tProperties.addAll(pModel.getProperties());
+            }
+            this.properties = Collections.unmodifiableList(tProperties);
             this.propertyMap = Collections.unmodifiableMap(properties.stream()
                     .map(p -> Lists.newArrayList(Tuple.tuple(p.getName(), p), Tuple.tuple(p.getColumn(), p)))
                     .flatMap(List::stream).distinct().collect(Collectors.toMap(Tuple::getX, Tuple::getY)));
@@ -516,7 +526,7 @@ public abstract class Savor<T> {
             return this.propertyMap.get(name);
         }
 
-        public List<Property> getProperties(List<String> names) {
+        public List<Property> getProperties(Collection<String> names) {
             return names.stream().map(this.propertyMap::get).collect(Collectors.toList());
         }
     }
@@ -524,7 +534,7 @@ public abstract class Savor<T> {
     /**
      * @author kuojian21
      */
-    @Data
+    @Getter
     public static class Property {
 
         private final String name;
@@ -561,12 +571,31 @@ public abstract class Savor<T> {
             }
         }
 
+        public Object cast(Object obj) {
+            if (obj != null && !this.type.equals(obj.getClass())) {
+                if (this.type == Long.class) {
+                    return Long.parseLong(obj.toString());
+                } else if (this.type == Integer.class) {
+                    return Integer.parseInt(obj.toString());
+                } else if (this.type == Short.class) {
+                    return Short.parseShort(obj.toString());
+                } else if (this.type == Byte.class) {
+                    return Byte.parseByte(obj.toString());
+                } else if (this.type == Double.class) {
+                    return Double.parseDouble(obj.toString());
+                } else if (this.type == Float.class) {
+                    return Float.parseFloat(obj.toString());
+                }
+            }
+            return obj;
+        }
+
     }
 
     /**
      * @author kuojian21
      */
-    @Data
+    @Getter
     public static class Tuple<X, Y> {
         private final X x;
         private final Y y;
@@ -607,7 +636,7 @@ public abstract class Savor<T> {
     /**
      * @author kuojian21
      */
-    @Data
+    @Getter
     public static class ShardHolder {
         private final NamedParameterJdbcTemplate template;
         private final String table;
@@ -622,14 +651,14 @@ public abstract class Savor<T> {
         public boolean equals(Object other) {
             if (other instanceof ShardHolder) {
                 ShardHolder o = (ShardHolder) other;
-                return this.table.equals(o.table) /*&& this.template.equals(o.template)*/;
+                return this.table.equals(o.table) /* && this.template.equals(o.template) */;
             }
             return false;
         }
 
         @Override
         public int hashCode() {
-            return this.table.hashCode() /*/ 2 + this.template.hashCode() / 2*/;
+            return this.table.hashCode() /* / 2 + this.template.hashCode() / 2 */;
         }
 
     }
@@ -637,7 +666,7 @@ public abstract class Savor<T> {
     /**
      * @author kuojian21
      */
-    @Data
+    @Getter
     public static class Expr {
         private final String vName;
         private final String expr;
@@ -702,10 +731,9 @@ public abstract class Savor<T> {
     /**
      * @author kuojian21
      */
-    @EqualsAndHashCode(callSuper = false)
-    @Data
+    @Getter
     public static class Value extends Expr {
-
+        private static final String NEW_VALUE_SUFFIX = "$newValueSuffix$";
         private final OP op;
 
         public Value(Property p, OP op, boolean upsert, Object value) {
@@ -765,15 +793,11 @@ public abstract class Savor<T> {
         }
 
         public static ParamsBuilder ofAnd() {
-            return of(CONN.AND);
+            return new ParamsBuilder(CONN.AND);
         }
 
         public static ParamsBuilder ofOr() {
-            return of(CONN.OR);
-        }
-
-        public static ParamsBuilder of(CONN conn) {
-            return new ParamsBuilder(conn);
+            return new ParamsBuilder(CONN.OR);
         }
 
         public ParamsBuilder with(Map<String, Object> params) {
@@ -826,20 +850,24 @@ public abstract class Savor<T> {
                             case "IN":
                             case "=":
                             case "EQ":
-                                if (value != null && (value instanceof Collection || value.getClass().isArray())) {
-                                    op = Param.OP.IN;
-                                } else {
-                                    op = Param.OP.EQ;
-                                }
+                                op = Param.OP.EQ;
                                 break;
                             default:
                                 logger.error("invalid syntax:{}", key);
                                 throw new RuntimeException("invalid syntax:" + key);
                         }
                     }
-                    if (op == Param.OP.IN && value.getClass().isArray()) {
-                        result.computeIfAbsent(p.getName(), k -> Lists.newArrayList())
-                                .add(new Param(p, Param.OP.IN, Arrays.asList((Object[]) value)));
+                    if (value instanceof Collection || value.getClass().isArray()) {
+                        if (op != Param.OP.EQ) {
+                            logger.error("invalid syntax:{}", key);
+                            throw new RuntimeException("invalid syntax:" + key);
+                        } else if (value.getClass().isArray()) {
+                            result.computeIfAbsent(p.getName(), k -> Lists.newArrayList())
+                                    .add(new Param(p, Param.OP.IN, Arrays.asList((Object[]) value)));
+                        } else {
+                            result.computeIfAbsent(p.getName(), k -> Lists.newArrayList())
+                                    .add(new Param(p, Param.OP.IN, value));
+                        }
                     } else {
                         result.computeIfAbsent(p.getName(), k -> Lists.newArrayList()).add(new Param(p, op, value));
                     }
@@ -868,7 +896,7 @@ public abstract class Savor<T> {
         /**
          * @author kuojian21
          */
-        @Data
+        @Getter
         public static class Params {
             private final ParamsBuilder.CONN conn;
             private final StringBuilder where;
@@ -948,9 +976,11 @@ public abstract class Savor<T> {
                             case "EXPR":
                                 op = Value.OP.EXPR;
                                 break;
+                            case "+":
                             case "ADD":
                                 op = Value.OP.ADD;
                                 break;
+                            case "-":
                             case "SUB":
                                 op = Value.OP.SUB;
                                 break;
@@ -969,7 +999,7 @@ public abstract class Savor<T> {
         /**
          * @author kuojian21
          */
-        @Data
+        @Getter
         public static class Values {
             private final Map<String, Value> values;
 
@@ -977,7 +1007,6 @@ public abstract class Savor<T> {
                 this.values = values;
             }
         }
-
     }
 
 }

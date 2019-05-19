@@ -1,23 +1,23 @@
 package com.kj.repo.tt.savor;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 import javax.sql.DataSource;
 
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
-import com.kj.repo.infra.algorithm.Cartesian;
-import com.kj.repo.infra.helper.SavorHelper;
 import com.kj.repo.infra.savor.Savor;
 import com.kj.repo.infra.savor.Savor.TimeInsert;
 import com.kj.repo.infra.savor.Savor.TimeUpdate;
@@ -27,143 +27,348 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@SuppressWarnings("unchecked")
 public class TeSavor {
 
-    public static void main(String[] args) throws SQLException {
-        test(args);
-
-        Object obj = new Object[]{1, 2, 3, 4};
-        System.out.println(Arrays.asList((Object[]) obj));
-        System.out.println(null == null);
-    }
-
-    public static void cartesian(String[] args) {
-        List<List<Integer>> result = Cartesian.cartesian(Lists.newArrayList(Lists.newArrayList(1, 2, 3, 4),
-                Lists.newArrayList(5, 6, 7, 8), Lists.newArrayList(9, 10, 11, 12)));
-        for (List<Integer> l : result) {
-            System.out.println(l);
-        }
-    }
-
-    public static void testSet(String[] args) {
-        Map<String, Object> map = Savor.Helper.newHashMap("sss", null);
-
-        System.out.println(map.entrySet().stream().map(Map.Entry::getValue).collect(Collectors.toList()));
-        map.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
-
-    public static void code(String[] args) throws SQLException {
-        /*
-         * -DsocksProxyHost= -DsocksProxyPort=8088
-         */
+	public static void main(String[] args) throws SQLException {
+		/*
+		 * -DsocksProxyHost= -DsocksProxyPort=8088
+		 */
 //		System.setProperty("socksProxyHost", "127.0.0.1");
 //		System.setProperty("socksProxyPort", "8088");
-//		create table savor_base_test( 
-//						id bigint(20) unsigned not null primary key comment '自增主键', 
-//						hash_key varchar(64) comment 'key', 
-//						value varchar(128)
-//						comment 'value', 
-//						name varchar(64) comment 'name', 
-//						sex varchar(64) comment 'sex', 
-//						age tinyint comment 'age', 
-//						create_time bigint(20) comment '创建时间',
-//						update_time timestamp default now() comment '创建时间'
-//					)ENGINE=INNODB DEFAULT CHARSET=UTF8MB4;
-        SavorHelper.Model model = SavorHelper.mysql(new SimpleDriverDataSource(new Driver(), args[0], args[1], args[2]),
-                args[3]);
-        SavorHelper.code(model);
-    }
+		TeSavor teSavor = new TeSavor();
+//        SavorTestDao<SavorTest> dao = new SavorTestDao<>(
+//                new SimpleDriverDataSource(new Driver(), args[0], args[1], args[2]),
+//                SavorTest.class);
+		SavorTestDao<SavorShardTest> dao = new SavorTestDao<>(
+				new SimpleDriverDataSource(new Driver(), args[0], args[1], args[2]),
+				new SimpleDriverDataSource(new Driver(), args[3], args[4], args[5]), SavorShardTest.class);
+		teSavor.insert(dao);
+		teSavor.update(dao);
+		teSavor.upsert(dao);
+		teSavor.select(dao);
+		teSavor.delete(dao);
+	}
 
-    public static void sql() throws Exception {
-//		System.out.println(Savor.SqlHelper.insert(Savor.ModelHelper.model(SavorBaseTest.class), null,
-//				Lists.newArrayList(new SavorBaseTest(), new SavorBaseTest()), false));
-//		System.out.println(Savor.SqlHelper.upsert(Savor.ModelHelper.model(SavorBaseTest.class), null,
-//				Lists.newArrayList(new SavorBaseTest(), new SavorBaseTest()),
-//				Savor.Helper.newHashMap("name", "values(name)")));
-//		System.out.println(Savor.SqlHelper.delete(Savor.ModelHelper.model(SavorBaseTest.class), null,
-//				Savor.Helper.newHashMap("id", 100)));
-//		System.out.println(Savor.SqlHelper.update(Savor.ModelHelper.model(SavorBaseTest.class), null,
-//				Savor.Helper.newHashMap("name", "kj"), Savor.Helper.newHashMap("id", 100)));
-//		System.out.println(Savor.SqlHelper.select(Savor.ModelHelper.model(SavorBaseTest.class), null, null,
-//				Savor.Helper.newHashMap("id#lt", 100), null, null, null));
-    }
+	public <T extends SavorTest> void insert(SavorTestDao<T> dao) {
+		Random random = new Random();
+		LongStream.range(0, 10).forEach(i -> {
+			dao.insert((List<T>) LongStream.range(0, 10).boxed()
+					.map(j -> new SavorShardTest(i * 10 + j, random.nextLong() + "", null,
+							random.nextInt() % 10 == 0 ? "zkj" : null,
+							random.nextInt() % 10 <= 9 ? (random.nextInt() % 2 == 0 ? "male" : "female") : null,
+							random.nextInt(100)))
+					.collect(Collectors.toList()));
+		});
+		this.select("after-insert-1", dao, Savor.Helper.newHashMap());
+		this.select("after-insert-1", dao, Savor.Helper.newHashMap("name", "zkj", "sex", "male"));
+	}
 
-    public static void test(String[] args) throws SQLException {
-        SavorBaseTestDao dao = new SavorBaseTestDao(
-                new SimpleDriverDataSource(new Driver(), args[0], args[1], args[2]));
-        /**
-         * test insert def
-         */
-        LongStream.range(0, 10).boxed().forEach(i -> {
-            log.info("{}", dao.insert(LongStream.range(0, 10).boxed().map(j -> {
-                SavorBaseTest test = new SavorBaseTest();
-                test.setId(i * 10 + j + 1);
-                return test;
-            }).collect(Collectors.toList())));
-        });
+	public void update(SavorTestDao<?> dao) {
+		this.select("before-update", dao,
+				Savor.Helper.newHashMap("id", IntStream.range(0, 10).boxed().collect(Collectors.toList())));
+		IntStream.range(0, 5).boxed().forEach(i -> {
+			Map<String, Object> params = Savor.Helper.newHashMap("id", 10);
+			Map<String, Object> values = Savor.Helper.newHashMap("age#add", 5, "name", "kj");
+			log.info("update values:{} params:{} {}", values, params, dao.update(values, params));
+		});
+		this.select("after-update", dao, Savor.Helper.newHashMap("name", "kj"));
+	}
 
-        /**
-         * test delete
-         */
-//		dao.delete(Savor.Helper.newHashMap("id", 1));
-        IntStream.range(0, 10).boxed().forEach(i -> dao.update(Savor.Helper.newHashMap("name", "kj"),
-                Savor.Helper.newHashMap("id", new Random().nextInt(100))));
-        log.info("{}", dao.select(Savor.Helper.newHashMap("name", "kj")));
-        log.info("{}", dao.select(Savor.Helper.newHashMap("id#le", 10)));
-        log.info("{}", dao.select(Savor.Helper.newHashMap("id#ge", 90)));
-        dao.update(Savor.Helper.newHashMap("id#sub", 1), Savor.Helper.newHashMap("id#LE", "100"));
-    }
+	public <T extends SavorTest> void upsert(SavorTestDao<T> dao) throws SQLException {
+		this.select("before-upsert", dao, Savor.Helper.newHashMap("id#>", 94));
+		List<T> objs = (List<T>) LongStream.range(95, 105).boxed().map(SavorShardTest::new)
+				.collect(Collectors.toList());
+		List<String> names = Lists.newArrayList("hashKey");
+		log.info("upsert data:{} names:{} {}", objs, names, dao.upsert(objs, names));
+		this.select("after-upsert", dao, Savor.Helper.newHashMap("id#GT", 94));
+		Map<String, Object> values = Savor.Helper.newHashMap("age#+", 1);
+		log.info("upsert data:{} values:{} {}", objs, values, dao.upsert(objs, values));
+		this.select("after-upsert", dao, Savor.Helper.newHashMap("id#GT", 94));
+		values = Savor.Helper.newHashMap("age#sub", 3);
+		log.info("upsert data:{} values:{} {}", objs, values, dao.upsert(objs, values));
+		this.select("after-upsert", dao, Savor.Helper.newHashMap("id#GT", 94));
+	}
 
-    public static class SavorBaseTestDao extends Savor<SavorBaseTest> {
+	public void select(SavorTestDao<?> dao) {
+		List<String> columns = Lists.newArrayList("id", "sex", "count(1)");
+		Savor.ParamsBuilder paramsBuilder = Savor.ParamsBuilder.ofAnd().with("sex", "male")
+				.with(Savor.ParamsBuilder.ofOr().with("id#>=", 90).with("id#<=", 10));
+		List<String> groups = Lists.newArrayList("id", "sex");
+		List<String> orders = Lists.newArrayList("id#D");
+		Integer offset = 0;
+		Integer limit = 10;
+		log.info("select columns:{} params:{} groups:{} orders:{} offset:{} limit:{} {}", columns, paramsBuilder,
+				groups, orders, offset, limit,
+				dao.select(columns, paramsBuilder, groups, orders, offset, limit, new RowMapper<List<Object>>() {
+					@Override
+					public List<Object> mapRow(ResultSet rs, int rowNum) throws SQLException {
+						return Lists.newArrayList(rs.getLong("id"), rs.getString("sex"), rs.getInt("count(1)"));
+					}
+				}));
+		this.select("select", dao, Savor.Helper.newHashMap("id#!", 10));
+	}
 
-        private final DataSource dataSource;
+	public void delete(SavorTestDao<?> dao) {
+		this.select("delete-before", dao, Savor.Helper.newHashMap("id#<=", 10));
+		IntStream.range(0, 11).boxed().forEach(i -> {
+			if (new Random().nextInt() % 2 == 0) {
+				dao.delete(Savor.Helper.newHashMap("id", i));
+			}
+		});
+		this.select("delete-after", dao, Savor.Helper.newHashMap("id#<=", 10));
+	}
 
-        public SavorBaseTestDao(DataSource dataSource) {
-            super();
-            this.dataSource = dataSource;
-        }
+	public void select(String module, SavorTestDao<?> dao, Map<String, Object> params) {
+		log.info("{} params:{} {}", module, JSON.toJSONString(params), dao.select(params));
+	}
 
-        @Override
-        public NamedParameterJdbcTemplate getReader() {
-            return new NamedParameterJdbcTemplate(this.dataSource);
-        }
+	public static class SavorTestDao<T> extends Savor<T> {
 
-        @Override
-        public NamedParameterJdbcTemplate getWriter() {
-            return new NamedParameterJdbcTemplate(this.dataSource);
-        }
+		private final NamedParameterJdbcTemplate jdbcTemplate1;
+		private final NamedParameterJdbcTemplate jdbcTemplate2;
 
-    }
+		public SavorTestDao(DataSource dataSource1, DataSource dataSource2, Class<T> clazz) {
+			super(clazz);
+			this.jdbcTemplate1 = new NamedParameterJdbcTemplate(dataSource1);
+			this.jdbcTemplate2 = new NamedParameterJdbcTemplate(dataSource2);
+		}
 
-    /**
-     * @author kj
-     */
-    @Data
-    public static class SavorBaseTest {
-        /* 自增主键 */
-        @Savor.PrimaryKey(insert = true)
-        private Long id;
-        /* key */
-        private String hashKey;
-        /* value */
-        private String value;
-        /* name */
-        private String name;
-        /* sex */
-        private String sex;
-        /* age */
-        private Integer age;
-        /* 创建时间 */
-        @TimeInsert(value = "timestamp")
-        private Long createTime;
-        /* 创建时间 */
-        @TimeUpdate(value = "timestamp")
-        private java.sql.Timestamp updateTime;
+		public SavorTestDao(DataSource dataSource1, Class<T> clazz) {
+			super(clazz);
+			this.jdbcTemplate1 = new NamedParameterJdbcTemplate(dataSource1);
+			this.jdbcTemplate2 = null;
+		}
 
-        @Override
-        public String toString() {
-            return JSON.toJSONString(this);
-        }
-    }
+		@Override
+		public NamedParameterJdbcTemplate getReader() {
+			return jdbcTemplate1;
+		}
+
+		@Override
+		public NamedParameterJdbcTemplate getWriter() {
+			return jdbcTemplate1;
+		}
+
+		@Override
+		public BiFunction<Object, Boolean, ShardHolder> shard() {
+			return (v, b) -> {
+				if (v == null) {
+					return null;
+				}
+				Long id = (Long) v;
+				id = id % 10;
+				return new ShardHolder(id % 2 == 0 ? jdbcTemplate1 : jdbcTemplate2,
+						super.getModel().getTable() + "_" + id);
+			};
+		}
+
+		@Override
+		public List<ShardHolder> shards(boolean update) {
+			return IntStream.range(0, 10).boxed().map(i -> new ShardHolder(i % 2 == 0 ? jdbcTemplate1 : jdbcTemplate2,
+					super.getModel().getTable() + "_" + i)).collect(Collectors.toList());
+		}
+
+	}
+
+	/**
+	 * @author kj
+	 */
+	@Data
+	public static class SavorTest {
+		/* 自增主键 */
+		@Savor.PrimaryKey(insert = true)
+		private Long id;
+		/* key */
+		private String hashKey;
+		/* value */
+		private String value;
+		/* name */
+		private String name;
+		/* sex */
+		private String sex;
+		/* age */
+		private Integer age;
+		/* 创建时间 */
+		@TimeInsert
+		private Long createTime;
+		/* 创建时间 */
+		@TimeUpdate
+		private java.sql.Timestamp updateTime;
+
+		public SavorTest(Long id, String hashKey, String value, String name, String sex, Integer age) {
+			this.id = id;
+			this.hashKey = hashKey;
+			this.value = value;
+			this.name = name;
+			this.sex = sex;
+			this.age = age;
+		}
+
+		public SavorTest(Long id) {
+			this.id = id;
+		}
+
+		public SavorTest() {
+		}
+
+		@Override
+		public String toString() {
+			return JSON.toJSONString(this);
+		}
+	}
+
+	/**
+	 * @author kj
+	 */
+	@Savor.Shard(shardKey = "id")
+	public static class SavorShardTest extends SavorTest {
+		public SavorShardTest() {
+
+		}
+
+		public SavorShardTest(Long id) {
+			super(id);
+		}
+
+		public SavorShardTest(Long id, String hashKey, String value, String name, String sex, Integer age) {
+			super(id, hashKey, value, name, sex, age);
+		}
+	}
+
+	/**
+	 * <pre>
+	 create table savor_test(
+	 id bigint(20) unsigned not null primary key comment '自增主键',
+	 hash_key varchar(64) comment 'key',
+	 value varchar(128)
+	 comment 'value',
+	 name varchar(64) comment 'name',
+	 sex varchar(64) comment 'sex',
+	 age tinyint comment 'age',
+	 create_time bigint(20) comment '创建时间',
+	 update_time timestamp default now() comment '创建时间'
+	 )ENGINE=INNODB DEFAULT CHARSET=UTF8MB4;
+	 * </pre>
+	 */
+
+	/**
+	 * <pre>
+	 * create table savor_shard_test_0(
+	 id bigint(20) unsigned not null primary key comment '自增主键',
+	 hash_key varchar(64) comment 'key',
+	 value varchar(128)
+	 comment 'value',
+	 name varchar(64) comment 'name',
+	 sex varchar(64) comment 'sex',
+	 age tinyint comment 'age',
+	 create_time bigint(20) comment '创建时间',
+	 update_time timestamp default now() comment '创建时间'
+	 )ENGINE=INNODB DEFAULT CHARSET=UTF8MB4;
+	 create table savor_shard_test_2(
+	 id bigint(20) unsigned not null primary key comment '自增主键',
+	 hash_key varchar(64) comment 'key',
+	 value varchar(128)
+	 comment 'value',
+	 name varchar(64) comment 'name',
+	 sex varchar(64) comment 'sex',
+	 age tinyint comment 'age',
+	 create_time bigint(20) comment '创建时间',
+	 update_time timestamp default now() comment '创建时间'
+	 )ENGINE=INNODB DEFAULT CHARSET=UTF8MB4;
+	 create table savor_shard_test_4(
+	 id bigint(20) unsigned not null primary key comment '自增主键',
+	 hash_key varchar(64) comment 'key',
+	 value varchar(128)
+	 comment 'value',
+	 name varchar(64) comment 'name',
+	 sex varchar(64) comment 'sex',
+	 age tinyint comment 'age',
+	 create_time bigint(20) comment '创建时间',
+	 update_time timestamp default now() comment '创建时间'
+	 )ENGINE=INNODB DEFAULT CHARSET=UTF8MB4;
+	 create table savor_shard_test_6(
+	 id bigint(20) unsigned not null primary key comment '自增主键',
+	 hash_key varchar(64) comment 'key',
+	 value varchar(128)
+	 comment 'value',
+	 name varchar(64) comment 'name',
+	 sex varchar(64) comment 'sex',
+	 age tinyint comment 'age',
+	 create_time bigint(20) comment '创建时间',
+	 update_time timestamp default now() comment '创建时间'
+	 )ENGINE=INNODB DEFAULT CHARSET=UTF8MB4;
+	 create table savor_shard_test_8(
+	 id bigint(20) unsigned not null primary key comment '自增主键',
+	 hash_key varchar(64) comment 'key',
+	 value varchar(128)
+	 comment 'value',
+	 name varchar(64) comment 'name',
+	 sex varchar(64) comment 'sex',
+	 age tinyint comment 'age',
+	 create_time bigint(20) comment '创建时间',
+	 update_time timestamp default now() comment '创建时间'
+	 )ENGINE=INNODB DEFAULT CHARSET=UTF8MB4;
+	 * </pre>
+	 */
+	/**
+	 * <pre>
+	 * create table savor_shard_test_1(
+	 id bigint(20) unsigned not null primary key comment '自增主键',
+	 hash_key varchar(64) comment 'key',
+	 value varchar(128)
+	 comment 'value',
+	 name varchar(64) comment 'name',
+	 sex varchar(64) comment 'sex',
+	 age tinyint comment 'age',
+	 create_time bigint(20) comment '创建时间',
+	 update_time timestamp default now() comment '创建时间'
+	 )ENGINE=INNODB DEFAULT CHARSET=UTF8MB4;
+	 create table savor_shard_test_3(
+	 id bigint(20) unsigned not null primary key comment '自增主键',
+	 hash_key varchar(64) comment 'key',
+	 value varchar(128)
+	 comment 'value',
+	 name varchar(64) comment 'name',
+	 sex varchar(64) comment 'sex',
+	 age tinyint comment 'age',
+	 create_time bigint(20) comment '创建时间',
+	 update_time timestamp default now() comment '创建时间'
+	 )ENGINE=INNODB DEFAULT CHARSET=UTF8MB4;
+	 create table savor_shard_test_5(
+	 id bigint(20) unsigned not null primary key comment '自增主键',
+	 hash_key varchar(64) comment 'key',
+	 value varchar(128)
+	 comment 'value',
+	 name varchar(64) comment 'name',
+	 sex varchar(64) comment 'sex',
+	 age tinyint comment 'age',
+	 create_time bigint(20) comment '创建时间',
+	 update_time timestamp default now() comment '创建时间'
+	 )ENGINE=INNODB DEFAULT CHARSET=UTF8MB4;
+	 create table savor_shard_test_7(
+	 id bigint(20) unsigned not null primary key comment '自增主键',
+	 hash_key varchar(64) comment 'key',
+	 value varchar(128)
+	 comment 'value',
+	 name varchar(64) comment 'name',
+	 sex varchar(64) comment 'sex',
+	 age tinyint comment 'age',
+	 create_time bigint(20) comment '创建时间',
+	 update_time timestamp default now() comment '创建时间'
+	 )ENGINE=INNODB DEFAULT CHARSET=UTF8MB4;
+	 create table savor_shard_test_9(
+	 id bigint(20) unsigned not null primary key comment '自增主键',
+	 hash_key varchar(64) comment 'key',
+	 value varchar(128)
+	 comment 'value',
+	 name varchar(64) comment 'name',
+	 sex varchar(64) comment 'sex',
+	 age tinyint comment 'age',
+	 create_time bigint(20) comment '创建时间',
+	 update_time timestamp default now() comment '创建时间'
+	 )ENGINE=INNODB DEFAULT CHARSET=UTF8MB4;
+	 * </pre>
+	 */
 
 }
