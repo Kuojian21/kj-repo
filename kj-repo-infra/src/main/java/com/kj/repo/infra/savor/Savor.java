@@ -62,7 +62,7 @@ public abstract class Savor<T> {
 
     public int update(SqlParams sqlParams) {
         logger.info("sql:{}", sqlParams.getSql());
-        return sqlParams.shardHolder.jdbcTemplateHolder.writer.update(sqlParams.getSql().toString(), sqlParams.getParams());
+        return sqlParams.getShardHolder().getJdbcTemplateHolder().getWriter().update(sqlParams.getSql().toString(), sqlParams.getParams());
     }
 
     public int update(Stream<SqlParams> stream) {
@@ -71,7 +71,7 @@ public abstract class Savor<T> {
 
     public <R> List<R> select(SqlParams sqlParams, RowMapper<R> rowMapper) {
         logger.info("sql:{}", sqlParams.getSql());
-        return sqlParams.shardHolder.jdbcTemplateHolder.reader.query(sqlParams.getSql().toString(), sqlParams.getParams(), rowMapper);
+        return sqlParams.getShardHolder().getJdbcTemplateHolder().getReader().query(sqlParams.getSql().toString(), sqlParams.getParams(), rowMapper);
     }
 
     public <R> List<R> select(Stream<SqlParams> stream, RowMapper<R> rowMapper) {
@@ -169,7 +169,7 @@ public abstract class Savor<T> {
         }
         List<Param> paramList = tParams.get(property.getName());
         if (paramList == null || params.getConn() == ParamsBuilder.CONN.OR) {
-            ShardHolder holder = this.shardWrap().apply(null);
+            ShardHolder holder = this.shard().apply(null);
             if (holder != null) {
                 return Helper.newHashMap(holder, params);
             }
@@ -178,10 +178,10 @@ public abstract class Savor<T> {
             Param param = paramList.get(0);
             switch (param.op) {
                 case EQ:
-                    return Helper.newHashMap(this.shardWrap().apply(param.getValue()), params);
+                    return Helper.newHashMap(this.shard().apply(property.cast(param.getValue())), params);
                 case IN:
                     return ((Collection<?>) param.getValue()).stream()
-                            .map(e -> Tuple.tuple(this.shardWrap().apply(e), e))
+                            .map(e -> Tuple.tuple(this.shard().apply(property.cast(e)), e))
                             .collect(Collectors.groupingBy(Tuple::getX)).entrySet().stream()
                             .collect(Collectors.toMap(Map.Entry::getKey,
                                     e -> params.copy(property.getName(), Lists.newArrayList(new Param(property, Param.OP.IN,
@@ -201,7 +201,7 @@ public abstract class Savor<T> {
             return Helper.newHashMap(new ShardHolder(new JdbcTemplateHolder(this.getReader(), this.getWriter()), this.model.getTable()), objs);
         } else {
             return objs.stream()
-                    .collect(Collectors.groupingBy(o -> this.shardWrap().apply(property.getOrInsertDef(o))));
+                    .collect(Collectors.groupingBy(o -> this.shard().apply(property.cast(property.getOrInsertDef(o)))));
         }
     }
 
@@ -223,10 +223,6 @@ public abstract class Savor<T> {
 
     protected List<ShardHolder> shards() {
         throw new RuntimeException("not supported");
-    }
-
-    protected Function<Object, ShardHolder> shardWrap() {
-        return (key) -> this.shard().apply(this.model.shardProperty.cast(key));
     }
 
     public abstract NamedParameterJdbcTemplate getReader();
@@ -635,6 +631,7 @@ public abstract class Savor<T> {
      */
     @Getter
     public static class ShardHolder {
+
         private final JdbcTemplateHolder jdbcTemplateHolder;
         private final String table;
 
@@ -647,14 +644,14 @@ public abstract class Savor<T> {
         public boolean equals(Object other) {
             if (other instanceof ShardHolder) {
                 ShardHolder o = (ShardHolder) other;
-                return this.table.equals(o.table) /* && this.template.equals(o.template) */;
+                return this.table.equals(o.table);
             }
             return false;
         }
 
         @Override
         public int hashCode() {
-            return this.table.hashCode() /* / 2 + this.template.hashCode() / 2 */;
+            return this.table.hashCode();
         }
 
     }
