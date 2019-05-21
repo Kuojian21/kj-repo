@@ -15,7 +15,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -62,7 +62,7 @@ public abstract class Savor<T> {
 
     public int update(SqlParams sqlParams) {
         logger.info("sql:{}", sqlParams.getSql());
-        return sqlParams.jdbcTemplate.update(sqlParams.getSql().toString(), sqlParams.getParams());
+        return sqlParams.shardHolder.jdbcTemplateHolder.writer.update(sqlParams.getSql().toString(), sqlParams.getParams());
     }
 
     public int update(Stream<SqlParams> stream) {
@@ -71,7 +71,7 @@ public abstract class Savor<T> {
 
     public <R> List<R> select(SqlParams sqlParams, RowMapper<R> rowMapper) {
         logger.info("sql:{}", sqlParams.getSql());
-        return sqlParams.jdbcTemplate.query(sqlParams.getSql().toString(), sqlParams.getParams(), rowMapper);
+        return sqlParams.shardHolder.jdbcTemplateHolder.reader.query(sqlParams.getSql().toString(), sqlParams.getParams(), rowMapper);
     }
 
     public <R> List<R> select(Stream<SqlParams> stream, RowMapper<R> rowMapper) {
@@ -122,7 +122,7 @@ public abstract class Savor<T> {
     }
 
     public int delete(ParamsBuilder paramsBuilder) {
-        return this.update(this.shard(paramsBuilder, true).entrySet().stream()
+        return this.update(this.shard(paramsBuilder).entrySet().stream()
                 .map(e -> SqlHelper.delete(e.getKey(), e.getValue())));
     }
 
@@ -131,7 +131,7 @@ public abstract class Savor<T> {
     }
 
     public int update(ValuesBuilder valuesBuilder, ParamsBuilder paramsBuilder) {
-        return this.update(this.shard(paramsBuilder, true).entrySet().stream()
+        return this.update(this.shard(paramsBuilder).entrySet().stream()
                 .map(e -> SqlHelper.update(e.getKey(), valuesBuilder.build(this.model), e.getValue())));
     }
 
@@ -154,43 +154,43 @@ public abstract class Savor<T> {
 
     public <R> List<R> select(Collection<String> columns, ParamsBuilder paramsBuilder, List<String> groups,
                               List<String> orders, Integer offset, Integer limit, RowMapper<R> rowMapper) {
-        return this.select(this.shard(paramsBuilder, false).entrySet().stream().map(
+        return this.select(this.shard(paramsBuilder).entrySet().stream().map(
                 e -> SqlHelper.select(this.model, e.getKey(), columns, e.getValue(), groups, orders, offset, limit)),
                 rowMapper);
     }
 
-    protected Map<ShardHolder, ParamsBuilder.Params> shard(ParamsBuilder paramsBuilder, boolean update) {
+    protected Map<ShardHolder, ParamsBuilder.Params> shard(ParamsBuilder paramsBuilder) {
         ParamsBuilder.Params params = paramsBuilder.build(this.model);
         Map<String, List<Param>> tParams = params.master;
         Property property = this.model.getShardProperty();
         if (property == null) {
             return Helper.newHashMap(
-                    new ShardHolder(update ? this.getWriter() : this.getReader(), this.model.getTable()), params);
+                    new ShardHolder(new JdbcTemplateHolder(this.getReader(), this.getWriter()), this.model.getTable()), params);
         }
         List<Param> paramList = tParams.get(property.getName());
         if (paramList == null || params.getConn() == ParamsBuilder.CONN.OR) {
-            ShardHolder holder = this.shardWrap().apply(null, update);
+            ShardHolder holder = this.shardWrap().apply(null);
             if (holder != null) {
                 return Helper.newHashMap(holder, params);
             }
-            return this.shards(update).stream().collect(Collectors.toMap(t -> t, t -> params));
+            return this.shards().stream().collect(Collectors.toMap(t -> t, t -> params));
         } else if (paramList.size() == 1) {
             Param param = paramList.get(0);
             switch (param.op) {
                 case EQ:
-                    return Helper.newHashMap(this.shardWrap().apply(param.getValue(), update), params);
+                    return Helper.newHashMap(this.shardWrap().apply(param.getValue()), params);
                 case IN:
                     return ((Collection<?>) param.getValue()).stream()
-                            .map(e -> Tuple.tuple(this.shardWrap().apply(e, update), e))
+                            .map(e -> Tuple.tuple(this.shardWrap().apply(e), e))
                             .collect(Collectors.groupingBy(Tuple::getX)).entrySet().stream()
                             .collect(Collectors.toMap(Map.Entry::getKey,
                                     e -> params.copy(property.getName(), Lists.newArrayList(new Param(property, Param.OP.IN,
                                             e.getValue().stream().map(Tuple::getY).collect(Collectors.toList()))))));
                 default:
-                    return this.shards(update).stream().collect(Collectors.toMap(t -> t, t -> params));
+                    return this.shards().stream().collect(Collectors.toMap(t -> t, t -> params));
             }
         } else {
-            return this.shards(update).stream().collect(Collectors.toMap(t -> t, t -> params));
+            return this.shards().stream().collect(Collectors.toMap(t -> t, t -> params));
         }
 
     }
@@ -198,10 +198,10 @@ public abstract class Savor<T> {
     protected Map<ShardHolder, List<T>> shard(List<T> objs) {
         Property property = this.model.getShardProperty();
         if (property == null) {
-            return Helper.newHashMap(new ShardHolder(this.getWriter(), this.model.getTable()), objs);
+            return Helper.newHashMap(new ShardHolder(new JdbcTemplateHolder(this.getReader(), this.getWriter()), this.model.getTable()), objs);
         } else {
             return objs.stream()
-                    .collect(Collectors.groupingBy(o -> this.shardWrap().apply(property.getOrInsertDef(o), true)));
+                    .collect(Collectors.groupingBy(o -> this.shardWrap().apply(property.getOrInsertDef(o))));
         }
     }
 
@@ -217,16 +217,16 @@ public abstract class Savor<T> {
         return this.rowMapper;
     }
 
-    protected BiFunction<Object, Boolean, ShardHolder> shard() {
+    protected Function<Object, ShardHolder> shard() {
         throw new RuntimeException("not supported");
     }
 
-    protected List<ShardHolder> shards(boolean update) {
+    protected List<ShardHolder> shards() {
         throw new RuntimeException("not supported");
     }
 
-    protected BiFunction<Object, Boolean, ShardHolder> shardWrap() {
-        return (v, b) -> this.shard().apply(this.model.shardProperty.cast(v), b);
+    protected Function<Object, ShardHolder> shardWrap() {
+        return (key) -> this.shard().apply(this.model.shardProperty.cast(key));
     }
 
     public abstract NamedParameterJdbcTemplate getReader();
@@ -239,9 +239,7 @@ public abstract class Savor<T> {
     @Target(ElementType.TYPE)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface Shard {
-        String table()
-
-                default "";
+        String table() default "";
 
         String shardKey() default "";
     }
@@ -369,7 +367,7 @@ public abstract class Savor<T> {
             Map<String, Object> params = Maps.newHashMap();
             IntStream.range(0, objs.size()).boxed().forEach(i -> model.getInsertProperties()
                     .forEach(p -> params.put(p.getName() + i, p.getOrInsertDef(objs.get(i)))));
-            return SqlParams.model(holder.template, sql, params);
+            return SqlParams.model(holder, sql, params);
         }
 
         public static <T> SqlParams upsert(Model model, ShardHolder holder, List<T> objs, ValuesBuilder.Values values) {
@@ -388,7 +386,7 @@ public abstract class Savor<T> {
         public static SqlParams delete(ShardHolder holder, ParamsBuilder.Params params) {
             StringBuilder sql = new StringBuilder();
             sql.append("delete from ").append(holder.getTable()).append("\n").append(params.getWhere(true));
-            return SqlParams.model(holder.template, sql, Helper.paramMap(params));
+            return SqlParams.model(holder, sql, Helper.paramMap(params));
         }
 
         public static SqlParams update(ShardHolder holder, ValuesBuilder.Values values, ParamsBuilder.Params params) {
@@ -402,7 +400,7 @@ public abstract class Savor<T> {
                             .join(values.getValues().values().stream().sorted(Comparator.comparing(Value::getVName))
                                     .map(Value::getExpr).collect(Collectors.toList())))
                     .append("\n").append(params.getWhere(true));
-            return SqlParams.model(holder.template, sql, Helper.valueMap(Helper.paramMap(params), values.getValues()));
+            return SqlParams.model(holder, sql, Helper.valueMap(Helper.paramMap(params), values.getValues()));
         }
 
         public static SqlParams select(Model model, ShardHolder holder, Collection<String> columns,
@@ -450,30 +448,7 @@ public abstract class Savor<T> {
                 paramMap.put(VAR_LIMIT, limit);
                 sql.append(" limit :").append(VAR_LIMIT);
             }
-            return SqlParams.model(holder.template, sql, paramMap);
-        }
-
-    }
-
-    /**
-     * @author kuojian21
-     */
-    @Getter
-    public static class SqlParams {
-        private final NamedParameterJdbcTemplate jdbcTemplate;
-        private final StringBuilder sql;
-        private final Map<String, Object> params;
-
-        public SqlParams(NamedParameterJdbcTemplate jdbcTemplate, StringBuilder sql, Map<String, Object> params) {
-            super();
-            this.jdbcTemplate = jdbcTemplate;
-            this.sql = sql;
-            this.params = params;
-        }
-
-        public static SqlParams model(NamedParameterJdbcTemplate jdbcTemplate, StringBuilder sql,
-                                      Map<String, Object> params) {
-            return new SqlParams(jdbcTemplate, sql, params);
+            return SqlParams.model(holder, sql, paramMap);
         }
 
     }
@@ -637,13 +612,34 @@ public abstract class Savor<T> {
      * @author kuojian21
      */
     @Getter
+    public static class SqlParams {
+        private final ShardHolder shardHolder;
+        private final StringBuilder sql;
+        private final Map<String, Object> params;
+
+        public SqlParams(ShardHolder shardHolder, StringBuilder sql, Map<String, Object> params) {
+            this.shardHolder = shardHolder;
+            this.sql = sql;
+            this.params = params;
+        }
+
+        public static SqlParams model(ShardHolder shardHolder, StringBuilder sql,
+                                      Map<String, Object> params) {
+            return new SqlParams(shardHolder, sql, params);
+        }
+
+    }
+
+    /**
+     * @author kuojian21
+     */
+    @Getter
     public static class ShardHolder {
-        private final NamedParameterJdbcTemplate template;
+        private final JdbcTemplateHolder jdbcTemplateHolder;
         private final String table;
 
-        public ShardHolder(NamedParameterJdbcTemplate template, String table) {
-            super();
-            this.template = template;
+        public ShardHolder(JdbcTemplateHolder jdbcTemplateHolder, String table) {
+            this.jdbcTemplateHolder = jdbcTemplateHolder;
             this.table = table;
         }
 
@@ -661,6 +657,20 @@ public abstract class Savor<T> {
             return this.table.hashCode() /* / 2 + this.template.hashCode() / 2 */;
         }
 
+    }
+
+    /**
+     * @author kuojian21
+     */
+    @Getter
+    public static class JdbcTemplateHolder {
+        private final NamedParameterJdbcTemplate reader;
+        private final NamedParameterJdbcTemplate writer;
+
+        public JdbcTemplateHolder(NamedParameterJdbcTemplate reader, NamedParameterJdbcTemplate writer) {
+            this.reader = reader;
+            this.writer = writer;
+        }
     }
 
     /**
