@@ -2,6 +2,7 @@ package com.kj.repo.infra.helper;
 
 import java.util.Map;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 /**
@@ -15,5 +16,9 @@ public class MapHelper {
             result.put((K) objs[i], (V) objs[i + 1]);
         }
         return result;
+    }
+
+    public static <K, V> ImmutableMap<K, V> of(K k1, V v1) {
+        return ImmutableMap.of(k1, v1);
     }
 }

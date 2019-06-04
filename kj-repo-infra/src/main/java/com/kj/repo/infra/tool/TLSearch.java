@@ -16,6 +16,7 @@ import java.util.stream.IntStream;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.kj.repo.infra.bean.BeanSupplier;
 
 /**
  * @author kuojian21
@@ -104,16 +105,24 @@ public class TLSearch {
 
         static AtomicLong count = new AtomicLong(0);
         static AtomicBoolean shutdown = new AtomicBoolean(false);
-        static ExecutorService service = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
-                Runtime.getRuntime().availableProcessors(), 0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>(4096), new ThreadPoolExecutor.CallerRunsPolicy());
+        static BeanSupplier<ExecutorService> service = new BeanSupplier<ExecutorService>(
+                () -> new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
+                        Runtime.getRuntime().availableProcessors(), 0L, TimeUnit.MILLISECONDS,
+                        new LinkedBlockingQueue<Runnable>(4096), new ThreadPoolExecutor.CallerRunsPolicy()),
+                s -> {
+                    try {
+                        s.shutdown();
+                        s.awaitTermination(3, TimeUnit.MINUTES);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                });
 
         static {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
                     shutdown.set(true);
-                    service.shutdown();
-                    service.awaitTermination(3, TimeUnit.MINUTES);
+                    service.close();
                 } catch (Exception e) {
 
                 }
@@ -125,7 +134,7 @@ public class TLSearch {
                 throw new RuntimeException();
             }
             Holder.count.incrementAndGet();
-            service.submit(() -> {
+            service.get().submit(() -> {
                 runnable.run();
                 Holder.count.decrementAndGet();
             });

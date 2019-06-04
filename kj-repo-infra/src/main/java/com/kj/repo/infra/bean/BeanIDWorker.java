@@ -7,8 +7,8 @@ import org.slf4j.LoggerFactory;
  * An object that generates IDs. This is broken into a separate class in case we
  * ever want to support multiple worker threads per process
  */
-public class IdWorkerBean {
-    private static Logger logger = LoggerFactory.getLogger(IdWorkerBean.class);
+public class BeanIDWorker {
+    private static Logger logger = LoggerFactory.getLogger(BeanIDWorker.class);
     private final long workerIdBits = 5L;
     private final long datacenterIdBits = 5L;
     private final long maxWorkerId = -1L ^ (-1L << workerIdBits);
@@ -25,7 +25,7 @@ public class IdWorkerBean {
     private long sequence = 0L;
     private long lastTimestamp = -1L;
 
-    public IdWorkerBean(long datacenterId, long workerId) {
+    public BeanIDWorker(long datacenterId, long workerId) {
         if (datacenterId > maxDatacenterId || datacenterId < 0) {
             throw new IllegalArgumentException(
                     String.format("datacenter Id can't be greater than %d or less than 0", maxDatacenterId));
