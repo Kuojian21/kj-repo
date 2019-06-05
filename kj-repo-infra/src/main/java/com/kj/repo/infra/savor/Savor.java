@@ -38,8 +38,6 @@ import com.kj.repo.infra.savor.Savor.Expr.PType;
 import com.kj.repo.infra.savor.Savor.Expr.Type;
 import com.kj.repo.infra.savor.Savor.ParamsBuilder.Params;
 
-import lombok.Getter;
-
 /**
  * @author kuojian21
  */
@@ -295,7 +293,6 @@ public abstract class Savor<T> {
     /**
      * @author kuojian21
      */
-    @Getter
     public static class Model {
 
         private static final ConcurrentMap<Class<?>, Model> MODELS = Maps.newConcurrentMap();
@@ -350,12 +347,39 @@ public abstract class Savor<T> {
         public static Model model(Class<?> clazz) {
             return MODELS.computeIfAbsent(clazz, Model::new);
         }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getTable() {
+            return table;
+        }
+
+        public List<Property> getProperties() {
+            return properties;
+        }
+
+        public Map<String, Property> getPropertyMap() {
+            return propertyMap;
+        }
+
+        public List<Property> getInsertProperties() {
+            return insertProperties;
+        }
+
+        public Property getShardProperty() {
+            return shardProperty;
+        }
+
+        public List<Property> getUpdateTimeProperties() {
+            return updateTimeProperties;
+        }
     }
 
     /**
      * @author kuojian21
      */
-    @Getter
     public static class Property {
 
         private final String name;
@@ -440,12 +464,42 @@ public abstract class Savor<T> {
             return obj;
         }
 
+        public String getName() {
+            return name;
+        }
+
+        public String getColumn() {
+            return column;
+        }
+
+        public Class<?> getType() {
+            return type;
+        }
+
+        public Field getField() {
+            return field;
+        }
+
+        public boolean isPrimaryKey() {
+            return primaryKey;
+        }
+
+        public boolean isInsertable() {
+            return insertable;
+        }
+
+        public Supplier<Object> getInsertDef() {
+            return insertDef;
+        }
+
+        public Supplier<Object> getUpdateDef() {
+            return updateDef;
+        }
     }
 
     /**
      * @author kuojian21
      */
-    @Getter
     public static class Tuple<X, Y> {
         private final X x;
         private final Y y;
@@ -481,12 +535,19 @@ public abstract class Savor<T> {
         public int hashCode() {
             return (this.x == null ? 0 : this.x.hashCode()) / 2 + (this.y == null ? 0 : this.y.hashCode()) / 2;
         }
+
+        public X getX() {
+            return x;
+        }
+
+        public Y getY() {
+            return y;
+        }
     }
 
     /**
      * @author kuojian21
      */
-    @Getter
     public static class SqlParams {
         private final ShardHolder shardHolder;
         private final StringBuilder sql;
@@ -503,12 +564,22 @@ public abstract class Savor<T> {
             return new SqlParams(shardHolder, sql, paramsList);
         }
 
+        public ShardHolder getShardHolder() {
+            return shardHolder;
+        }
+
+        public StringBuilder getSql() {
+            return sql;
+        }
+
+        public List<Map<String, Object>> getParamsList() {
+            return paramsList;
+        }
     }
 
     /**
      * @author kuojian21
      */
-    @Getter
     public static class ShardHolder {
 
         private final String table;
@@ -535,6 +606,14 @@ public abstract class Savor<T> {
             return this.table.hashCode();
         }
 
+        public String getTable() {
+            return table;
+        }
+
+        public NamedParameterJdbcTemplate getWriter() {
+            return writer;
+        }
+
         public NamedParameterJdbcTemplate getReader() {
             if (TransactionSynchronizationManager.isSynchronizationActive()) {
                 return this.writer;
@@ -547,19 +626,18 @@ public abstract class Savor<T> {
     /**
      * @author kuojian21
      */
-    @Getter
     public static class Expr {
         private final Property property;
         private final Type type;
-        private final String vName;
+        private final String vname;
         private final String expr;
         private final Object value;
 
-        public Expr(Property property, Type type, String vName, String expr, Object value) {
+        public Expr(Property property, Type type, String vname, String expr, Object value) {
             super();
             this.property = property;
             this.type = type;
-            this.vName = vName;
+            this.vname = vname;
             this.expr = expr;
             this.value = value;
         }
@@ -576,7 +654,6 @@ public abstract class Savor<T> {
         /**
          * @author kuojian21
          */
-        @Getter
         public enum PType implements Type {
             EQ("="), IN("in"), LT("<"), LE("<="), GT(">"), GE(">="), NE("!=");
             private final String symbol;
@@ -611,6 +688,25 @@ public abstract class Savor<T> {
             return new Expr(p, type, vname, expr, value);
         }
 
+        public Property getProperty() {
+            return property;
+        }
+
+        public Type getType() {
+            return type;
+        }
+
+        public String getVname() {
+            return vname;
+        }
+
+        public String getExpr() {
+            return expr;
+        }
+
+        public Object getValue() {
+            return value;
+        }
     }
 
     /**
@@ -708,7 +804,7 @@ public abstract class Savor<T> {
             }
             Params tParams = new Params(this.conn, result);
             List<String> exprs = tParams.getMajor().entrySet().stream().flatMap(e -> e.getValue().stream())
-                    .sorted(Comparator.comparing(Expr::getVName)).map(Expr::getExpr).collect(Collectors.toList());
+                    .sorted(Comparator.comparing(Expr::getVname)).map(Expr::getExpr).collect(Collectors.toList());
             this.minor.stream().map(pb -> pb.build(model)).sorted(Comparator.comparing(p -> p.getWhere().toString()))
                     .forEach(p -> {
                         exprs.add("(" + p.getWhere() + ")");
@@ -729,7 +825,6 @@ public abstract class Savor<T> {
         /**
          * @author kuojian21
          */
-        @Getter
         public static class Params {
             private final ParamsBuilder.CONN conn;
             private final StringBuilder where;
@@ -765,6 +860,21 @@ public abstract class Savor<T> {
                 return " where " + this.where.toString();
             }
 
+            public CONN getConn() {
+                return conn;
+            }
+
+            public StringBuilder getWhere() {
+                return where;
+            }
+
+            public Map<String, List<Expr>> getMajor() {
+                return major;
+            }
+
+            public Map<String, List<Expr>> getMinor() {
+                return minor;
+            }
         }
     }
 
@@ -786,7 +896,6 @@ public abstract class Savor<T> {
         /**
          * @author kuojian21
          */
-        @Getter
         public enum VType implements Type {
             EQ("="), ADD("+"), SUB("-"), EXPR("EXPR");
             private final String symbol;
@@ -818,13 +927,13 @@ public abstract class Savor<T> {
                                          List<String> groups, List<String> orders, Integer offset, Integer limit);
 
         public static Map<String, Object> expr(Map<String, Object> paramMap, ParamsBuilder.Params params) {
-            params.major.forEach((key, value) -> value.forEach(v -> paramMap.put(v.getVName(), v.getValue())));
-            params.minor.forEach((key, value) -> value.forEach(v -> paramMap.put(v.getVName(), v.getValue())));
+            params.major.forEach((key, value) -> value.forEach(v -> paramMap.put(v.getVname(), v.getValue())));
+            params.minor.forEach((key, value) -> value.forEach(v -> paramMap.put(v.getVname(), v.getValue())));
             return paramMap;
         }
 
         public static Map<String, Object> expr(Map<String, Object> paramMap, Map<String, Expr> values) {
-            values.values().forEach(v -> paramMap.put(v.getVName(), v.getValue()));
+            values.values().forEach(v -> paramMap.put(v.getVname(), v.getValue()));
             return paramMap;
         }
 
@@ -842,7 +951,7 @@ public abstract class Savor<T> {
             StringBuilder sql = new StringBuilder();
             sql.append("update ").append(holder.getTable()).append("\n").append(" set ")
                     .append(Joiner.on(",")
-                            .join(values.values().stream().sorted(Comparator.comparing(Expr::getVName))
+                            .join(values.values().stream().sorted(Comparator.comparing(Expr::getVname))
                                     .map(Expr::getExpr).collect(Collectors.toList())))
                     .append("\n").append(params.getSqlWhere());
             return SqlParams.model(holder, sql, Lists.newArrayList(expr(expr(Maps.newHashMap(), params), values)));
