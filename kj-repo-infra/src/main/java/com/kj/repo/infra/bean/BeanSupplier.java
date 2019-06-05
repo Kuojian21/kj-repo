@@ -1,11 +1,14 @@
 package com.kj.repo.infra.bean;
 
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * @param <T>
+ * @author kuojian21
+ */
 public class BeanSupplier<T> implements Supplier<T>, AutoCloseable {
     private final Supplier<T> delegate;
-    private final Consumer<T> reset;
+    private final Consumer<T> close;
     private volatile boolean initialized;
     private T value;
 
@@ -13,10 +16,10 @@ public class BeanSupplier<T> implements Supplier<T>, AutoCloseable {
         this(delegate, null);
     }
 
-    public BeanSupplier(Supplier<T> delegate, Consumer<T> reset) {
+    public BeanSupplier(Supplier<T> delegate, Consumer<T> close) {
         super();
         this.delegate = delegate;
-        this.reset = reset;
+        this.close = close;
     }
 
     @Override
@@ -24,7 +27,11 @@ public class BeanSupplier<T> implements Supplier<T>, AutoCloseable {
         if (!this.initialized) {
             synchronized (this) {
                 if (!this.initialized) {
-                    this.value = this.delegate.get();
+                    try {
+                        this.value = this.delegate.get();
+                    } catch (Throwable e) {
+                        throw new RuntimeException(e);
+                    }
                     this.initialized = true;
                 }
             }
@@ -32,22 +39,32 @@ public class BeanSupplier<T> implements Supplier<T>, AutoCloseable {
         return this.value;
     }
 
-    public void reset() {
-        try {
-            this.close();
-        } catch (Exception e) {
-
-        } finally {
-            this.initialized = false;
-            this.value = null;
+    public void reset() throws Exception {
+        if (this.initialized) {
+            if (this.close != null) {
+                close.accept(this.value);
+            }
+            this.value = this.delegate.get();
         }
     }
 
     @Override
     public void close() throws Exception {
-        if (this.initialized && this.reset != null) {
-            reset.accept(this.value);
+        if (this.initialized && this.close != null) {
+            close.accept(this.value);
         }
+        this.initialized = false;
+        this.value = null;
+    }
+
+    @FunctionalInterface
+    public interface Supplier<T> {
+        T get() throws Exception;
+    }
+
+    @FunctionalInterface
+    public interface Consumer<T> {
+        void accept(T t) throws Exception;
     }
 
 }

@@ -13,6 +13,7 @@
         <module>kj-repo-shell</module>
         <module>kj-repo-spring-boot</module>
         <module>kj-repo-spring-web</module>
+        <module>kj-repo-debug</module>
     </modules>
 
     <properties>
