@@ -336,16 +336,16 @@ public abstract class Savor<T> {
                     .unmodifiableList(properties.stream().filter(Property::isInsertable).collect(Collectors.toList()));
         }
 
+        public static Model model(Class<?> clazz) {
+            return MODELS.computeIfAbsent(clazz, Model::new);
+        }
+
         public Property getProperty(String name) {
             return this.propertyMap.get(name);
         }
 
         public List<Property> getProperties(Collection<String> names) {
             return names.stream().map(this.propertyMap::get).collect(Collectors.toList());
-        }
-
-        public static Model model(Class<?> clazz) {
-            return MODELS.computeIfAbsent(clazz, Model::new);
         }
 
         public String getName() {
@@ -642,31 +642,6 @@ public abstract class Savor<T> {
             this.value = value;
         }
 
-        /**
-         * @author kuojian21
-         */
-        public interface Type {
-            String name();
-
-            String symbol();
-        }
-
-        /**
-         * @author kuojian21
-         */
-        public enum PType implements Type {
-            EQ("="), IN("in"), LT("<"), LE("<="), GT(">"), GE(">="), NE("!=");
-            private final String symbol;
-
-            PType(String symbol) {
-                this.symbol = symbol;
-            }
-
-            public String symbol() {
-                return symbol;
-            }
-        }
-
         public static Expr param(Property p, PType type, Object value) {
             String vname = p.name + "#" + type.name();
             String expr;
@@ -706,6 +681,31 @@ public abstract class Savor<T> {
 
         public Object getValue() {
             return value;
+        }
+
+        /**
+         * @author kuojian21
+         */
+        public enum PType implements Type {
+            EQ("="), IN("in"), LT("<"), LE("<="), GT(">"), GE(">="), NE("!=");
+            private final String symbol;
+
+            PType(String symbol) {
+                this.symbol = symbol;
+            }
+
+            public String symbol() {
+                return symbol;
+            }
+        }
+
+        /**
+         * @author kuojian21
+         */
+        public interface Type {
+            String name();
+
+            String symbol();
         }
     }
 
@@ -883,30 +883,14 @@ public abstract class Savor<T> {
      */
     public static abstract class SqlBuilder {
 
-        private static Logger logger = LoggerFactory.getLogger(Savor.class);
         private static final String NEW_VALUE_SUFFIX = "$newValueSuffix$";
         private static final String VAR_LIMIT = "$limit$";
         private static final String VAR_OFFSET = "$offset$";
         private static final ConcurrentMap<Savor.DBType, SqlBuilder> BUILDERS = Maps.newConcurrentMap();
+        private static Logger logger = LoggerFactory.getLogger(Savor.class);
 
         static {
             register(Savor.DBType.MYSQL, new MysqlBuilder());
-        }
-
-        /**
-         * @author kuojian21
-         */
-        public enum VType implements Type {
-            EQ("="), ADD("+"), SUB("-"), EXPR("EXPR");
-            private final String symbol;
-
-            VType(String symbol) {
-                this.symbol = symbol;
-            }
-
-            public String symbol() {
-                return symbol;
-            }
         }
 
         public static SqlBuilder sqlBuilder(Savor.DBType dbType) {
@@ -916,15 +900,6 @@ public abstract class Savor<T> {
         public static void register(Savor.DBType dbType, SqlBuilder sqlBuilder) {
             BUILDERS.putIfAbsent(dbType, sqlBuilder);
         }
-
-        public abstract Map<String, Expr> valueExprs(Model model, boolean upsert, Map<String, Object> values);
-
-        public abstract <T> SqlParams insert(Model model, ShardHolder holder, List<T> objs, boolean ignore);
-
-        public abstract <T> SqlParams upsert(Model model, ShardHolder holder, List<T> objs, Map<String, Expr> values);
-
-        public abstract SqlParams select(Model model, ShardHolder holder, Collection<String> columns, Params params,
-                                         List<String> groups, List<String> orders, Integer offset, Integer limit);
 
         public static Map<String, Object> expr(Map<String, Object> paramMap, ParamsBuilder.Params params) {
             params.major.forEach((key, value) -> value.forEach(v -> paramMap.put(v.getVname(), v.getValue())));
@@ -936,6 +911,15 @@ public abstract class Savor<T> {
             values.values().forEach(v -> paramMap.put(v.getVname(), v.getValue()));
             return paramMap;
         }
+
+        public abstract Map<String, Expr> valueExprs(Model model, boolean upsert, Map<String, Object> values);
+
+        public abstract <T> SqlParams insert(Model model, ShardHolder holder, List<T> objs, boolean ignore);
+
+        public abstract <T> SqlParams upsert(Model model, ShardHolder holder, List<T> objs, Map<String, Expr> values);
+
+        public abstract SqlParams select(Model model, ShardHolder holder, Collection<String> columns, Params params,
+                                         List<String> groups, List<String> orders, Integer offset, Integer limit);
 
         public SqlParams delete(ShardHolder holder, ParamsBuilder.Params params) {
             StringBuilder sql = new StringBuilder();
@@ -955,6 +939,22 @@ public abstract class Savor<T> {
                                     .map(Expr::getExpr).collect(Collectors.toList())))
                     .append("\n").append(params.getSqlWhere());
             return SqlParams.model(holder, sql, Lists.newArrayList(expr(expr(Maps.newHashMap(), params), values)));
+        }
+
+        /**
+         * @author kuojian21
+         */
+        public enum VType implements Type {
+            EQ("="), ADD("+"), SUB("-"), EXPR("EXPR");
+            private final String symbol;
+
+            VType(String symbol) {
+                this.symbol = symbol;
+            }
+
+            public String symbol() {
+                return symbol;
+            }
         }
 
         public static class MysqlBuilder extends SqlBuilder {
