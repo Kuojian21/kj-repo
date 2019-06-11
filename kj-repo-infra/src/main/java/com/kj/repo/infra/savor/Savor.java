@@ -209,12 +209,12 @@ public abstract class Savor<T> {
                     return Helper.newHashMap(this.shard().apply(property.cast(param.getValue())), params);
                 case IN:
                     return ((Collection<?>) param.getValue()).stream()
-                            .map(e -> Tuple.tuple(this.shard().apply(property.cast(e)), e))
-                            .collect(Collectors.groupingBy(Tuple::getX)).entrySet().stream()
+                            .map(e -> Pair.pair(this.shard().apply(property.cast(e)), e))
+                            .collect(Collectors.groupingBy(Pair::getKey)).entrySet().stream()
                             .collect(Collectors.toMap(Map.Entry::getKey,
                                     e -> params.copyWith(property.getName(), Lists.newArrayList(Expr.param(property,
                                             Expr.PType.IN,
-                                            e.getValue().stream().map(Tuple::getY).collect(Collectors.toList()))))));
+                                            e.getValue().stream().map(Pair::getValue).collect(Collectors.toList()))))));
                 default:
                     return this.shards().stream().collect(Collectors.toMap(t -> t, t -> params));
             }
@@ -317,8 +317,8 @@ public abstract class Savor<T> {
             }
             this.properties = Collections.unmodifiableList(tProperties);
             this.propertyMap = Collections.unmodifiableMap(properties.stream()
-                    .map(p -> Lists.newArrayList(Tuple.tuple(p.getName(), p), Tuple.tuple(p.getColumn(), p)))
-                    .flatMap(List::stream).distinct().collect(Collectors.toMap(Tuple::getX, Tuple::getY)));
+                    .map(p -> Lists.newArrayList(Pair.pair(p.getName(), p), Pair.pair(p.getColumn(), p)))
+                    .flatMap(List::stream).distinct().collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
             Shard shard = clazz.getAnnotation(Shard.class);
             if (shard == null) {
                 this.table = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, this.name);
@@ -500,48 +500,48 @@ public abstract class Savor<T> {
     /**
      * @author kuojian21
      */
-    public static class Tuple<X, Y> {
-        private final X x;
-        private final Y y;
+    public static class Pair<K, V> {
+        private final K key;
+        private final V value;
 
-        public Tuple(X x, Y v) {
+        public Pair(K key, V value) {
             super();
-            this.x = x;
-            this.y = v;
+            this.key = key;
+            this.value = value;
         }
 
-        public static <X, Y> Tuple<X, Y> tuple(X x, Y y) {
-            return new Tuple<>(x, y);
+        public static <K, V> Pair<K, V> pair(K key, V value) {
+            return new Pair<>(key, value);
         }
 
         @Override
         public boolean equals(Object other) {
-            if (other == null || other.getClass() != Tuple.class) {
+            if (other == null || other.getClass() != Pair.class) {
                 return false;
             }
-            Tuple<?, ?> oTuple = (Tuple<?, ?>) other;
-            if (this.x != null && !this.x.equals(oTuple.x)) {
+            Pair<?, ?> oPair = (Pair<?, ?>) other;
+            if (this.key != null && !this.key.equals(oPair.key)) {
                 return false;
-            } else if (this.x == null && oTuple.x != null) {
+            } else if (this.key == null && oPair.key != null) {
                 return false;
-            } else if (this.y != null && !this.y.equals(oTuple.y)) {
+            } else if (this.value != null && !this.value.equals(oPair.value)) {
                 return false;
             } else {
-                return this.y != null || oTuple.y == null;
+                return this.value != null || oPair.value == null;
             }
         }
 
         @Override
         public int hashCode() {
-            return (this.x == null ? 0 : this.x.hashCode()) / 2 + (this.y == null ? 0 : this.y.hashCode()) / 2;
+            return (this.key == null ? 0 : this.key.hashCode()) / 2 + (this.value == null ? 0 : this.value.hashCode()) / 2;
         }
 
-        public X getX() {
-            return x;
+        public K getKey() {
+            return key;
         }
 
-        public Y getY() {
-            return y;
+        public V getValue() {
+            return value;
         }
     }
 

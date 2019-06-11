@@ -286,6 +286,12 @@
             <artifactId>curator-recipes</artifactId>
             <version>4.0.1</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.github.shyiko/mysql-binlog-connector-java -->
+        <dependency>
+            <groupId>com.github.shyiko</groupId>
+            <artifactId>mysql-binlog-connector-java</artifactId>
+            <version>0.16.1</version>
+        </dependency>
     </dependencies>
 
     <build>
