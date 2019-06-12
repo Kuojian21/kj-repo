@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -12,6 +13,9 @@ import java.util.stream.LongStream;
 
 import javax.sql.DataSource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
@@ -24,11 +28,11 @@ import com.kj.repo.infra.savor.Savor.TimeUpdate;
 import com.mysql.cj.jdbc.Driver;
 
 import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @SuppressWarnings("unchecked")
 public class TeSavor {
+
+    private static Logger log = LoggerFactory.getLogger(Savor.class);
 
     public static void main(String[] args) throws SQLException {
         /*
@@ -36,6 +40,8 @@ public class TeSavor {
          */
 //		System.setProperty("socksProxyHost", "127.0.0.1");
 //		System.setProperty("socksProxyPort", "8088");
+        MDC.put("UUID", UUID.randomUUID().toString());
+        MDC.get("UUID");
         TeSavor teSavor = new TeSavor();
 //        SavorTestDao<SavorTest> dao = new SavorTestDao<>(
 //                new SimpleDriverDataSource(new Driver(), args[0], args[1], args[2]),

@@ -9,9 +9,11 @@ import com.kj.repo.infra.helper.ZxingHelper;
 public class TeZxingHelper {
 
     public static void main(String[] args) throws IOException {
-        ZxingHelper.matrix("https://www.lmlc.com");
-        Files.write(ZxingHelper.matrix("https://www.lmlc.com"),
+        Files.write(ZxingHelper.encode("https://www.lmlc.com"),
                 Paths.get(System.getProperty("user.home") + "/text.jpg").toFile());
+
+        System.out.println(ZxingHelper.decode(
+                Files.toByteArray(Paths.get(System.getProperty("user.home") + "/Desktop/Screen Shot 2019-06-12 at 17.25.51.png").toFile())));
     }
 
 }
