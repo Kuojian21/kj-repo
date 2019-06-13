@@ -29,7 +29,7 @@ public class TePLBrowser {
         kjBrowser.execute(t -> {
             try {
                 t.addCookie("_did=web_966972270286159", domain, null);
-                t.addCookie("_gitlab_session=d44e489f50cd9710f4a014130ca79f17", domain, null);
+                t.addCookie("_gitlab_session=7903cae1d9e8fe8a4e674c03fa3f9f84", domain, null);
                 t.addCookie("sidebar_collapsed=false", domain, null);
                 HtmlPage page = t.getPage(args[0]);
                 List<String> all = PLBrowser.Helper.parse(page, "//a[@class='project']/@href");
@@ -92,9 +92,10 @@ public class TePLBrowser {
     }
 
     public static void main(String[] args) throws Exception {
-        System.setProperty("socksProxyHost", "127.0.0.1");
-        System.setProperty("socksProxyPort", "8088");
-        gatherproxy(args);
+//        System.setProperty("socksProxyHost", "127.0.0.1");
+//        System.setProperty("socksProxyPort", "8088");
+//        gatherproxy(args);
+        git(args);
 
         kjBrowser.shutdown();
     }

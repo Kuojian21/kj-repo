@@ -12,6 +12,7 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
 import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.DomAttr;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTable;
@@ -130,6 +131,8 @@ public class PLBrowser<T> {
 //									.map(c -> c.asText().trim())
                                 .collect(Collectors.toList()));
                         break;
+                    case "DomAttr":
+                        result.add((T) ((DomAttr) node).getTextContent());
                     default:
 
                 }
