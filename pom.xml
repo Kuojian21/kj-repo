@@ -14,6 +14,7 @@
         <module>kj-repo-spring-boot</module>
         <module>kj-repo-spring-web</module>
         <module>kj-repo-debug</module>
+        <module>kj-repo-test</module>
     </modules>
 
     <properties>
