@@ -8,18 +8,18 @@ import java.util.function.Supplier;
  */
 public class BeanSupplier<T> implements Supplier<T>, AutoCloseable {
     private final Supplier<T> delegate;
-    private final Consumer<T> close;
+    private final Consumer<T> clean;
     private volatile boolean initialized;
-    private T value;
+    private volatile T value;
 
     public BeanSupplier(Supplier<T> delegate) {
         this(delegate, null);
     }
 
-    public BeanSupplier(Supplier<T> delegate, Consumer<T> close) {
+    public BeanSupplier(Supplier<T> delegate, Consumer<T> clean) {
         super();
         this.delegate = delegate;
-        this.close = close;
+        this.clean = clean;
     }
 
     @Override
@@ -40,20 +40,18 @@ public class BeanSupplier<T> implements Supplier<T>, AutoCloseable {
     }
 
     public void reset() throws Exception {
-        if (this.initialized) {
-            if (this.close != null) {
-                close.accept(this.value);
-            }
-            this.value = this.delegate.get();
+        T oValue = this.value;
+        this.value = this.delegate.get();
+        if (this.clean != null && oValue != null) {
+            this.clean.accept(oValue);
         }
     }
 
     @Override
     public void close() throws Exception {
-        if (this.initialized && this.close != null) {
-            close.accept(this.value);
+        if (this.clean != null && this.value != null) {
+            this.clean.accept(this.value);
         }
-        this.initialized = false;
         this.value = null;
     }
 

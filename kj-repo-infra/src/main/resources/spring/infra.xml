@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:aop="http://www.springframework.org/schema/aop"
-        xmlns:context="http://www.springframework.org/schema/context"
-        xmlns="http://www.springframework.org/schema/beans"
-        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns="http://www.springframework.org/schema/beans"
+
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
     <aop:config proxy-target-class="true"/>
@@ -13,4 +13,18 @@
     <context:component-scan base-package="com.kj.repo.infra.bean"/>
     <context:component-scan base-package="com.kj.repo.tt"/>
 
+    <!-- <tx:annotation-driven /> <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" /> </bean> -->
+    <aop:config>
+        <aop:aspect id="time" ref="timeHandler" order="1">
+            <aop:pointcut id="addTime" expression="execution(* com.xrq.aop.HelloWorld.*(..))"/>
+            <aop:before method="printTime" pointcut-ref="addTime"/>
+            <aop:after method="printTime" pointcut-ref="addTime"/>
+        </aop:aspect>
+        <aop:aspect id="log" ref="logHandler" order="2">
+            <aop:pointcut id="printLog" expression="execution(* com.xrq.aop.HelloWorld.*(..))"/>
+            <aop:before method="LogBefore" pointcut-ref="printLog"/>
+            <aop:after method="LogAfter" pointcut-ref="printLog"/>
+        </aop:aspect>
+    </aop:config>
 </beans>

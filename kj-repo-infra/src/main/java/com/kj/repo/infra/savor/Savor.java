@@ -113,7 +113,7 @@ public abstract class Savor<T> {
     }
 
     public int update(SqlParams sqlParams) {
-        logger.info("sql:{}", sqlParams.getSql());
+        logger.debug("sql:{}", sqlParams.getSql());
         return IntStream.of(sqlParams.getShardHolder().getWriter().batchUpdate(sqlParams.getSql().toString(),
                 sqlParams.getParamsList().toArray(new Map[0]))).sum();
     }
@@ -146,7 +146,7 @@ public abstract class Savor<T> {
     }
 
     public <R> List<R> select(SqlParams sqlParams, RowMapper<R> rowMapper) {
-        logger.info("sql:{}", sqlParams.getSql());
+        logger.debug("sql:{}", sqlParams.getSql());
         return sqlParams.getShardHolder().getReader().query(sqlParams.getSql().toString(),
                 sqlParams.getParamsList().get(0), rowMapper);
     }
@@ -234,6 +234,9 @@ public abstract class Savor<T> {
         }
     }
 
+    /**
+     * @author kuojian21
+     */
     public enum DBType {
         MYSQL
     }
@@ -254,26 +257,12 @@ public abstract class Savor<T> {
      */
     @Target(ElementType.FIELD)
     @Retention(RetentionPolicy.RUNTIME)
-    public @interface PrimaryKey {
-        boolean insert() default false;
-    }
+    public @interface Key {
+        boolean insert() default true;
 
-    /**
-     * @author kuojian21
-     */
-    @Target(ElementType.FIELD)
-    @Retention(RetentionPolicy.RUNTIME)
-    public @interface TimeInsert {
-        String value() default "";
-    }
+        String defInsert() default "";
 
-    /**
-     * @author kuojian21
-     */
-    @Target(ElementType.FIELD)
-    @Retention(RetentionPolicy.RUNTIME)
-    public @interface TimeUpdate {
-        String value() default "";
+        String defUpdate() default "";
     }
 
     /**
@@ -294,16 +283,14 @@ public abstract class Savor<T> {
      * @author kuojian21
      */
     public static class Model {
-
         private static final ConcurrentMap<Class<?>, Model> MODELS = Maps.newConcurrentMap();
-
         private final String name;
         private final String table;
         private final List<Property> properties;
         private final Map<String, Property> propertyMap;
-        private final List<Property> insertProperties;
         private final Property shardProperty;
-        private final List<Property> updateTimeProperties;
+        private final List<Property> insertProperties;
+        private final List<Property> updateDefProperties;
 
         public Model(Class<?> clazz) {
             super();
@@ -329,11 +316,10 @@ public abstract class Savor<T> {
                 this.shardProperty = !Strings.isNullOrEmpty(shard.shardKey()) ? this.getProperty(shard.shardKey())
                         : null;
             }
-            this.updateTimeProperties = Collections.unmodifiableList(
-                    Arrays.stream(clazz.getDeclaredFields()).filter(f -> f.getAnnotation(TimeUpdate.class) != null)
-                            .map(f -> this.getProperty(f.getName())).collect(Collectors.toList()));
+            this.updateDefProperties = Collections.unmodifiableList(
+                    this.properties.stream().filter(p -> p.updateDef != null).collect(Collectors.toList()));
             this.insertProperties = Collections
-                    .unmodifiableList(properties.stream().filter(Property::isInsertable).collect(Collectors.toList()));
+                    .unmodifiableList(this.properties.stream().filter(Property::isInsert).collect(Collectors.toList()));
         }
 
         public static Model model(Class<?> clazz) {
@@ -372,8 +358,8 @@ public abstract class Savor<T> {
             return shardProperty;
         }
 
-        public List<Property> getUpdateTimeProperties() {
-            return updateTimeProperties;
+        public List<Property> getUpdateDefProperties() {
+            return updateDefProperties;
         }
     }
 
@@ -386,8 +372,8 @@ public abstract class Savor<T> {
         private final String column;
         private final Class<?> type;
         private final Field field;
-        private final boolean primaryKey;
-        private final boolean insertable;
+        private final Key key;
+        private final boolean insert;
         private final Supplier<Object> insertDef;
         private final Supplier<Object> updateDef;
 
@@ -397,45 +383,29 @@ public abstract class Savor<T> {
             this.name = f.getName();
             this.column = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, f.getName());
             this.type = f.getType();
-            this.primaryKey = f.getAnnotation(PrimaryKey.class) != null;
-            this.insertable = f.getAnnotation(PrimaryKey.class) == null || f.getAnnotation(PrimaryKey.class).insert();
-            this.insertDef = insertDef(f);
-            this.updateDef = updateDef(f);
+            this.key = f.getAnnotation(Key.class);
+            this.insert = this.key == null || this.key.insert();
+            this.insertDef = (this.key != null) ? def(this.key.defInsert()) : null;
+            this.updateDef = (this.key != null) ? def(this.key.defUpdate()) : null;
         }
 
-        public Supplier<Object> insertDef(Field f) {
-            TimeInsert inDef = f.getAnnotation(TimeInsert.class);
-            if (inDef != null) {
-                return parseDef(f.getType(), inDef.value());
-            } else {
-                return () -> null;
+        public Supplier<Object> def(String value) {
+            if (!Strings.isNullOrEmpty(value)) {
+                if (Long.class.equals(this.type)) {
+                    return System::currentTimeMillis;
+                } else if (java.sql.Date.class.equals(this.type)) {
+                    return () -> new java.sql.Date(System.currentTimeMillis());
+                } else if (Timestamp.class.equals(this.type)) {
+                    return () -> new Timestamp(System.currentTimeMillis());
+                }
             }
-        }
-
-        public Supplier<Object> updateDef(Field f) {
-            TimeUpdate upDef = f.getAnnotation(TimeUpdate.class);
-            if (upDef != null) {
-                return parseDef(f.getType(), upDef.value());
-            } else {
-                return () -> null;
-            }
-        }
-
-        public Supplier<Object> parseDef(Class<?> type, String value) {
-            if (Long.class.equals(type)) {
-                return System::currentTimeMillis;
-            } else if (java.sql.Date.class.equals(type)) {
-                return () -> new java.sql.Date(System.currentTimeMillis());
-            } else if (Timestamp.class.equals(type)) {
-                return () -> new Timestamp(System.currentTimeMillis());
-            }
-            return () -> null;
+            return null;
         }
 
         public Object getOrInsertDef(Object obj) {
             try {
                 Object rtn = this.field.get(obj);
-                if (rtn == null) {
+                if (rtn == null && this.insertDef != null) {
                     return this.insertDef.get();
                 }
                 return rtn;
@@ -480,12 +450,12 @@ public abstract class Savor<T> {
             return field;
         }
 
-        public boolean isPrimaryKey() {
-            return primaryKey;
+        public Key getKey() {
+            return key;
         }
 
-        public boolean isInsertable() {
-            return insertable;
+        public boolean isInsert() {
+            return insert;
         }
 
         public Supplier<Object> getInsertDef() {
@@ -533,7 +503,8 @@ public abstract class Savor<T> {
 
         @Override
         public int hashCode() {
-            return (this.key == null ? 0 : this.key.hashCode()) / 2 + (this.value == null ? 0 : this.value.hashCode()) / 2;
+            return (this.key == null ? 0 : this.key.hashCode()) / 2
+                    + (this.value == null ? 0 : this.value.hashCode()) / 2;
         }
 
         public K getKey() {
@@ -881,13 +852,12 @@ public abstract class Savor<T> {
     /**
      * @author kuojian21
      */
-    public static abstract class SqlBuilder {
+    public abstract static class SqlBuilder {
 
         private static final String NEW_VALUE_SUFFIX = "$newValueSuffix$";
         private static final String VAR_LIMIT = "$limit$";
         private static final String VAR_OFFSET = "$offset$";
         private static final ConcurrentMap<Savor.DBType, SqlBuilder> BUILDERS = Maps.newConcurrentMap();
-        private static Logger logger = LoggerFactory.getLogger(Savor.class);
 
         static {
             register(Savor.DBType.MYSQL, new MysqlBuilder());
@@ -957,6 +927,9 @@ public abstract class Savor<T> {
             }
         }
 
+        /**
+         * @author kuojian21
+         */
         public static class MysqlBuilder extends SqlBuilder {
 
             private Expr newExpr(Property p, Type type, boolean upsert, Object value) {
@@ -1012,7 +985,7 @@ public abstract class Savor<T> {
                         result.putIfAbsent(p.getName(), newExpr(p, op, upsert, value));
                     });
                 }
-                model.getUpdateTimeProperties().forEach(
+                model.getUpdateDefProperties().forEach(
                         p -> result.putIfAbsent(p.getName(), newExpr(p, VType.EQ, upsert, p.getUpdateDef().get())));
                 return result;
             }
@@ -1022,7 +995,7 @@ public abstract class Savor<T> {
                 StringBuilder sql = new StringBuilder();
                 sql.append("insert");
                 if (ignore) {
-                    sql.append(" ignore	 ");
+                    sql.append(" ignore ");
                 }
                 sql.append(" into ").append(holder.getTable()).append("\n").append(" (")
                         .append(Joiner.on(",")

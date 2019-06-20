@@ -23,8 +23,6 @@ import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.kj.repo.infra.savor.Savor;
-import com.kj.repo.infra.savor.Savor.TimeInsert;
-import com.kj.repo.infra.savor.Savor.TimeUpdate;
 import com.mysql.cj.jdbc.Driver;
 
 import lombok.Data;
@@ -182,7 +180,7 @@ public class TeSavor {
     @Data
     public static class SavorTest {
         /* 自增主键 */
-        @Savor.PrimaryKey(insert = true)
+        @Savor.Key(insert = true)
         private Long id;
         /* key */
         private String hashKey;
@@ -195,10 +193,10 @@ public class TeSavor {
         /* age */
         private Integer age;
         /* 创建时间 */
-        @TimeInsert
+        @Savor.Key(defInsert = "1")
         private Long createTime;
         /* 创建时间 */
-        @TimeUpdate
+        @Savor.Key(defUpdate = "1")
         private java.sql.Timestamp updateTime;
 
         public SavorTest(Long id, String hashKey, String value, String name, String sex, Integer age) {
