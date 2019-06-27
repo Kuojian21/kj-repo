@@ -12,8 +12,6 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.logging.log4j.util.Strings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,7 +29,7 @@ public class RangeController {
     int chunksize = 1024 * 1024 * 1024;
     long size = 0;
     int chunk = 0;
-    private Logger logger = LoggerFactory.getLogger(RangeController.class);
+//    private Logger logger = LoggerFactory.getLogger(RangeController.class);
 
     @PostConstruct
     public void init() throws IOException {
@@ -50,7 +48,7 @@ public class RangeController {
     @RequestMapping(path = "/fragment")
     public ResponseEntity<byte[]> fragment(HttpServletRequest request) throws IOException {
         String range = request.getHeader("Range");
-        logger.info("{}", range);
+//        logger.info("{}", range);
 
         long pos = 0;
         long end = chunk - 1;
@@ -89,7 +87,7 @@ public class RangeController {
         }
         int len = (int) (end - pos + 1);
         byte[] data = new byte[len];
-        logger.info("{} {}", (int) (pos / chunksize), buffers.size());
+//        logger.info("{} {}", (int) (pos / chunksize), buffers.size());
         System.arraycopy(buffers.get((int) (pos / chunksize)).array(), (int) (pos / chunksize), data, 0, len);
         return data;
     }

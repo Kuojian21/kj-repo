@@ -23,6 +23,10 @@ import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.kj.repo.infra.savor.Savor;
+import com.kj.repo.infra.savor.annotation.Column;
+import com.kj.repo.infra.savor.annotation.Table;
+import com.kj.repo.infra.savor.model.ShardHolder;
+import com.kj.repo.infra.savor.sql.ParamsBuilder;
 import com.mysql.cj.jdbc.Driver;
 
 import lombok.Data;
@@ -81,8 +85,7 @@ public class TeSavor {
 
     public <T extends SavorTest> void upsert(SavorTestDao<T> dao) throws SQLException {
         this.select("before-upsert", dao, Savor.Helper.newHashMap("id#>", 94));
-        List<T> objs = (List<T>) LongStream.range(95, 105).boxed().map(SavorShardTest::new)
-                .collect(Collectors.toList());
+        List<T> objs = (List<T>) LongStream.range(95, 96).boxed().map(SavorShardTest::new).collect(Collectors.toList());
         List<String> names = Lists.newArrayList("hashKey");
         log.info("upsert data:{} names:{} {}", objs, names, dao.upsert(objs, names));
         this.select("after-upsert", dao, Savor.Helper.newHashMap("id#GT", 94));
@@ -96,8 +99,8 @@ public class TeSavor {
 
     public void select(SavorTestDao<?> dao) {
         List<String> columns = Lists.newArrayList("id", "sex", "count(1)");
-        Savor.ParamsBuilder paramsBuilder = Savor.ParamsBuilder.ofAnd().with("sex", "male")
-                .with(Savor.ParamsBuilder.ofOr().with("id#>=", 90).with("id#<=", 10));
+        ParamsBuilder paramsBuilder = ParamsBuilder.ofAnd().with("sex", "male")
+                .with(ParamsBuilder.ofOr().with("id#>=", 90).with("id#<=", 10));
         List<String> groups = Lists.newArrayList("id", "sex");
         List<String> orders = Lists.newArrayList("id#D");
         Integer offset = 0;
@@ -180,7 +183,7 @@ public class TeSavor {
     @Data
     public static class SavorTest {
         /* 自增主键 */
-        @Savor.Key(insert = true)
+        @Column(insert = true)
         private Long id;
         /* key */
         private String hashKey;
@@ -193,10 +196,10 @@ public class TeSavor {
         /* age */
         private Integer age;
         /* 创建时间 */
-        @Savor.Key(defInsert = "1")
+        @Column(defInsert = "1")
         private Long createTime;
         /* 创建时间 */
-        @Savor.Key(defUpdate = "1")
+        @Column(defUpdate = "1")
         private java.sql.Timestamp updateTime;
 
         public SavorTest(Long id, String hashKey, String value, String name, String sex, Integer age) {
@@ -224,7 +227,7 @@ public class TeSavor {
     /**
      * @author kj
      */
-    @Savor.Shard(shardKey = "id")
+    @Table(shardKey = "id")
     public static class SavorShardTest extends SavorTest {
         public SavorShardTest() {
 

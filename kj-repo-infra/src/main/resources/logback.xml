@@ -5,7 +5,7 @@
     <property name="appName" value="main"></property>
     <appender name="stdout"
               class="ch.qos.logback.core.ConsoleAppender">
-        <Encoding>UTF-8</Encoding>
+        <!-- <Encoding>UTF-8</Encoding> -->
         <layout class="ch.qos.logback.classic.PatternLayout">
             <pattern>
                 %d{yyyy-MM-dd HH:mm:ss.SSS} %X{UUID} [%thread] %-5level %t \(%F:%L\)-%msg%n
@@ -15,14 +15,16 @@
 
     <appender name="appLogAppender"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <Encoding>UTF-8</Encoding>
+        <!-- <Encoding>UTF-8</Encoding> -->
         <file>${LOG_HOME}/${appName}.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>
                 ${LOG_HOME}/${appName}-%d{yyyy-MM-dd}-%i.log
             </fileNamePattern>
             <MaxHistory>365</MaxHistory>
-            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>100MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
         </rollingPolicy>
@@ -34,8 +36,9 @@
     </appender>
 
     <logger name="org.hibernate" level="error" additivity="true"/>
-    <logger name="org.springframework" level="error" additivity="true"/>
-    <logger name="com.kj" level="info" additivity="true">
+    <logger name="org.springframework" level="error"
+            additivity="true"/>
+    <logger name="com.kj" level="debug" additivity="true">
         <appender-ref ref="stdout"/>
         <appender-ref ref="appLogAppender"/>
     </logger>
