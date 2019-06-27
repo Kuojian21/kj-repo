@@ -19,8 +19,8 @@ import com.beust.jcommander.internal.Lists;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
-import com.kj.repo.infra.savor.annotation.Column;
-import com.kj.repo.infra.savor.annotation.Table;
+import com.kj.repo.infra.savor.annotation.Key;
+import com.kj.repo.infra.savor.annotation.Shard;
 
 /**
  * @author kuojian21
@@ -51,7 +51,7 @@ public class Model {
         this.propertyMap = Collections.unmodifiableMap(
                 properties.stream().map(p -> Lists.newArrayList(Pair.pair(p.getName(), p), Pair.pair(p.getColumn(), p)))
                         .flatMap(List::stream).distinct().collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
-        Table shard = clazz.getAnnotation(Table.class);
+        Shard shard = clazz.getAnnotation(Shard.class);
         if (shard == null) {
             this.table = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, this.name);
             this.shardProperty = null;
@@ -115,7 +115,7 @@ public class Model {
         private final String column;
         private final Class<?> type;
         private final Field field;
-        private final Column column;
+        private final Key key;
         private final boolean insert;
         private final Supplier<Object> insertDef;
         private final Supplier<Object> updateDef;
@@ -126,10 +126,10 @@ public class Model {
             this.name = f.getName();
             this.column = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, f.getName());
             this.type = f.getType();
-            this.column = f.getAnnotation(Column.class);
-            this.insert = this.column == null || this.column.insert();
-            this.insertDef = (this.column != null) ? def(this.column.defInsert()) : null;
-            this.updateDef = (this.column != null) ? def(this.column.defUpdate()) : null;
+            this.key = f.getAnnotation(Key.class);
+            this.insert = this.key == null || this.key.insert();
+            this.insertDef = (this.key != null) ? def(this.key.defInsert()) : null;
+            this.updateDef = (this.key != null) ? def(this.key.defUpdate()) : null;
         }
 
         public Supplier<Object> def(String value) {
@@ -193,8 +193,8 @@ public class Model {
             return field;
         }
 
-        public Column getColumn() {
-            return column;
+        public Key getKey() {
+            return key;
         }
 
         public boolean isInsert() {
