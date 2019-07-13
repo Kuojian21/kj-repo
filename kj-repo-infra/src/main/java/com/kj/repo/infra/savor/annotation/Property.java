@@ -8,10 +8,13 @@ import java.lang.annotation.Target;
 /**
  * @author kuojian21
  */
-@Target(ElementType.TYPE)
+@Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Shard {
-    String table() default "";
+public @interface Property {
 
-    String shardKey() default "";
+    boolean insert() default true;
+
+    String defInsert() default "";
+
+    String defUpdate() default "";
 }

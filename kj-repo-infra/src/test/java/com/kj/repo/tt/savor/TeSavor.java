@@ -23,8 +23,8 @@ import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
 import com.kj.repo.infra.savor.Savor;
-import com.kj.repo.infra.savor.annotation.Key;
-import com.kj.repo.infra.savor.annotation.Shard;
+import com.kj.repo.infra.savor.annotation.Model;
+import com.kj.repo.infra.savor.annotation.Property;
 import com.kj.repo.infra.savor.model.ShardHolder;
 import com.kj.repo.infra.savor.sql.ParamsBuilder;
 import com.mysql.cj.jdbc.Driver;
@@ -183,7 +183,7 @@ public class TeSavor {
     @Data
     public static class SavorTest {
         /* 自增主键 */
-        @Key(insert = true)
+        @Property(insert = true)
         private Long id;
         /* key */
         private String hashKey;
@@ -196,10 +196,10 @@ public class TeSavor {
         /* age */
         private Integer age;
         /* 创建时间 */
-        @Key(defInsert = "1")
+        @Property(defInsert = "1")
         private Long createTime;
         /* 创建时间 */
-        @Key(defUpdate = "1")
+        @Property(defUpdate = "1")
         private java.sql.Timestamp updateTime;
 
         public SavorTest(Long id, String hashKey, String value, String name, String sex, Integer age) {
@@ -227,7 +227,7 @@ public class TeSavor {
     /**
      * @author kj
      */
-    @Shard(shardKey = "id")
+    @Model(shardKey = "id")
     public static class SavorShardTest extends SavorTest {
         public SavorShardTest() {
 

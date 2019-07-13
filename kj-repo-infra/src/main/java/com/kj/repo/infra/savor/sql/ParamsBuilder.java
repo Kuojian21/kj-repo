@@ -13,7 +13,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.kj.repo.infra.savor.model.Expr;
-import com.kj.repo.infra.savor.model.Model;
+import com.kj.repo.infra.savor.model.IModel;
 
 /**
  * @author kuojian21
@@ -52,14 +52,14 @@ public class ParamsBuilder {
         return this;
     }
 
-    public Params build(Model model, String suffix) {
+    public Params build(IModel model, String suffix) {
         Map<String, List<Expr>> result = Maps.newHashMap();
         int[] index = new int[]{0};
         if (!CollectionUtils.isEmpty(this.major)) {
             this.major.forEach((key, value) -> {
                 String[] s = key.split("#");
                 s[0] = s[0].trim();
-                Model.Property p = model.getProperty(s[0]);
+                IModel.IProperty p = model.getProperty(s[0]);
                 Expr.PType op = Expr.PType.EQ;
                 if (s.length == 2) {
                     switch (s[1].trim().toUpperCase()) {

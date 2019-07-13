@@ -19,7 +19,7 @@ import org.springframework.util.CollectionUtils;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.kj.repo.infra.savor.model.Expr;
-import com.kj.repo.infra.savor.model.Model;
+import com.kj.repo.infra.savor.model.IModel;
 import com.kj.repo.infra.savor.model.Pair;
 import com.kj.repo.infra.savor.model.ShardHolder;
 import com.kj.repo.infra.savor.model.SqlParams;
@@ -35,19 +35,19 @@ public abstract class Savor<T> {
     private static Logger logger = LoggerFactory.getLogger(Savor.class);
     private final Class<T> clazz;
     private final RowMapper<T> rowMapper;
-    private final Model model;
+    private final IModel model;
 
     protected Savor() {
         this.clazz = (Class<T>) (((ParameterizedType) this.getClass().getGenericSuperclass())
                 .getActualTypeArguments()[0]);
         this.rowMapper = new BeanPropertyRowMapper<>(this.clazz);
-        this.model = Model.model(this.clazz);
+        this.model = IModel.model(this.clazz);
     }
 
     protected Savor(Class<T> clazz) {
         this.clazz = clazz;
         this.rowMapper = new BeanPropertyRowMapper<>(this.clazz);
-        this.model = Model.model(this.clazz);
+        this.model = IModel.model(this.clazz);
     }
 
     public int insert(List<T> objs) {
@@ -147,7 +147,7 @@ public abstract class Savor<T> {
 
     protected abstract NamedParameterJdbcTemplate getWriter();
 
-    protected Model getModel() {
+    protected IModel getModel() {
         return this.model;
     }
 
@@ -178,7 +178,7 @@ public abstract class Savor<T> {
     private Map<ShardHolder, ParamsBuilder.Params> shard(ParamsBuilder paramsBuilder) {
         ParamsBuilder.Params params = paramsBuilder.build(this.model, "");
         Map<String, List<Expr>> tParams = params.getMajor();
-        Model.Property property = this.model.getShardProperty();
+        IModel.IProperty property = this.model.getModelProperty();
         if (property == null) {
             return Helper.newHashMap(new ShardHolder(this.model.getTable(), this.getReader(), this.getWriter()),
                     params);
@@ -212,7 +212,7 @@ public abstract class Savor<T> {
     }
 
     private Map<ShardHolder, List<T>> shard(List<T> objs) {
-        Model.Property property = this.model.getShardProperty();
+        IModel.IProperty property = this.model.getModelProperty();
         if (property == null) {
             return Helper.newHashMap(new ShardHolder(this.model.getTable(), this.getReader(), this.getWriter()), objs);
         } else {

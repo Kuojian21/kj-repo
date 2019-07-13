@@ -17,7 +17,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.kj.repo.infra.savor.Savor;
 import com.kj.repo.infra.savor.model.Expr;
-import com.kj.repo.infra.savor.model.Model;
+import com.kj.repo.infra.savor.model.IModel;
 import com.kj.repo.infra.savor.model.ShardHolder;
 import com.kj.repo.infra.savor.model.SqlParams;
 
@@ -55,13 +55,13 @@ public abstract class SqlBuilder {
         return paramMap;
     }
 
-    public abstract Map<String, Expr> valueExprs(Model model, boolean upsert, Map<String, Object> values);
+    public abstract Map<String, Expr> valueExprs(IModel model, boolean upsert, Map<String, Object> values);
 
-    public abstract <T> SqlParams insert(Model model, ShardHolder holder, List<T> objs, boolean ignore);
+    public abstract <T> SqlParams insert(IModel model, ShardHolder holder, List<T> objs, boolean ignore);
 
-    public abstract <T> SqlParams upsert(Model model, ShardHolder holder, List<T> objs, Map<String, Expr> values);
+    public abstract <T> SqlParams upsert(IModel model, ShardHolder holder, List<T> objs, Map<String, Expr> values);
 
-    public abstract SqlParams select(Model model, ShardHolder holder, Collection<String> columns,
+    public abstract SqlParams select(IModel model, ShardHolder holder, Collection<String> columns,
                                      ParamsBuilder.Params params, List<String> groups, List<String> orders, Integer offset,
                                      Integer limit);
 
@@ -90,7 +90,7 @@ public abstract class SqlBuilder {
      */
     public static class MysqlBuilder extends SqlBuilder {
 
-        private Expr newExpr(Model.Property p, Expr.Type type, boolean upsert, Object value) {
+        private Expr newExpr(IModel.IProperty p, Expr.Type type, boolean upsert, Object value) {
             String vname = p.getName() + "#" + type.name() + NEW_VALUE_SUFFIX;
             String expr;
             switch ((Expr.VType) type) {
@@ -115,13 +115,13 @@ public abstract class SqlBuilder {
         }
 
         @Override
-        public Map<String, Expr> valueExprs(Model model, boolean upsert, Map<String, Object> values) {
+        public Map<String, Expr> valueExprs(IModel model, boolean upsert, Map<String, Object> values) {
             Map<String, Expr> result = Maps.newHashMap();
             if (!CollectionUtils.isEmpty(values)) {
                 values.forEach((key, value) -> {
                     String[] s = key.split("#");
                     s[0] = s[0].trim();
-                    Model.Property p = model.getProperty(s[0]);
+                    IModel.IProperty p = model.getProperty(s[0]);
                     Expr.VType op = Expr.VType.EQ;
                     if (s.length == 2) {
                         switch (s[1].trim().toUpperCase()) {
@@ -149,7 +149,7 @@ public abstract class SqlBuilder {
         }
 
         @Override
-        public <T> SqlParams insert(Model model, ShardHolder holder, List<T> objs, boolean ignore) {
+        public <T> SqlParams insert(IModel model, ShardHolder holder, List<T> objs, boolean ignore) {
             StringBuilder sql = new StringBuilder();
             sql.append("insert");
             if (ignore) {
@@ -157,7 +157,7 @@ public abstract class SqlBuilder {
             }
             sql.append(" into ").append(holder.getTable()).append("\n").append(" (")
                     .append(Joiner.on(",").join(
-                            model.getInsertProperties().stream().map(Model.Property::getColumn).collect(Collectors.toList())))
+                            model.getInsertProperties().stream().map(IModel.IProperty::getColumn).collect(Collectors.toList())))
                     .append(") ").append("\n").append("values").append("\n")
                     .append(Joiner.on(",\n").join(IntStream
                             .range(0, objs.size()).boxed().map(
@@ -173,7 +173,7 @@ public abstract class SqlBuilder {
         }
 
         @Override
-        public <T> SqlParams upsert(Model model, ShardHolder holder, List<T> objs, Map<String, Expr> values) {
+        public <T> SqlParams upsert(IModel model, ShardHolder holder, List<T> objs, Map<String, Expr> values) {
             if (CollectionUtils.isEmpty(values)) {
                 return this.insert(model, holder, objs, true);
             }
@@ -186,7 +186,7 @@ public abstract class SqlBuilder {
         }
 
         @Override
-        public SqlParams select(Model model, ShardHolder holder, Collection<String> columns,
+        public SqlParams select(IModel model, ShardHolder holder, Collection<String> columns,
                                 ParamsBuilder.Params params, List<String> groups, List<String> orders, Integer offset,
                                 Integer limit) {
             StringBuilder sql = new StringBuilder();
@@ -195,7 +195,7 @@ public abstract class SqlBuilder {
                 sql.append("*");
             } else {
                 sql.append(Joiner.on(",").join(columns.stream().map(String::trim).sorted().map(n -> {
-                    Model.Property property = model.getProperty(n);
+                    IModel.IProperty property = model.getProperty(n);
                     if (property == null) {
                         return n;
                     }
@@ -212,7 +212,7 @@ public abstract class SqlBuilder {
                         .append(Joiner.on(",").join(orders.stream().map(String::trim).sorted().map(o -> {
                             String[] s = o.split("#");
                             s[0] = s[0].trim();
-                            Model.Property p = model.getProperty(s[0]);
+                            IModel.IProperty p = model.getProperty(s[0]);
                             String t = " ASC ";
                             if (s.length == 2 && s[1].toUpperCase().equals("DESC")) {
                                 t = " DESC ";

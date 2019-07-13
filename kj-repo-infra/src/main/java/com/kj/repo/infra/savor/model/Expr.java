@@ -4,13 +4,13 @@ package com.kj.repo.infra.savor.model;
  * @author kuojian21
  */
 public class Expr {
-    private final Model.Property property;
+    private final IModel.IProperty property;
     private final Type type;
     private final String vname;
     private final String expr;
     private final Object value;
 
-    public Expr(Model.Property property, Type type, String vname, String expr, Object value) {
+    public Expr(IModel.IProperty property, Type type, String vname, String expr, Object value) {
         super();
         this.property = property;
         this.type = type;
@@ -19,7 +19,7 @@ public class Expr {
         this.value = value;
     }
 
-    public static Expr param(Model.Property p, PType type, Object value, String suffix) {
+    public static Expr param(IModel.IProperty p, PType type, Object value, String suffix) {
         String vname = p.getName() + "#" + type.name() + suffix;
         String expr;
         switch (type) {
@@ -47,7 +47,7 @@ public class Expr {
         return new Expr(this.property, this.type, this.vname, this.expr, value);
     }
 
-    public Model.Property getProperty() {
+    public IModel.IProperty getProperty() {
         return property;
     }
 

@@ -4,9 +4,9 @@ import com.kj.repo.infra.spring.BeanFactory;
 
 public class AopTest {
 
-	public static void main(String[] args) {
-		AopTarget aopTarget = BeanFactory.getBean(AopTarget.class);
-		aopTarget.target();
-	}
+    public static void main(String[] args) {
+        AopTarget aopTarget = BeanFactory.getBean(AopTarget.class);
+        aopTarget.target();
+    }
 
 }

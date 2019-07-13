@@ -5,14 +5,14 @@ import org.slf4j.LoggerFactory;
 
 public class AopAspect {
 
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	public void before() {
-		logger.info("{}", "before");
-	}
+    public void before() {
+        logger.info("{}", "before");
+    }
 
-	public void after() {
-		logger.info("{}", "after");
-	}
+    public void after() {
+        logger.info("{}", "after");
+    }
 
 }

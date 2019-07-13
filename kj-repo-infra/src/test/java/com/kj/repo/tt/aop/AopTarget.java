@@ -7,10 +7,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class AopTarget {
 
-	private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	public void target() {
-		logger.info("{}", "target");
-	}
+    public void target() {
+        logger.info("{}", "target");
+    }
 
 }
