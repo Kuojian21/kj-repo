@@ -4,11 +4,13 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
+import org.apache.curator.shaded.com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +19,7 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.kj.repo.infra.pool.PLBrowser;
+import com.kj.repo.tt.http.TeHttpCompBuilder;
 
 public class TePLBrowser {
 
@@ -28,8 +31,7 @@ public class TePLBrowser {
         URL domain = new URL(args[0]);
         kjBrowser.execute(t -> {
             try {
-                t.addCookie("_did=web_966972270286159", domain, null);
-                t.addCookie("_gitlab_session=7903cae1d9e8fe8a4e674c03fa3f9f84", domain, null);
+                t.addCookie("_gitlab_session=" + args[1], domain, null);
                 t.addCookie("sidebar_collapsed=false", domain, null);
                 HtmlPage page = t.getPage(args[0]);
                 List<String> all = PLBrowser.Helper.parse(page, "//a[@class='project']/@href");
@@ -37,7 +39,10 @@ public class TePLBrowser {
                     List<HtmlAnchor> anchors = page.getByXPath("//li[@class='next']/a");
                     if (anchors.isEmpty()) {
                         System.out.println(all.size());
-                        all.stream().sorted().forEach(System.out::println);
+                        all.addAll(TeHttpCompBuilder.git(args));
+                        Set<String> s = Sets.newHashSet(all);
+                        System.out.println(s.size());
+                        s.stream().sorted().forEach(System.out::println);
                         break;
                     }
                     page = anchors.get(0).click();
