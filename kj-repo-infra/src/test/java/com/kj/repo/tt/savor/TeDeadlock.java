@@ -14,36 +14,37 @@ import com.mysql.cj.jdbc.Driver;
 
 public class TeDeadlock {
 
-    public static void main(String[] args) throws SQLException, InterruptedException {
-        Logger logger = LoggerFactory.getLogger(TeDeadlock.class);
+	public static void main(String[] args) throws SQLException, InterruptedException {
+		Logger logger = LoggerFactory.getLogger(TeDeadlock.class);
+		logger.info("");
 //		System.setProperty("socksProxyHost", "127.0.0.1");
 //		System.setProperty("socksProxyPort", "8088");
-        NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(
-                new SimpleDriverDataSource(new Driver(), args[0], args[1], args[2]));
-        String sql = "insert into savor_base_test(hash_key,name) values(:hashKey,:name)";
-        for (int i = 0; i < 100000; i++) {
-            int x = i;
-            CountDownLatch latch = new CountDownLatch(1);
-            int len = 3;
-            CountDownLatch latch2 = new CountDownLatch(len);
-            for (int j = 0; j < len; j++) {
-                new Thread(() -> {
+		NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(
+				new SimpleDriverDataSource(new Driver(), args[0], args[1], args[2]));
+		String sql = "insert into savor_base_test(hash_key,name) values(:hashKey,:name)";
+		for (int i = 0; i < 100000; i++) {
+			int x = i;
+			CountDownLatch latch = new CountDownLatch(1);
+			int len = 3;
+			CountDownLatch latch2 = new CountDownLatch(len);
+			for (int j = 0; j < len; j++) {
+				new Thread(() -> {
 //					while (true) {
-                    try {
-                        latch.await();
-                        jdbcTemplate.update(sql, new MapSqlParameterSource().addValue("hashKey", "" + x + "")
-                                .addValue("name", UUID.randomUUID().toString()));
+					try {
+						latch.await();
+						jdbcTemplate.update(sql, new MapSqlParameterSource().addValue("hashKey", "" + x + "")
+								.addValue("name", UUID.randomUUID().toString()));
 //						logger.info(x + ":" + jdbcTemplate.update(sql, new MapSqlParameterSource()
 //								.addValue("hashKey", "" + x + "").addValue("name", UUID.randomUUID().toString())));
-                        latch2.countDown();
-                    } catch (Throwable t) {
-                        t.printStackTrace();
-                    } finally {
-                        latch2.countDown();
-                    }
+						latch2.countDown();
+					} catch (Throwable t) {
+						t.printStackTrace();
+					} finally {
+						latch2.countDown();
+					}
 //					}
-                }).start();
-            }
+				}).start();
+			}
 //			new Thread(() -> {
 ////				while (true) {
 //					try {
@@ -55,9 +56,9 @@ public class TeDeadlock {
 //					}
 ////				}
 //			}).start();
-            latch.countDown();
-            latch2.await();
-        }
-    }
+			latch.countDown();
+			latch2.await();
+		}
+	}
 
 }
