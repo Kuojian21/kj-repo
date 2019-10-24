@@ -5,7 +5,6 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.function.Supplier;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -34,46 +33,50 @@ import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
 import org.apache.http.impl.nio.reactor.IOReactorConfig;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.nio.reactor.IOReactorException;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.util.CollectionUtils;
 
 import com.google.common.collect.Lists;
-import com.kj.repo.infra.bean.BeanSupplier;
+import com.kj.repo.infra.bean.LocalSupplier;
+import com.kj.repo.infra.helper.RunnableHelper;
 
 /**
  * @author kuojian21
  */
 public class HttpCompBuilder {
 
-    private static final Supplier<CloseableHttpClient> SYNC = new BeanSupplier<CloseableHttpClient>(() -> {
-        PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
-        connManager.setDefaultMaxPerRoute(20);
-        connManager.setMaxTotal(200);
-        connManager.setDefaultSocketConfig(SocketConfig.custom().setTcpNoDelay(true).setSoTimeout(10000).build());
-        HttpClientBuilder builder = HttpClientBuilder.create().setConnectionManager(connManager)
-                .setDefaultRequestConfig(
-                        RequestConfig.custom().setConnectTimeout(10000).setConnectionRequestTimeout(10000).build());
-        return builder.build();
-    });
-
-    private static final Supplier<CloseableHttpAsyncClient> ASYNC = new BeanSupplier<CloseableHttpAsyncClient>(() -> {
-        try {
-            PoolingNHttpClientConnectionManager connManager = new PoolingNHttpClientConnectionManager(
-                    new DefaultConnectingIOReactor(IOReactorConfig.DEFAULT, Executors.defaultThreadFactory()));
+    private static final LocalSupplier<CloseableHttpClient> SYNC = new LocalSupplier<CloseableHttpClient>(() -> {
+        return RunnableHelper.call(() -> {
+            PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
             connManager.setDefaultMaxPerRoute(20);
             connManager.setMaxTotal(200);
-            return HttpAsyncClientBuilder.create().setConnectionManager(connManager).build();
-        } catch (IOReactorException e) {
-            return null;
-        }
+            connManager.setDefaultSocketConfig(SocketConfig.custom().setTcpNoDelay(true).setSoTimeout(10000).build());
+            HttpClientBuilder builder = HttpClientBuilder.create().setConnectionManager(connManager)
+                    .setDefaultRequestConfig(
+                            RequestConfig.custom().setConnectTimeout(10000).setConnectionRequestTimeout(10000).build());
+            return builder.build();
+        });
+
     });
+
+    private static final LocalSupplier<CloseableHttpAsyncClient> ASYNC = new LocalSupplier<CloseableHttpAsyncClient>(
+            () -> {
+                return RunnableHelper.call(() -> {
+
+                    PoolingNHttpClientConnectionManager connManager = new PoolingNHttpClientConnectionManager(
+                            new DefaultConnectingIOReactor(IOReactorConfig.DEFAULT, Executors.defaultThreadFactory()));
+                    connManager.setDefaultMaxPerRoute(20);
+                    connManager.setMaxTotal(200);
+                    return HttpAsyncClientBuilder.create().setConnectionManager(connManager).build();
+
+                });
+            });
     private final String url;
     private final METHOD method;
     private List<Header> headers = Lists.newArrayList();
     private List<BasicNameValuePair> nameValuePairs = Lists.newArrayList();
-    private BeanSupplier<HttpClientContext> context = new BeanSupplier<HttpClientContext>(() -> {
+    private LocalSupplier<HttpClientContext> context = new LocalSupplier<HttpClientContext>(() -> {
         HttpClientContext context = HttpClientContext.create();
         context.setCookieStore(new BasicCookieStore());
         return context;

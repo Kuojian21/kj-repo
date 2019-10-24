@@ -8,7 +8,7 @@ import org.apache.curator.retry.RetryNTimes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.kj.repo.infra.curator.CuratorNode;
+import com.kj.repo.infra.curator.CuratorConf;
 
 /**
  *
@@ -18,7 +18,7 @@ public class TeCuratorNode {
     private static Logger logger = LoggerFactory.getLogger(TeCuratorNode.class);
 
     public static void main(String[] args) throws InterruptedException {
-        CuratorNode<String> node = new CuratorNode<String>(args[0], null) {
+        CuratorConf<String> node = new CuratorConf<String>(args[0], null) {
 
             private CuratorFramework curator = CuratorFrameworkFactory.builder().connectString(args[1])
                     .retryPolicy(new RetryNTimes(1, 1000)).sessionTimeoutMs(60000).connectionTimeoutMs(50000).build();

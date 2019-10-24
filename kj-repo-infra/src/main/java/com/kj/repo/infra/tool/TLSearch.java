@@ -16,7 +16,7 @@ import java.util.stream.IntStream;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import com.kj.repo.infra.bean.BeanSupplier;
+import com.kj.repo.infra.bean.LocalSupplier;
 
 /**
  * @author kuojian21
@@ -105,7 +105,7 @@ public class TLSearch {
 
         static AtomicLong count = new AtomicLong(0);
         static AtomicBoolean shutdown = new AtomicBoolean(false);
-        static BeanSupplier<ExecutorService> service = new BeanSupplier<ExecutorService>(
+        static LocalSupplier<ExecutorService> service = new LocalSupplier<ExecutorService>(
                 () -> new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
                         Runtime.getRuntime().availableProcessors(), 0L, TimeUnit.MILLISECONDS,
                         new LinkedBlockingQueue<Runnable>(4096), new ThreadPoolExecutor.CallerRunsPolicy()),
@@ -122,7 +122,7 @@ public class TLSearch {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
                     shutdown.set(true);
-                    service.close();
+                    service.release();
                 } catch (Exception e) {
 
                 }

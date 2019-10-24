@@ -4,61 +4,59 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-import org.apache.curator.shaded.com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.WebClient;
+import com.beust.jcommander.internal.Lists;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.kj.repo.infra.pool.PLBrowser;
-import com.kj.repo.tt.http.TeHttpCompBuilder;
+import com.kj.repo.infra.pool.browser.PLBrowser;
+import com.kj.repo.infra.pool.browser.PLBrowserHelper;
 
 public class TePLBrowser {
 
     public static Logger logger = LoggerFactory.getLogger(TePLBrowser.class);
 
-    public static PLBrowser<WebClient> kjBrowser = PLBrowser.browser(BrowserVersion.CHROME);
+    public static void main(String[] args) throws Exception {
+//        System.setProperty("socksProxyHost", "127.0.0.1");
+//        System.setProperty("socksProxyPort", "8088");
+//        gatherproxy(args);
+        List<String> rtn = git(args);
 
-    public static void git(String[] args) throws Exception {
+//		all.addAll(TeHttpCompBuilder.git(args));
+        System.out.println(rtn.size());
+        rtn.stream().sorted().forEach(System.out::println);
+    }
+
+    public static List<String> git(String[] args) throws Exception {
+        List<String> rtn = Lists.newArrayList();
         URL domain = new URL(args[0]);
-        kjBrowser.execute(t -> {
-            try {
-                t.addCookie("_gitlab_session=" + args[1], domain, null);
-                t.addCookie("sidebar_collapsed=false", domain, null);
-                HtmlPage page = t.getPage(args[0]);
-                List<String> all = PLBrowser.Helper.parse(page, "//a[@class='project']/@href");
-                do {
-                    List<HtmlAnchor> anchors = page.getByXPath("//li[@class='next']/a");
-                    if (anchors.isEmpty()) {
-                        System.out.println(all.size());
-                        all.addAll(TeHttpCompBuilder.git(args));
-                        Set<String> s = Sets.newHashSet(all);
-                        System.out.println(s.size());
-                        s.stream().sorted().forEach(System.out::println);
-                        break;
-                    }
-                    page = anchors.get(0).click();
-                    all.addAll(PLBrowser.Helper.parse(page, "//a[@class='project']/@href"));
-                } while (true);
-            } catch (Exception e) {
-                logger.error("", e);
-            }
+        PLBrowser.DEFAULT.execute(t -> {
+            t.addCookie("_gitlab_session=" + args[1], domain, null);
+            t.addCookie("sidebar_collapsed=false", domain, null);
+            HtmlPage page = t.getPage(args[0]);
+            do {
+                rtn.addAll(PLBrowserHelper.parse(page, "//a[@class='project']/@href"));
+                List<HtmlAnchor> anchors = page.getByXPath("//li[@class='next']/a");
+                if (anchors.isEmpty()) {
+                    break;
+                }
+                page = anchors.get(0).click();
+            } while (true);
         });
+        return rtn;
     }
 
     public static void gatherproxy(String[] arg) throws Exception {
         ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() + 1);
-        List<String> urls = kjBrowser.execute(w -> {
+        List<String> urls = PLBrowser.DEFAULT.execute(w -> {
             HtmlPage page = w.getPage("http://www.gatherproxy.com/sockslist/sockslistbycountry");
-            return PLBrowser.Helper.parse(page, "//ul[@class='pc-list']/li/a");
+            return PLBrowserHelper.parse(page, "//ul[@class='pc-list']/li/a");
         });
 
         String path = Paths.get(System.getProperty("user.home"), "kj", "crawler", "gatherproxy").toFile()
@@ -73,8 +71,8 @@ public class TePLBrowser {
             executor.submit(() -> {
                 try {
                     logger.info("{}", url);
-                    kjBrowser.execute(w -> {
-                        List<List<String>> rows = PLBrowser.Helper.parse(w.getPage(url),
+                    PLBrowser.DEFAULT.execute(w -> {
+                        List<String> rows = PLBrowserHelper.parse(w.getPage(url),
                                 "//div[@class='proxy-list']/table[@id='tblproxy']");
                         String file = url.substring(url.lastIndexOf("=") + 1);
                         if (Paths.get(path, file).toFile().exists()) {
@@ -94,15 +92,6 @@ public class TePLBrowser {
         latch.await();
         executor.shutdown();
 
-    }
-
-    public static void main(String[] args) throws Exception {
-//        System.setProperty("socksProxyHost", "127.0.0.1");
-//        System.setProperty("socksProxyPort", "8088");
-//        gatherproxy(args);
-        git(args);
-
-        kjBrowser.shutdown();
     }
 
 }

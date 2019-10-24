@@ -20,7 +20,9 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 
 import com.google.common.base.Stopwatch;
-import com.kj.repo.infra.pool.PLCrypt;
+import com.kj.repo.infra.pool.crypt.PLCipher;
+import com.kj.repo.infra.pool.crypt.algorithm.Crypt;
+import com.kj.repo.infra.pool.crypt.factory.CryptFactory;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,17 +32,15 @@ public class TePLCrypt {
     public static void main(String[] args) throws NoSuchAlgorithmException, InvalidAlgorithmParameterException,
             InvalidKeyException, InvalidKeySpecException, InterruptedException, ExecutionException {
 
-        Key key = PLCrypt.Factory.generateKey(PLCrypt.Algorithm.Crypt.DESede.getName(),
-                PLCrypt.Algorithm.Crypt.DESede.getKeysize(), null);
+        Key key = CryptFactory.generateKey(Crypt.DESede.getName(), Crypt.DESede.getKeysize(), null);
         System.out.println(Base64.getEncoder().encodeToString(key.getEncoded()));
-        KeyPair keyPair = PLCrypt.Factory.generateKeyPair(PLCrypt.Algorithm.Crypt.RSA_2048.getName(),
-                PLCrypt.Algorithm.Crypt.RSA_2048.getKeysize(), null);
+        KeyPair keyPair = CryptFactory.generateKeyPair(Crypt.RSA_2048.getName(), Crypt.RSA_2048.getKeysize(), null);
         System.out.println(Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()));
         System.out.println(Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded()));
 
         perf("DESede/CBC/PKCS5Padding",
-                PLCrypt.Factory.loadKey("DESede", Base64.getDecoder().decode("L/gx33BYzjQLj12FhlSXlEosuVSwKl1M")),
-                PLCrypt.Factory.loadIvp("11111111".getBytes()), 10000000, 10, 1);
+                CryptFactory.loadKey("DESede", Base64.getDecoder().decode("L/gx33BYzjQLj12FhlSXlEosuVSwKl1M")),
+                CryptFactory.loadIvp("11111111".getBytes()), 10000000, 10, 1);
 
     }
 
@@ -55,8 +55,8 @@ public class TePLCrypt {
     public static long perf1(String algorithm, Key key, IvParameterSpec ivp, int total, int thread, int times)
             throws InterruptedException, InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException,
             ExecutionException {
-        PLCrypt<Cipher, byte[]> encrypt = PLCrypt.KjCipher.encrypt(algorithm, key, ivp);
-        PLCrypt<Cipher, byte[]> decrypt = PLCrypt.KjCipher.decrypt(algorithm, key, ivp);
+        PLCipher encrypt = PLCipher.encrypt(algorithm, key, ivp);
+        PLCipher decrypt = PLCipher.decrypt(algorithm, key, ivp);
         ExecutorService executor = Executors.newFixedThreadPool(thread);
 
         Stopwatch stopwatch = Stopwatch.createStarted();
@@ -68,7 +68,7 @@ public class TePLCrypt {
                     try {
                         long rtn = 0;
                         for (int i = 0; i < times; i++) {
-                            rtn += new String(decrypt.crypt(encrypt.crypt(("kuojian" + j).getBytes()))).hashCode()
+                            rtn += new String(decrypt.cipher(encrypt.cipher(("kuojian" + j).getBytes()))).hashCode()
                                     % Integer.MAX_VALUE;
                         }
                         return rtn;
@@ -116,8 +116,7 @@ public class TePLCrypt {
 
                         long rtn = 0;
                         for (int i = 0; i < times; i++) {
-                            rtn += new String(PLCrypt.Helper.cipher(decrypt,
-                                    PLCrypt.Helper.cipher(encrypt, ("kuojian" + j).getBytes()))).hashCode()
+                            rtn += new String(decrypt.doFinal(encrypt.doFinal(("kuojian" + j).getBytes()))).hashCode()
                                     % Integer.MAX_VALUE;
                         }
                         return rtn;
