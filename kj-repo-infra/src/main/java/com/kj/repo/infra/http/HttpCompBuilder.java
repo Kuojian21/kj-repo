@@ -38,7 +38,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.util.CollectionUtils;
 
 import com.google.common.collect.Lists;
-import com.kj.repo.infra.bean.LocalSupplier;
+import com.kj.repo.infra.base.LocalSupplier;
 import com.kj.repo.infra.helper.RunnableHelper;
 
 /**

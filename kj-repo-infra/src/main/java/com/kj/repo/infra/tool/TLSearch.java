@@ -16,7 +16,7 @@ import java.util.stream.IntStream;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-import com.kj.repo.infra.bean.LocalSupplier;
+import com.kj.repo.infra.base.LocalSupplier;
 
 /**
  * @author kuojian21
