@@ -38,12 +38,12 @@
     <logger name="org.hibernate" level="error" additivity="true"/>
     <logger name="org.springframework" level="error"
             additivity="true"/>
-    <logger name="com.kj" level="debug" additivity="true">
+    <logger name="com.kj" level="info" additivity="true">
         <appender-ref ref="stdout"/>
         <appender-ref ref="appLogAppender"/>
     </logger>
 
-    <root level="info">
+    <root level="error">
         <appender-ref ref="stdout"/>
         <appender-ref ref="appLogAppender"/>
     </root>

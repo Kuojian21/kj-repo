@@ -4,6 +4,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -11,9 +12,9 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.beust.jcommander.internal.Lists;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.kj.repo.infra.pool.browser.PLBrowser;
 import com.kj.repo.infra.pool.browser.PLBrowserHelper;
 import com.kj.repo.tt.http.TeHttpCompBuilder;
@@ -26,7 +27,7 @@ public class TePLBrowser {
 //        System.setProperty("socksProxyHost", "127.0.0.1");
 //        System.setProperty("socksProxyPort", "8088");
 //        gatherproxy(args);
-		List<String> rtn = git(args);
+		Set<String> rtn = Sets.newHashSet(git(args));
 
 		rtn.addAll(TeHttpCompBuilder.git(args));
 		System.out.println(rtn.size());
