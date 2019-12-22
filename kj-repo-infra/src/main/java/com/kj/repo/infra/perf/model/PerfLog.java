@@ -8,30 +8,28 @@ import com.google.common.collect.Lists;
 /**
  * @author kj
  */
-public class RichTag {
+public class PerfLog {
 
-    private String namespace;
-    private String tag;
-    private List<Object> extras = Lists.newArrayList();
+    private final String namespace;
+    private final String tag;
+    private final List<Object> extras;
 
-    public static RichTagBuilder builder() {
-        return new RichTagBuilder(new RichTag());
+    public PerfLog(String namespace, String tag, List<Object> extras) {
+        this.namespace = namespace;
+        this.tag = tag;
+        this.extras = extras;
+    }
+
+    public static PerfLogBuilder builder() {
+        return new PerfLogBuilder();
     }
 
     public String getNamespace() {
         return namespace;
     }
 
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
-    }
-
     public String getTag() {
         return tag;
-    }
-
-    public void setTag(String tag) {
-        this.tag = tag;
     }
 
     public List<Object> getExtras() {
@@ -56,7 +54,7 @@ public class RichTag {
         } else if (getClass() != obj.getClass()) {
             return false;
         }
-        RichTag other = (RichTag) obj;
+        PerfLog other = (PerfLog) obj;
         if (!nullToEmpty(namespace).equals(nullToEmpty(other.namespace))
                 || !nullToEmpty(tag).equals(nullToEmpty(other.tag))) {
             return false;

@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.MoreExecutors;
+import com.kj.repo.infra.trigger.buffer.BatchBuffer;
 
 /**
  * @author kj

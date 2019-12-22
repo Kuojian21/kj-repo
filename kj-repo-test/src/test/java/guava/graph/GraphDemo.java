@@ -1,6 +1,5 @@
 package guava.graph;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayDeque;
@@ -24,6 +23,24 @@ import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.Graphs;
 import com.google.common.graph.MutableGraph;
 import com.google.common.graph.Traverser;
+
+enum NodeType {
+    USER, USER_GROUP, RESOURCE, RESOURCE_GROUP;
+}
+
+interface Node<T> {
+
+    NodeType getNodeType();
+
+    long getId();
+
+    T getRaw();
+}
+
+interface NodeTransfer<T> {
+
+    Node<T> toNode();
+}
 
 /**
  * @author lujunhua 2019/11/14
@@ -220,19 +237,6 @@ public class GraphDemo {
     }
 }
 
-enum NodeType {
-    USER, USER_GROUP, RESOURCE, RESOURCE_GROUP;
-}
-
-interface Node<T> {
-
-    NodeType getNodeType();
-
-    long getId();
-
-    T getRaw();
-}
-
 abstract class AbstractNode<T> implements Node<T> {
 
     public String toString() {
@@ -257,11 +261,6 @@ abstract class AbstractNode<T> implements Node<T> {
         Node objNode = ((Node) obj);
         return this.getNodeType() == objNode.getNodeType() && this.getId() == objNode.getId();
     }
-}
-
-interface NodeTransfer<T> {
-
-    Node<T> toNode();
 }
 
 class User implements NodeTransfer<User> {
@@ -536,6 +535,10 @@ class GraphPath<T> {
         endpointPairSet = new LinkedHashSet<>();
     }
 
+    public static <U> Comparator<GraphPath<U>> getComparatorByEndPointPairSize() {
+        return Comparator.comparing(gp -> gp.endpointPairSet.size());
+    }
+
     public GraphPath<T> copyOf(Set<EndpointPair<T>> pairs) {
         endpointPairSet.addAll(pairs);
         return this;
@@ -570,9 +573,5 @@ class GraphPath<T> {
     @Override
     public String toString() {
         return endpointPairSet.toString();
-    }
-
-    public static <U> Comparator<GraphPath<U>> getComparatorByEndPointPairSize() {
-        return Comparator.comparing(gp -> gp.endpointPairSet.size());
     }
 }

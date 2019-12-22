@@ -18,7 +18,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.kj.repo.infra.pool.browser.PLBrowser;
 import com.kj.repo.infra.pool.browser.PLBrowserHelper;
-import com.kj.repo.tt.http.TeHttpCompBuilder;
 
 public class TePLBrowser {
 
@@ -28,9 +27,9 @@ public class TePLBrowser {
 //        System.setProperty("socksProxyHost", "127.0.0.1");
 //        System.setProperty("socksProxyPort", "8088");
 //        gatherproxy(args);
-        Set<String> rtn = Sets.newHashSet(git(args));
+        Set<String> rtn = Sets.newHashSet(gitIDC(args));
 
-        rtn.addAll(TeHttpCompBuilder.git(args));
+//		rtn.addAll(TeHttpCompBuilder.git(args));
         System.out.println(rtn.size());
         rtn.stream().sorted().forEach(System.out::println);
     }
@@ -46,6 +45,30 @@ public class TePLBrowser {
             do {
                 HtmlPage page = t
                         .getPage(args[0] + "?non_archived=true&page=" + pageIndex + "&sort=latest_activity_desc");
+                List<String> p = PLBrowserHelper.parse(page, "//a[@class='project']/@href");
+                rtn.addAll(p);
+                logger.info("pageIndex:{} pageSize:{}", pageIndex, p.size());
+                if (p.size() < pageCount || p.size() == 0) {
+                    break;
+                }
+                pageCount = p.size();
+                pageIndex++;
+            } while (true);
+        });
+        return rtn;
+    }
+
+    public static List<String> gitIDC(String[] args) throws Exception {
+        List<String> rtn = Lists.newArrayList();
+        URL domain = new URL(args[0]);
+        PLBrowser.DEFAULT.execute(t -> {
+            t.addCookie("_gitlab_session=" + args[1], domain, null);
+            t.addCookie("sidebar_collapsed=false", domain, null);
+            int pageIndex = 1;
+            int pageCount = 0;
+            do {
+                HtmlPage page = t
+                        .getPage(args[0] + "/explore/projects?page=" + pageIndex);
                 List<String> p = PLBrowserHelper.parse(page, "//a[@class='project']/@href");
                 rtn.addAll(p);
                 logger.info("pageIndex:{} pageSize:{}", pageIndex, p.size());

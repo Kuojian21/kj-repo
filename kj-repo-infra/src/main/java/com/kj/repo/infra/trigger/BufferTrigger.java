@@ -1,5 +1,8 @@
 package com.kj.repo.infra.trigger;
 
+/**
+ * @author kj
+ */
 public interface BufferTrigger<E> {
 
     static <E, T> BatchBufferTriggerBuilder<E, T> builder() {

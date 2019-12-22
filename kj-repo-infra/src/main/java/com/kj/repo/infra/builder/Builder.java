@@ -5,6 +5,15 @@ package com.kj.repo.infra.builder;
  */
 public interface Builder<T> {
 
-    T build();
+    T doBuild();
+
+    default T build() {
+        ensure();
+        return doBuild();
+    }
+
+    default void ensure() {
+
+    }
 
 }
