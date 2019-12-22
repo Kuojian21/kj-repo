@@ -195,8 +195,6 @@ public class GraphDemo {
     /*参考com.google.common.graph.Graphs.reachableNodes*/
     private static <T> Multimap<NodePair<T>, GraphPath<T>> getPaths(Graph<T> graph, T from) {
         checkNotNull(from);
-        checkArgument(graph.nodes().contains(from), "%s not exist", from);
-
         Set<T> visitedNodes = new LinkedHashSet<>();
         Queue<T> queuedNodes = new ArrayDeque<>();
         Multimap<NodePair<T>, GraphPath<T>> nodePairGraphPathMultimap = HashMultimap.create();

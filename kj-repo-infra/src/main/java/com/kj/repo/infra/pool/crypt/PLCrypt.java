@@ -2,7 +2,7 @@ package com.kj.repo.infra.pool.crypt;
 
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
-import com.kj.repo.infra.pool.base.PLBase;
+import com.kj.repo.infra.pool.PLBase;
 
 /**
  * @param <T>

@@ -8,7 +8,7 @@ import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
-import com.kj.repo.infra.pool.base.PLBase;
+import com.kj.repo.infra.pool.PLBase;
 
 /**
  * @author kuojian21

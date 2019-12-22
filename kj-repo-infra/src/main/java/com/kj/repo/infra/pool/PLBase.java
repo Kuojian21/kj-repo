@@ -1,4 +1,4 @@
-package com.kj.repo.infra.pool.base;
+package com.kj.repo.infra.pool;
 
 import org.apache.commons.pool2.impl.GenericObjectPool;
 

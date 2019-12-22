@@ -8,7 +8,7 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
 import com.gargoylesoftware.htmlunit.WebClient;
-import com.kj.repo.infra.pool.base.PLBase;
+import com.kj.repo.infra.pool.PLBase;
 
 /**
  * @author kuojian21 http://htmlunit.sourceforge.net/
