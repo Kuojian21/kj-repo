@@ -19,7 +19,7 @@ import com.google.common.base.Strings;
 import lombok.Data;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class SavorHelper {
 
@@ -62,7 +62,7 @@ public class SavorHelper {
     }
 
     /**
-     * @author kuojian21
+     * @author kj
      */
     @Data
     public static class Model {
@@ -84,7 +84,7 @@ public class SavorHelper {
     }
 
     /**
-     * @author kuojian21
+     * @author kj
      */
     @Data
     public static class Property {

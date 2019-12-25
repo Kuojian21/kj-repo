@@ -12,7 +12,7 @@ import retrofit2.converter.protobuf.ProtoConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class RetrofitBuilder {
 

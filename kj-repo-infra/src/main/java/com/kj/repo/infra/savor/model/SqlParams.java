@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class SqlParams {
     private final ShardHolder shardHolder;

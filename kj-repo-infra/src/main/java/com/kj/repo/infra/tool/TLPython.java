@@ -3,7 +3,7 @@ package com.kj.repo.infra.tool;
 import org.python.util.PythonInterpreter;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class TLPython {
 

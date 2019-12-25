@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class JavaCompilerHelper {
 
@@ -51,26 +51,26 @@ public class JavaCompilerHelper {
     }
 
     public static synchronized Class<?> compile(String name, String body) {
-        try {
-            JavaCompiler.CompilationTask task = compiler
-                    .getTask(null, fileManager, null, null, null,
-                            Arrays.asList(new SimpleJavaFileObject(
-                                    URI.create("string:///" + name.replace('.', '/') + Kind.SOURCE.extension),
-                                    Kind.SOURCE) {
-                                @Override
-                                public CharSequence getCharContent(boolean ignoreEncodingErrors) {
-                                    return body;
-                                }
-                            }));
-            fileManager.flush();
-            if (task.call()) {
-                return classLoader.loadClass(name);
-            }
-            return null;
-        } catch (ClassNotFoundException | IOException e) {
-            logger.error("", e);
-            return null;
+        return RunHelper.run(() -> compileInternal(name, body),
+                JavaCompilerHelper.class.getName(), "compileInternal", name);
+    }
+
+    public static synchronized Class<?> compileInternal(String name, String body) throws IOException, ClassNotFoundException {
+        JavaCompiler.CompilationTask task = compiler
+                .getTask(null, fileManager, null, null, null,
+                        Arrays.asList(new SimpleJavaFileObject(
+                                URI.create("string:///" + name.replace('.', '/') + Kind.SOURCE.extension),
+                                Kind.SOURCE) {
+                            @Override
+                            public CharSequence getCharContent(boolean ignoreEncodingErrors) {
+                                return body;
+                            }
+                        }));
+        fileManager.flush();
+        if (task.call()) {
+            return classLoader.loadClass(name);
         }
+        return null;
     }
 
 }

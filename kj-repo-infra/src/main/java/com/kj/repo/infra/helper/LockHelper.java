@@ -3,6 +3,9 @@ package com.kj.repo.infra.helper;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.Lock;
 
+/**
+ * @author kj
+ */
 public class LockHelper {
 
     public static void runInLock(Lock lock, Runnable runnable) {

@@ -1,7 +1,7 @@
 package com.kj.repo.infra.savor.model;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class Pair<K, V> {
     private final K key;

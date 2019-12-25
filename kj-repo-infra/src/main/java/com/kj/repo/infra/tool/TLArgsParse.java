@@ -6,7 +6,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class TLArgsParse {
 

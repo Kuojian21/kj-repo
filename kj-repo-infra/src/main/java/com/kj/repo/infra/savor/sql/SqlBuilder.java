@@ -22,7 +22,7 @@ import com.kj.repo.infra.savor.model.ShardHolder;
 import com.kj.repo.infra.savor.model.SqlParams;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public abstract class SqlBuilder {
 
@@ -86,7 +86,7 @@ public abstract class SqlBuilder {
 
 
     /**
-     * @author kuojian21
+     * @author kj
      */
     public static class MysqlBuilder extends SqlBuilder {
 

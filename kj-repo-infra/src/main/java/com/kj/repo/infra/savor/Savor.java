@@ -27,7 +27,7 @@ import com.kj.repo.infra.savor.sql.ParamsBuilder;
 import com.kj.repo.infra.savor.sql.SqlBuilder;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 @SuppressWarnings({"checkstyle:HiddenField", "checkstyle:ParameterNumber", "unchecked"})
 public abstract class Savor<T> {
@@ -222,14 +222,14 @@ public abstract class Savor<T> {
     }
 
     /**
-     * @author kuojian21
+     * @author kj
      */
     public enum DBType {
         MYSQL
     }
 
     /**
-     * @author kuojian21
+     * @author kj
      */
     public static class Helper {
 

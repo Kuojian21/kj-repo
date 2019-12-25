@@ -4,7 +4,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class ShardHolder {
 

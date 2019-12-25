@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 @RestController
 public class EmojiController {

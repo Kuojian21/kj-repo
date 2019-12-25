@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class MapHelper {
     @SuppressWarnings("unchecked")

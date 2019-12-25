@@ -15,7 +15,7 @@ public interface Buffer<E, T> {
 
     static <E, K, V> Buffer<E, Entry<K, V>> map(Function<E, K> keyMapper, Function<E, V> valueInit,
                                                 BiConsumer<E, V> valueHandle) {
-        return new MapBuffer<>(keyMapper, valueInit);
+        return new ConcurrentMapBuffer<>(keyMapper, valueInit);
     }
 
     void add(E element) throws InterruptedException;

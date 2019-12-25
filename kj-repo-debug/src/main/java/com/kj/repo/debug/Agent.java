@@ -9,7 +9,7 @@ import java.security.ProtectionDomain;
  * https://docs.oracle.com/javase/8/docs/api/java/lang/instrument/compact3-package-summary.html
  * -javaagent:jarpath[=options]
  *
- * @author kuojian21
+ * @author kj
  */
 public class Agent {
 

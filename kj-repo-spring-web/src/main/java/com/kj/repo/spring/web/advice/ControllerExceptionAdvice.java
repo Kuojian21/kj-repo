@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import com.kj.repo.infra.base.ResultInfo;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 @ControllerAdvice
 public class ControllerExceptionAdvice {

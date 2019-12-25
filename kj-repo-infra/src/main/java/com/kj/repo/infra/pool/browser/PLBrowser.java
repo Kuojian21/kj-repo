@@ -11,7 +11,7 @@ import com.gargoylesoftware.htmlunit.WebClient;
 import com.kj.repo.infra.pool.PLBase;
 
 /**
- * @author kuojian21 http://htmlunit.sourceforge.net/
+ * @author kj http://htmlunit.sourceforge.net/
  */
 public class PLBrowser extends PLBase<WebClient> {
 

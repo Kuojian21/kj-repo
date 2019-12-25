@@ -3,7 +3,7 @@ package com.kj.repo.spring.web.listener;
 import javax.servlet.ServletContextListener;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class MyServletContextListener implements ServletContextListener {
 

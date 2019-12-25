@@ -24,16 +24,18 @@ public class PerfBuilder {
         return count;
     }
 
-    public void setCount(long count) {
+    public PerfBuilder count(long count) {
         this.count = count;
+        return this;
     }
 
     public long getMicro() {
         return micro;
     }
 
-    public void setMicro(long micro) {
+    public PerfBuilder micro(long micro) {
         this.micro = micro;
+        return this;
     }
 
     public void logstash() {

@@ -11,7 +11,7 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.stereotype.Service;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 @Service
 public final class BeanFactory {

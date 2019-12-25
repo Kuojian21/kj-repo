@@ -26,7 +26,7 @@ import com.google.common.collect.Sets;
 import lombok.Data;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 @SuppressWarnings({"checkstyle:HiddenField", "checkstyle:ParameterNumber"})
 public class TLJson {
@@ -73,7 +73,7 @@ public class TLJson {
     }
 
     /**
-     * @author kuojian21
+     * @author kj
      */
     @Data
     public static class Model {
@@ -114,7 +114,7 @@ public class TLJson {
     }
 
     /**
-     * @author kuojian21
+     * @author kj
      */
     @Data
     public static class Property {

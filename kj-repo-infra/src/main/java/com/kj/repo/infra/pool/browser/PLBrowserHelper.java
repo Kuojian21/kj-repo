@@ -13,7 +13,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlTable;
 import com.google.common.collect.Lists;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class PLBrowserHelper {
     public static <N> List<String> parse(HtmlPage page, String xpath) {

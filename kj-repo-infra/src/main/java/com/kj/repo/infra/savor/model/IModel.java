@@ -23,7 +23,7 @@ import com.kj.repo.infra.savor.annotation.Model;
 import com.kj.repo.infra.savor.annotation.Property;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 @SuppressWarnings({"checkstyle:HiddenField", "checkstyle:ParameterNumber", "unchecked"})
 public class IModel {
@@ -107,7 +107,7 @@ public class IModel {
     }
 
     /**
-     * @author kuojian21
+     * @author kj
      */
     public static class IProperty {
 

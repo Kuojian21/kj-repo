@@ -18,8 +18,7 @@ import com.jcraft.jsch.SftpException;
 import com.kj.repo.infra.pool.PLBase;
 
 /**
- * @param <T>
- * @author kuojian21
+ * @author kj
  */
 public class PLJsch extends PLBase<ChannelSftp> {
 

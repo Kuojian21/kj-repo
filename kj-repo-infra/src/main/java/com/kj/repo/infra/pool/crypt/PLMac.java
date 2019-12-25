@@ -11,7 +11,7 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import com.kj.repo.infra.pool.PLBase;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class PLMac extends PLBase<Mac> {
     public PLMac(GenericObjectPool<Mac> pool) {

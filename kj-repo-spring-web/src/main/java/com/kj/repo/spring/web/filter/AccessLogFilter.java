@@ -25,7 +25,7 @@ import com.google.common.base.Strings;
 import com.google.gson.Gson;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class AccessLogFilter implements Filter {
 

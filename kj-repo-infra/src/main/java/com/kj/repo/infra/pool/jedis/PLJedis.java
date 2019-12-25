@@ -14,7 +14,7 @@ import redis.clients.util.Pool;
 
 /**
  * @param <T>
- * @author kuojian21
+ * @author kj
  */
 public class PLJedis<T> extends PLBase<T> {
 

@@ -10,7 +10,7 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import com.kj.repo.infra.pool.PLBase;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class PLMessageDigest extends PLBase<MessageDigest> {
 

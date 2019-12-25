@@ -3,7 +3,7 @@ package com.kj.repo.infra.helper;
 import java.util.function.Predicate;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class RetryHelper {
 
@@ -38,10 +38,10 @@ public class RetryHelper {
     }
 
     /**
-     * @author kuojian21
+     * @author kj
      */
     @FunctionalInterface
-    public static interface Function<T, R> {
+    public interface Function<T, R> {
         R apply(T t) throws Exception;
     }
 

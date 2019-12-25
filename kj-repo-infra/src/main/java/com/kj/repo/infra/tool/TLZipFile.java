@@ -7,7 +7,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class TLZipFile {
 
@@ -52,7 +52,7 @@ public class TLZipFile {
     }
 
     /**
-     * @author kuojian21
+     * @author kj
      */
     @FunctionalInterface
     public interface Consumer<T> {
@@ -60,7 +60,7 @@ public class TLZipFile {
     }
 
     /**
-     * @author kuojian21
+     * @author kj
      */
     @FunctionalInterface
     public interface BiConsumer<T, U> {

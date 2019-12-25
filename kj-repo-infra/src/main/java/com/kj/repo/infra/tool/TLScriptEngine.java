@@ -6,7 +6,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class TLScriptEngine {
 

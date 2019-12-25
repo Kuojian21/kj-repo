@@ -16,7 +16,7 @@ import com.kj.repo.infra.savor.model.Expr;
 import com.kj.repo.infra.savor.model.IModel;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class ParamsBuilder {
 
@@ -129,14 +129,14 @@ public class ParamsBuilder {
     }
 
     /**
-     * @author kuojian21
+     * @author kj
      */
     public enum CONN {
         AND, OR
     }
 
     /**
-     * @author kuojian21
+     * @author kj
      */
     public static class Params {
         private final ParamsBuilder.CONN conn;

@@ -24,7 +24,7 @@ import javax.crypto.spec.IvParameterSpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class CryptFactory {
 

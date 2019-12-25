@@ -6,8 +6,7 @@ import com.kj.repo.infra.pool.PLBase;
 
 /**
  * @param <T>
- * @param <R>
- * @author kuojian21
+ * @author kj
  */
 public abstract class PLCrypt<T> extends PLBase<T> {
 

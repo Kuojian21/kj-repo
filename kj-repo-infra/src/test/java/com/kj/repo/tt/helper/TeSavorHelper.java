@@ -8,7 +8,7 @@ import com.kj.repo.infra.helper.SavorHelper;
 import com.mysql.cj.jdbc.Driver;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class TeSavorHelper {
 

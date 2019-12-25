@@ -9,7 +9,7 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class MyHandlerMethodArgumentResolver implements HandlerMethodArgumentResolver {
 

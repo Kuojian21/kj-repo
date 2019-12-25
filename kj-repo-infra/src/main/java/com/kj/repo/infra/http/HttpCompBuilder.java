@@ -39,39 +39,32 @@ import org.springframework.util.CollectionUtils;
 
 import com.google.common.collect.Lists;
 import com.kj.repo.infra.base.LocalSupplier;
-import com.kj.repo.infra.helper.RunnableHelper;
+import com.kj.repo.infra.helper.RunHelper;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class HttpCompBuilder {
 
-    private static final LocalSupplier<CloseableHttpClient> SYNC = new LocalSupplier<CloseableHttpClient>(() -> {
-        return RunnableHelper.call(() -> {
-            PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
-            connManager.setDefaultMaxPerRoute(20);
-            connManager.setMaxTotal(200);
-            connManager.setDefaultSocketConfig(SocketConfig.custom().setTcpNoDelay(true).setSoTimeout(10000).build());
-            HttpClientBuilder builder = HttpClientBuilder.create().setConnectionManager(connManager)
-                    .setDefaultRequestConfig(
-                            RequestConfig.custom().setConnectTimeout(10000).setConnectionRequestTimeout(10000).build());
-            return builder.build();
-        });
+    private static final LocalSupplier<CloseableHttpClient> SYNC = new LocalSupplier<>(() -> RunHelper.run(() -> {
+        PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
+        connManager.setDefaultMaxPerRoute(20);
+        connManager.setMaxTotal(200);
+        connManager.setDefaultSocketConfig(SocketConfig.custom().setTcpNoDelay(true).setSoTimeout(10000).build());
+        HttpClientBuilder builder = HttpClientBuilder.create().setConnectionManager(connManager)
+                .setDefaultRequestConfig(
+                        RequestConfig.custom().setConnectTimeout(10000).setConnectionRequestTimeout(10000).build());
+        return builder.build();
+    }));
 
-    });
-
-    private static final LocalSupplier<CloseableHttpAsyncClient> ASYNC = new LocalSupplier<CloseableHttpAsyncClient>(
-            () -> {
-                return RunnableHelper.call(() -> {
-
-                    PoolingNHttpClientConnectionManager connManager = new PoolingNHttpClientConnectionManager(
-                            new DefaultConnectingIOReactor(IOReactorConfig.DEFAULT, Executors.defaultThreadFactory()));
-                    connManager.setDefaultMaxPerRoute(20);
-                    connManager.setMaxTotal(200);
-                    return HttpAsyncClientBuilder.create().setConnectionManager(connManager).build();
-
-                });
-            });
+    private static final LocalSupplier<CloseableHttpAsyncClient> ASYNC = new LocalSupplier<>(
+            () -> RunHelper.run(() -> {
+                PoolingNHttpClientConnectionManager connManager = new PoolingNHttpClientConnectionManager(
+                        new DefaultConnectingIOReactor(IOReactorConfig.DEFAULT, Executors.defaultThreadFactory()));
+                connManager.setDefaultMaxPerRoute(20);
+                connManager.setMaxTotal(200);
+                return HttpAsyncClientBuilder.create().setConnectionManager(connManager).build();
+            }));
     private final String url;
     private final METHOD method;
     private List<Header> headers = Lists.newArrayList();

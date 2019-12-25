@@ -5,7 +5,7 @@ import org.jsoup.nodes.Document;
 import org.seimicrawler.xpath.JXDocument;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class TLJsoupXpath {
 

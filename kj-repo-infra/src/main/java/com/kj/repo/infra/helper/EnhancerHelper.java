@@ -8,7 +8,7 @@ import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 @SuppressWarnings("unchecked")
 public class EnhancerHelper {

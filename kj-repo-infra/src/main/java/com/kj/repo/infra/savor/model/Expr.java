@@ -1,7 +1,7 @@
 package com.kj.repo.infra.savor.model;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class Expr {
     private final IModel.IProperty property;
@@ -68,7 +68,7 @@ public class Expr {
     }
 
     /**
-     * @author kuojian21
+     * @author kj
      */
     public enum PType implements Type {
         EQ("="), IN("in"), LT("<"), LE("<="), GT(">"), GE(">="), NE("!="), NOTIN("not in");
@@ -84,7 +84,7 @@ public class Expr {
     }
 
     /**
-     * @author kuojian21
+     * @author kj
      */
     public enum VType implements Expr.Type {
         EQ("="), ADD("+"), SUB("-"), EXPR("EXPR");
@@ -100,7 +100,7 @@ public class Expr {
     }
 
     /**
-     * @author kuojian21
+     * @author kj
      */
     public interface Type {
         String name();

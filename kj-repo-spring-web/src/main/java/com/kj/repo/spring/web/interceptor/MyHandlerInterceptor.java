@@ -6,7 +6,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class MyHandlerInterceptor extends HandlerInterceptorAdapter {
 

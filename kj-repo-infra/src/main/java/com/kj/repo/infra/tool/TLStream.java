@@ -11,7 +11,7 @@ import java.util.List;
 import com.google.common.collect.Lists;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class TLStream {
 

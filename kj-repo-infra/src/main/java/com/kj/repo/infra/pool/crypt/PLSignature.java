@@ -12,7 +12,7 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import com.kj.repo.infra.pool.PLBase;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class PLSignature extends PLBase<Signature> {
     public PLSignature(GenericObjectPool<Signature> pool) {

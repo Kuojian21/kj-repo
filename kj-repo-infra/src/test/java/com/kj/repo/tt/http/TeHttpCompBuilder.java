@@ -12,7 +12,7 @@ import com.beust.jcommander.internal.Sets;
 import com.kj.repo.infra.http.HttpCompBuilder;
 
 /**
- * @author kuojian21
+ * @author kj
  */
 public class TeHttpCompBuilder {
 
