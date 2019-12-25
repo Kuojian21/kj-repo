@@ -9,12 +9,12 @@ import org.apache.commons.collections4.CollectionUtils;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.kj.repo.infra.batch.BatchTrigger;
+import com.kj.repo.infra.batch.buffer.Buffer;
 import com.kj.repo.infra.perf.model.Perf;
 import com.kj.repo.infra.perf.model.PerfBuilder;
 import com.kj.repo.infra.perf.model.PerfLog;
 import com.kj.repo.infra.perf.model.PerfStat;
-import com.kj.repo.infra.trigger.BufferTrigger;
-import com.kj.repo.infra.trigger.buffer.BatchBuffer;
 
 /**
  * @author kj
@@ -44,13 +44,13 @@ public abstract class PerfLogger {
         }
     };
 
-    private final BufferTrigger<PerfBuilder> bufferTrigger = BufferTrigger.<PerfBuilder, Map.Entry<PerfLog, Perf>>builder()
-            .setConsumer(this::display).setBuffer(BatchBuffer.map(PerfBuilder::getPerfLog, e -> new Perf(),
+    private final BatchTrigger<PerfBuilder> batchTrigger = BatchTrigger.<PerfBuilder, Map.Entry<PerfLog, Perf>>builder()
+            .setConsumer(this::display).setBuffer(Buffer.map(PerfBuilder::getPerfLog, e -> new Perf(),
                     (e, v) -> v.accept(e.getCount(), e.getMicro())))
             .build();
 
     public void logstash(PerfBuilder builder) {
-        bufferTrigger.enqueue(builder);
+        batchTrigger.enqueue(builder);
     }
 
     private void display(List<Map.Entry<PerfLog, Perf>> list) {

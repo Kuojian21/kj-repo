@@ -1,4 +1,4 @@
-package com.kj.repo.infra.trigger.buffer;
+package com.kj.repo.infra.batch.buffer;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
@@ -11,12 +11,12 @@ import com.google.common.collect.Lists;
 /**
  * @author kj
  */
-public class QueueBatchBuffer<E, T> implements BatchBuffer<E, T> {
+public class QueueBuffer<E, T> implements Buffer<E, T> {
 
     private final BlockingQueue<E> queue;
     private final Function<E, T> mapper;
 
-    public QueueBatchBuffer(int capacity, Function<E, T> mapper) {
+    public QueueBuffer(int capacity, Function<E, T> mapper) {
         this.queue = new LinkedBlockingQueue<>(capacity);
         this.mapper = mapper;
     }

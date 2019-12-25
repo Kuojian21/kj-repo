@@ -1,4 +1,4 @@
-package com.kj.repo.infra.trigger;
+package com.kj.repo.infra.batch;
 
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -13,28 +13,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.MoreExecutors;
-import com.kj.repo.infra.trigger.buffer.BatchBuffer;
+import com.kj.repo.infra.batch.buffer.Buffer;
 
 /**
  * @author kj
  */
-public class BatchBufferTrigger<E, T> implements BufferTrigger<E> {
+public class BatchTriggerImpl<E, T> implements BatchTrigger<E> {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final Consumer<List<T>> consumer;
     private final int batchsize;
     private final long linger;
-    private final BatchBuffer<E, T> buffer;
+    private final Buffer<E, T> buffer;
     private final BiConsumer<Throwable, List<T>> throwableHandler;
     private final ScheduledExecutorService scheduledExecutor;
     private final Executor workerExecutor;
     private final ReentrantLock lock = new ReentrantLock();
     private final AtomicBoolean running = new AtomicBoolean();
 
-    BatchBufferTrigger(Consumer<List<T>> consumer, int batchsize, long linger, BatchBuffer<E, T> buffer,
-                       BiConsumer<Throwable, List<T>> throwableHandler, ScheduledExecutorService scheduledExecutor,
-                       Executor workerExecutor) {
+    BatchTriggerImpl(Consumer<List<T>> consumer, int batchsize, long linger, Buffer<E, T> buffer,
+                     BiConsumer<Throwable, List<T>> throwableHandler, ScheduledExecutorService scheduledExecutor,
+                     Executor workerExecutor) {
         this.consumer = consumer;
         this.batchsize = batchsize;
         this.linger = linger;
@@ -45,7 +45,7 @@ public class BatchBufferTrigger<E, T> implements BufferTrigger<E> {
         this.scheduledExecutor.schedule(new BatchConsumerRunnable(), this.linger, TimeUnit.MILLISECONDS);
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
-                doBatchConsumer(BatchBufferTrigger.TriggerType.MANUALLY);
+                doBatchConsumer(BatchTriggerImpl.TriggerType.MANUALLY);
             }
         });
     }
@@ -62,7 +62,7 @@ public class BatchBufferTrigger<E, T> implements BufferTrigger<E> {
 
     @Override
     public void trigger() {
-        doBatchConsumer(BatchBufferTrigger.TriggerType.MANUALLY);
+        doBatchConsumer(BatchTriggerImpl.TriggerType.MANUALLY);
     }
 
     private void tryTrigBatchConsume() {

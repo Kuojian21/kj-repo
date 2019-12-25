@@ -1,7 +1,6 @@
-package com.kj.repo.infra.trigger.buffer;
+package com.kj.repo.infra.batch.buffer;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.BiConsumer;
@@ -13,20 +12,20 @@ import org.apache.curator.shaded.com.google.common.collect.Maps;
 /**
  * @author kj
  */
-public class MapBatchBuffer<E, K, V> implements BatchBuffer<E, Map.Entry<K, V>> {
+public class MapBuffer<E, K, V> implements Buffer<E, Entry<K, V>> {
 
     private final ConcurrentMap<K, V> map = Maps.newConcurrentMap();
     private final Function<E, K> keyMapper;
     private final Function<E, V> valueInit;
     private final BiConsumer<E, V> valueHandle;
 
-    public MapBatchBuffer(Function<E, K> keyMapper, Function<E, V> valueInit) {
+    public MapBuffer(Function<E, K> keyMapper, Function<E, V> valueInit) {
         this(keyMapper, valueInit, (e, v) -> {
             return;
         });
     }
 
-    public MapBatchBuffer(Function<E, K> keyMapper, Function<E, V> valueInit, BiConsumer<E, V> valueHandle) {
+    public MapBuffer(Function<E, K> keyMapper, Function<E, V> valueInit, BiConsumer<E, V> valueHandle) {
         super();
         this.keyMapper = keyMapper;
         this.valueInit = valueInit;
