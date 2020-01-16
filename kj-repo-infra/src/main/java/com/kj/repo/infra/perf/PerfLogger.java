@@ -46,7 +46,7 @@ public abstract class PerfLogger {
 
     private final BatchTrigger<PerfBuilder> batchTrigger = BatchTrigger.<PerfBuilder, Map.Entry<PerfLog, Perf>>builder()
             .setConsumer(this::display).setBuffer(
-                    Buffer.map(PerfBuilder::getPerfLog, e -> new Perf(e.getCount(), e.getCount()),
+                    Buffer.map(PerfBuilder::getPerfLog, e -> new Perf(e.getCount(), e.getMicro()),
                             (v1, v2) -> {
                                 v1.accept(v2.getCount(), v2.getMicro());
                                 return v1;
