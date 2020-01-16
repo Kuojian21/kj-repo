@@ -31,7 +31,7 @@ public abstract class PerfLogger {
             }
             Perf perf = entry.getValue();
             PerfStat perfStat = new PerfStat(perf);
-            params.add(perf.getSum());
+            params.add(perf.getMicro());
             params.add(perf.getCount());
             params.add(perf.getMaxValue());
             params.add(perf.getMinValue());
@@ -45,8 +45,12 @@ public abstract class PerfLogger {
     };
 
     private final BatchTrigger<PerfBuilder> batchTrigger = BatchTrigger.<PerfBuilder, Map.Entry<PerfLog, Perf>>builder()
-            .setConsumer(this::display).setBuffer(Buffer.map(PerfBuilder::getPerfLog, e -> new Perf(),
-                    (e, v) -> v.accept(e.getCount(), e.getMicro())))
+            .setConsumer(this::display).setBuffer(
+                    Buffer.map(PerfBuilder::getPerfLog, e -> new Perf(e.getCount(), e.getCount()),
+                            (v1, v2) -> {
+                                v1.accept(v2.getCount(), v2.getMicro());
+                                return v1;
+                            }))
             .build();
 
     public void logstash(PerfBuilder builder) {

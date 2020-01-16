@@ -18,12 +18,13 @@ public class Perf implements BiConsumer<Long, Long> {
     private AtomicLong minValue = new AtomicLong(Long.MAX_VALUE);
     private AtomicLong maxValue = new AtomicLong(Long.MIN_VALUE);
 
-    public Perf() {
-        this(DEFAULT_PRECISION);
+    public Perf(Long count, Long micro) {
+        this(DEFAULT_PRECISION, count, micro);
     }
 
-    public Perf(int precision) {
+    public Perf(int precision, Long count, Long micro) {
         this.precision = precision;
+        this.accept(count, micro);
     }
 
     @Override
@@ -60,7 +61,7 @@ public class Perf implements BiConsumer<Long, Long> {
         return totalCount.longValue();
     }
 
-    public long getSum() {
+    public long getMicro() {
         return totalMicro.longValue();
     }
 

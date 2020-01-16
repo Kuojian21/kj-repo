@@ -23,7 +23,7 @@ public class PerfStat {
 
     public PerfStat(Perf perf) {
         this.perf = perf;
-        this.avg = perf.getSum() / perf.getCount();
+        this.avg = perf.getMicro() / perf.getCount();
 
         this.timeTreeMap = new TreeMap<>(perf.getTimeMap().entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().longValue())));

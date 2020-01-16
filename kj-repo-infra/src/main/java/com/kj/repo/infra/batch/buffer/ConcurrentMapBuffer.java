@@ -3,7 +3,7 @@ package com.kj.repo.infra.batch.buffer;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -12,30 +12,26 @@ import org.apache.curator.shaded.com.google.common.collect.Maps;
 /**
  * @author kj
  */
-public class MapBuffer<E, K, V> implements Buffer<E, Entry<K, V>> {
+public class ConcurrentMapBuffer<E, K, V> implements Buffer<E, Entry<K, V>> {
 
     private final ConcurrentMap<K, V> map = Maps.newConcurrentMap();
     private final Function<E, K> keyMapper;
-    private final Function<E, V> valueInit;
-    private final BiConsumer<E, V> valueHandle;
+    private final Function<E, V> valMapper;
+    private final BiFunction<V, V, V> valMerger;
 
-    public MapBuffer(Function<E, K> keyMapper, Function<E, V> valueInit) {
-        this(keyMapper, valueInit, (e, v) -> {
-            return;
-        });
+    public ConcurrentMapBuffer(Function<E, K> keyMapper, Function<E, V> valMapper) {
+        this(keyMapper, valMapper, (v1, v2) -> v1);
     }
 
-    public MapBuffer(Function<E, K> keyMapper, Function<E, V> valueInit, BiConsumer<E, V> valueHandle) {
-        super();
+    public ConcurrentMapBuffer(Function<E, K> keyMapper, Function<E, V> valMapper, BiFunction<V, V, V> valMerger) {
         this.keyMapper = keyMapper;
-        this.valueInit = valueInit;
-        this.valueHandle = valueHandle;
+        this.valMapper = valMapper;
+        this.valMerger = valMerger;
     }
 
     @Override
     public void add(E element) throws InterruptedException {
-        V value = this.map.computeIfAbsent(keyMapper.apply(element), k -> valueInit.apply(element));
-        this.valueHandle.accept(element, value);
+        this.map.merge(keyMapper.apply(element), valMapper.apply(element), valMerger);
     }
 
     @Override

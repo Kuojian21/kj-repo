@@ -2,7 +2,7 @@ package com.kj.repo.infra.batch.buffer;
 
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -13,9 +13,8 @@ public interface Buffer<E, T> {
         return new QueueBuffer<>(capacity, mapper);
     }
 
-    static <E, K, V> Buffer<E, Entry<K, V>> map(Function<E, K> keyMapper, Function<E, V> valueInit,
-                                                BiConsumer<E, V> valueHandle) {
-        return new MapBuffer<>(keyMapper, valueInit);
+    static <E, K, V> Buffer<E, Entry<K, V>> map(Function<E, K> keyMapper, Function<E, V> valMapper, BiFunction<V, V, V> valMerger) {
+        return new ConcurrentMapBuffer<>(keyMapper, valMapper, valMerger);
     }
 
     void add(E element) throws InterruptedException;
