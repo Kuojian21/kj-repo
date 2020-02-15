@@ -23,7 +23,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import lombok.Data;
 
 /**
  * @author kj
@@ -75,7 +74,6 @@ public class TLJson {
     /**
      * @author kj
      */
-    @Data
     public static class Model {
         private final String name;
         private final List<Property> properties;
@@ -111,12 +109,23 @@ public class TLJson {
             return this.propertyMap.get(name);
         }
 
+		public String getName() {
+			return name;
+		}
+
+		public List<Property> getProperties() {
+			return properties;
+		}
+
+		public Map<String, Property> getPropertyMap() {
+			return propertyMap;
+		}
+
     }
 
     /**
      * @author kj
      */
-    @Data
     public static class Property {
 
         private final String name;
@@ -163,6 +172,22 @@ public class TLJson {
                 logger.error("", e);
             }
         }
+
+		public String getName() {
+			return name;
+		}
+
+		public Class<?> getType() {
+			return type;
+		}
+
+		public Field getField() {
+			return field;
+		}
+
+		public PropertyDescriptor getDescriptor() {
+			return descriptor;
+		}
 
     }
 

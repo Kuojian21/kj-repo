@@ -16,8 +16,6 @@ import org.springframework.jdbc.core.RowMapper;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Strings;
 
-import lombok.Data;
-
 /**
  * @author kj
  */
@@ -64,7 +62,6 @@ public class SavorHelper {
     /**
      * @author kj
      */
-    @Data
     public static class Model {
         private final String name;
         private final String table;
@@ -81,12 +78,27 @@ public class SavorHelper {
                     .collect(Collectors.toSet());
         }
 
+		public String getName() {
+			return name;
+		}
+
+		public String getTable() {
+			return table;
+		}
+
+		public List<Property> getProperties() {
+			return properties;
+		}
+
+		public Set<String> getImports() {
+			return imports;
+		}
+
     }
 
     /**
      * @author kj
      */
-    @Data
     public static class Property {
 
         private final String name;
@@ -123,6 +135,34 @@ public class SavorHelper {
             this.insert = !"auto_increment".equals(rs.getString("Extra"));
             this.comment = rs.getString("Comment");
         }
+
+		public String getName() {
+			return name;
+		}
+
+		public String getColumn() {
+			return column;
+		}
+
+		public String getType() {
+			return type;
+		}
+
+		public String getFullType() {
+			return fullType;
+		}
+
+		public boolean isPrimaryKey() {
+			return primaryKey;
+		}
+
+		public boolean isInsert() {
+			return insert;
+		}
+
+		public String getComment() {
+			return comment;
+		}
 
     }
 

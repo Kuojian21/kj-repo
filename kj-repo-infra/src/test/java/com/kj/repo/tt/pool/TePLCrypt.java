@@ -19,16 +19,21 @@ import java.util.stream.IntStream;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Stopwatch;
 import com.kj.repo.infra.pool.crypt.PLCipher;
 import com.kj.repo.infra.pool.crypt.algorithm.Crypt;
 import com.kj.repo.infra.pool.crypt.factory.CryptFactory;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Slf4j
+/**
+ * @author kj
+ */
 public class TePLCrypt {
 
+	public static Logger logger = LoggerFactory.getLogger(TePLCrypt.class);
+	
     public static void main(String[] args) throws NoSuchAlgorithmException, InvalidAlgorithmParameterException,
             InvalidKeyException, InvalidKeySpecException, InterruptedException, ExecutionException {
 
@@ -49,7 +54,7 @@ public class TePLCrypt {
             ExecutionException {
         long p1 = perf1(algorithm, key, ivp, total, thread, times);
         long p2 = perf2(algorithm, key, ivp, total, thread, times);
-        log.info("{} {}", p1, p2);
+        logger.info("{} {}", p1, p2);
     }
 
     public static long perf1(String algorithm, Key key, IvParameterSpec ivp, int total, int thread, int times)
@@ -73,7 +78,7 @@ public class TePLCrypt {
                         }
                         return rtn;
                     } catch (Exception e) {
-                        log.error("", e);
+                        logger.error("", e);
                         return 0L;
                     }
                 }));
@@ -90,7 +95,7 @@ public class TePLCrypt {
                 rtn += future.get() % Integer.MAX_VALUE;
             }
         }
-        log.info("{}", rtn);
+        logger.info("{}", rtn);
         executor.shutdown();
         executor.awaitTermination(3, TimeUnit.MINUTES);
         return stopwatch.elapsed(TimeUnit.MILLISECONDS);
@@ -121,7 +126,7 @@ public class TePLCrypt {
                         }
                         return rtn;
                     } catch (Exception e) {
-                        log.error("", e);
+                    	logger.error("", e);
                         return 0L;
                     }
                 }));
@@ -137,7 +142,7 @@ public class TePLCrypt {
                 rtn += future.get() % Integer.MAX_VALUE;
             }
         }
-        log.info("{}", rtn);
+        logger.info("{}", rtn);
         executor.shutdown();
         executor.awaitTermination(3, TimeUnit.MINUTES);
         return stopwatch.elapsed(TimeUnit.MILLISECONDS);

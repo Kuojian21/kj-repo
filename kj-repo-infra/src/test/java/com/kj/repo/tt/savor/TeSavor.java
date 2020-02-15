@@ -29,8 +29,6 @@ import com.kj.repo.infra.savor.model.ShardHolder;
 import com.kj.repo.infra.savor.sql.ParamsBuilder;
 import com.mysql.cj.jdbc.Driver;
 
-import lombok.Data;
-
 @SuppressWarnings("unchecked")
 public class TeSavor {
 
@@ -180,7 +178,6 @@ public class TeSavor {
     /**
      * @author kj
      */
-    @Data
     public static class SavorTest {
         /* 自增主键 */
         @Property(insert = true)
@@ -222,6 +219,71 @@ public class TeSavor {
         public String toString() {
             return JSON.toJSONString(this);
         }
+
+		public Long getId() {
+			return id;
+		}
+
+		public void setId(Long id) {
+			this.id = id;
+		}
+
+		public String getHashKey() {
+			return hashKey;
+		}
+
+		public void setHashKey(String hashKey) {
+			this.hashKey = hashKey;
+		}
+
+		public String getValue() {
+			return value;
+		}
+
+		public void setValue(String value) {
+			this.value = value;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public String getSex() {
+			return sex;
+		}
+
+		public void setSex(String sex) {
+			this.sex = sex;
+		}
+
+		public Integer getAge() {
+			return age;
+		}
+
+		public void setAge(Integer age) {
+			this.age = age;
+		}
+
+		public Long getCreateTime() {
+			return createTime;
+		}
+
+		public void setCreateTime(Long createTime) {
+			this.createTime = createTime;
+		}
+
+		public java.sql.Timestamp getUpdateTime() {
+			return updateTime;
+		}
+
+		public void setUpdateTime(java.sql.Timestamp updateTime) {
+			this.updateTime = updateTime;
+		}
+        
     }
 
     /**
