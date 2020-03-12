@@ -34,7 +34,7 @@ do
 		mvn dependency:sources #-T 4.0C
 		mvn dependency:resolve -Dclassifier=javadoc #-T 4.0C
 	fi
-	cd ${dir}/${path}
+	cd ${dir}/${base_path}
 done
 
 cd ${dir}
