@@ -38,14 +38,14 @@ public class TeSavor {
         /*
          * -DsocksProxyHost= -DsocksProxyPort=8088
          */
-//		System.setProperty("socksProxyHost", "127.0.0.1");
-//		System.setProperty("socksProxyPort", "8088");
+        //		System.setProperty("socksProxyHost", "127.0.0.1");
+        //		System.setProperty("socksProxyPort", "8088");
         MDC.put("UUID", UUID.randomUUID().toString());
         MDC.get("UUID");
         TeSavor teSavor = new TeSavor();
-//        SavorTestDao<SavorTest> dao = new SavorTestDao<>(
-//                new SimpleDriverDataSource(new Driver(), args[0], args[1], args[2]),
-//                SavorTest.class);
+        //        SavorTestDao<SavorTest> dao = new SavorTestDao<>(
+        //                new SimpleDriverDataSource(new Driver(), args[0], args[1], args[2]),
+        //                SavorTest.class);
         SavorTestDao<SavorShardTest> dao = new SavorTestDao<>(
                 new SimpleDriverDataSource(new Driver(), args[0], args[1], args[2]),
                 new SimpleDriverDataSource(new Driver(), args[3], args[4], args[5]), SavorShardTest.class);
@@ -220,70 +220,70 @@ public class TeSavor {
             return JSON.toJSONString(this);
         }
 
-		public Long getId() {
-			return id;
-		}
+        public Long getId() {
+            return id;
+        }
 
-		public void setId(Long id) {
-			this.id = id;
-		}
+        public void setId(Long id) {
+            this.id = id;
+        }
 
-		public String getHashKey() {
-			return hashKey;
-		}
+        public String getHashKey() {
+            return hashKey;
+        }
 
-		public void setHashKey(String hashKey) {
-			this.hashKey = hashKey;
-		}
+        public void setHashKey(String hashKey) {
+            this.hashKey = hashKey;
+        }
 
-		public String getValue() {
-			return value;
-		}
+        public String getValue() {
+            return value;
+        }
 
-		public void setValue(String value) {
-			this.value = value;
-		}
+        public void setValue(String value) {
+            this.value = value;
+        }
 
-		public String getName() {
-			return name;
-		}
+        public String getName() {
+            return name;
+        }
 
-		public void setName(String name) {
-			this.name = name;
-		}
+        public void setName(String name) {
+            this.name = name;
+        }
 
-		public String getSex() {
-			return sex;
-		}
+        public String getSex() {
+            return sex;
+        }
 
-		public void setSex(String sex) {
-			this.sex = sex;
-		}
+        public void setSex(String sex) {
+            this.sex = sex;
+        }
 
-		public Integer getAge() {
-			return age;
-		}
+        public Integer getAge() {
+            return age;
+        }
 
-		public void setAge(Integer age) {
-			this.age = age;
-		}
+        public void setAge(Integer age) {
+            this.age = age;
+        }
 
-		public Long getCreateTime() {
-			return createTime;
-		}
+        public Long getCreateTime() {
+            return createTime;
+        }
 
-		public void setCreateTime(Long createTime) {
-			this.createTime = createTime;
-		}
+        public void setCreateTime(Long createTime) {
+            this.createTime = createTime;
+        }
 
-		public java.sql.Timestamp getUpdateTime() {
-			return updateTime;
-		}
+        public java.sql.Timestamp getUpdateTime() {
+            return updateTime;
+        }
 
-		public void setUpdateTime(java.sql.Timestamp updateTime) {
-			this.updateTime = updateTime;
-		}
-        
+        public void setUpdateTime(java.sql.Timestamp updateTime) {
+            this.updateTime = updateTime;
+        }
+
     }
 
     /**

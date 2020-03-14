@@ -12,7 +12,7 @@ public class TeTLArgsParse {
         Options options = new Options();
         options.addOption("t", true, "opt");
         options.addOption("", "long-opt", true, "long-opt");
-        CommandLine command = TLArgsParse.parse(options, new String[]{"-t", "z", "--long-opt", "kj"});
+        CommandLine command = TLArgsParse.parse(options, new String[] {"-t", "z", "--long-opt", "kj"});
         if (command.hasOption("t")) {
             System.out.println(command.getOptionValue("t"));
         }

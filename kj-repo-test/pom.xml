@@ -12,6 +12,10 @@
     <artifactId>kj-repo-test</artifactId>
 
     <dependencies>
+        <dependency>
+            <groupId>com.kj.repo</groupId>
+            <artifactId>kj-repo-infra</artifactId>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/com.alibaba/dubbo -->
         <dependency>
             <groupId>com.alibaba</groupId>

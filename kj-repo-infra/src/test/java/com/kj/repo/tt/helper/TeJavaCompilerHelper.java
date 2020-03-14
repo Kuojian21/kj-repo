@@ -20,7 +20,7 @@ public class TeJavaCompilerHelper {
                 .append("\t}\n") //
                 .append("}\n");
         Class<?> clazz = JavaCompilerHelper.compile("com.kj.CalculatorTest", java.toString());
-        Method method = clazz.getMethod("multiply", new Class<?>[]{int.class, int.class});
+        Method method = clazz.getMethod("multiply", new Class<?>[] {int.class, int.class});
         System.out.println(method.invoke(null, 2, 3));
         System.out.println(System.getProperty("user.dir"));
     }

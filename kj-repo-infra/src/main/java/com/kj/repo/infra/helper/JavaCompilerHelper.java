@@ -35,7 +35,7 @@ public class JavaCompilerHelper {
                 out.mkdirs();
             }
             fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Arrays.asList(out));
-            classLoader = new URLClassLoader(new URL[]{out.toURI().toURL()});
+            classLoader = new URLClassLoader(new URL[] {out.toURI().toURL()});
         } catch (IOException e) {
             logger.error("", e);
         }
@@ -55,7 +55,8 @@ public class JavaCompilerHelper {
                 JavaCompilerHelper.class.getName(), "compileInternal", name);
     }
 
-    public static synchronized Class<?> compileInternal(String name, String body) throws IOException, ClassNotFoundException {
+    public static synchronized Class<?> compileInternal(String name, String body)
+            throws IOException, ClassNotFoundException {
         JavaCompiler.CompilationTask task = compiler
                 .getTask(null, fileManager, null, null, null,
                         Arrays.asList(new SimpleJavaFileObject(

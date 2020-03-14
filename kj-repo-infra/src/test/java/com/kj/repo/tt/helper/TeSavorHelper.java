@@ -16,8 +16,8 @@ public class TeSavorHelper {
         /*
          * -DsocksProxyHost= -DsocksProxyPort=8088
          */
-//		System.setProperty("socksProxyHost", "127.0.0.1");
-//		System.setProperty("socksProxyPort", "8088");
+        //		System.setProperty("socksProxyHost", "127.0.0.1");
+        //		System.setProperty("socksProxyPort", "8088");
         /**
          * <pre>
          *     		create table savor_test(

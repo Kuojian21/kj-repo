@@ -123,12 +123,12 @@ public abstract class Savor<T> {
     }
 
     public <R> List<R> select(Collection<String> columns, Map<String, Object> params, List<String> orders,
-                              Integer offset, Integer limit, RowMapper<R> rowMapper) {
+            Integer offset, Integer limit, RowMapper<R> rowMapper) {
         return this.select(columns, ParamsBuilder.ofAnd().with(params), null, orders, offset, limit, rowMapper);
     }
 
     public <R> List<R> select(Collection<String> columns, ParamsBuilder paramsBuilder, List<String> groups,
-                              List<String> orders, Integer offset, Integer limit, RowMapper<R> rowMapper) {
+            List<String> orders, Integer offset, Integer limit, RowMapper<R> rowMapper) {
         return this.select(this.shard(paramsBuilder).entrySet().stream().map(e -> this.sqlBuilder().select(this.model,
                 e.getKey(), columns, e.getValue(), groups, orders, offset, limit)), rowMapper);
     }

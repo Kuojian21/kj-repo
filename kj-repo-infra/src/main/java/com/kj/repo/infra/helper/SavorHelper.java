@@ -78,21 +78,21 @@ public class SavorHelper {
                     .collect(Collectors.toSet());
         }
 
-		public String getName() {
-			return name;
-		}
+        public String getName() {
+            return name;
+        }
 
-		public String getTable() {
-			return table;
-		}
+        public String getTable() {
+            return table;
+        }
 
-		public List<Property> getProperties() {
-			return properties;
-		}
+        public List<Property> getProperties() {
+            return properties;
+        }
 
-		public Set<String> getImports() {
-			return imports;
-		}
+        public Set<String> getImports() {
+            return imports;
+        }
 
     }
 
@@ -136,33 +136,33 @@ public class SavorHelper {
             this.comment = rs.getString("Comment");
         }
 
-		public String getName() {
-			return name;
-		}
+        public String getName() {
+            return name;
+        }
 
-		public String getColumn() {
-			return column;
-		}
+        public String getColumn() {
+            return column;
+        }
 
-		public String getType() {
-			return type;
-		}
+        public String getType() {
+            return type;
+        }
 
-		public String getFullType() {
-			return fullType;
-		}
+        public String getFullType() {
+            return fullType;
+        }
 
-		public boolean isPrimaryKey() {
-			return primaryKey;
-		}
+        public boolean isPrimaryKey() {
+            return primaryKey;
+        }
 
-		public boolean isInsert() {
-			return insert;
-		}
+        public boolean isInsert() {
+            return insert;
+        }
 
-		public String getComment() {
-			return comment;
-		}
+        public String getComment() {
+            return comment;
+        }
 
     }
 

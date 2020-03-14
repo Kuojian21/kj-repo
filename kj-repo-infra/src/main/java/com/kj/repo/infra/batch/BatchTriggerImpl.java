@@ -33,8 +33,8 @@ public class BatchTriggerImpl<E, T> implements BatchTrigger<E> {
     private final AtomicBoolean running = new AtomicBoolean();
 
     BatchTriggerImpl(Consumer<List<T>> consumer, int batchsize, long linger, Buffer<E, T> buffer,
-                     BiConsumer<Throwable, List<T>> throwableHandler, ScheduledExecutorService scheduledExecutor,
-                     Executor workerExecutor) {
+            BiConsumer<Throwable, List<T>> throwableHandler, ScheduledExecutorService scheduledExecutor,
+            Executor workerExecutor) {
         this.consumer = consumer;
         this.batchsize = batchsize;
         this.linger = linger;
@@ -118,7 +118,9 @@ public class BatchTriggerImpl<E, T> implements BatchTrigger<E> {
     }
 
     private enum TriggerType {
-        LINGER, ENQUEUE, MANUALLY
+        LINGER,
+        ENQUEUE,
+        MANUALLY
     }
 
     private class BatchConsumerRunnable implements Runnable {

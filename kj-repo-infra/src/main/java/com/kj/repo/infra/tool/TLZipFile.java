@@ -6,6 +6,9 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import com.kj.repo.infra.base.function.BiConsumer;
+import com.kj.repo.infra.base.function.Consumer;
+
 /**
  * @author kj
  */
@@ -50,21 +53,4 @@ public class TLZipFile {
             }
         }
     }
-
-    /**
-     * @author kj
-     */
-    @FunctionalInterface
-    public interface Consumer<T> {
-        void accept(T t) throws Exception;
-    }
-
-    /**
-     * @author kj
-     */
-    @FunctionalInterface
-    public interface BiConsumer<T, U> {
-        void accept(T t, U u) throws Exception;
-    }
-
 }

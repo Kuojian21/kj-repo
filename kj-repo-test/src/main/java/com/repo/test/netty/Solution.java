@@ -12,7 +12,7 @@ public class Solution {
     public static void main(String[] args) {
         System.out.println(Solution.class.getSimpleName());
         System.out.println(
-                new Solution().divide("wordgoodgoodgoodbestword", new String[]{"word", "good", "best", "good"}));
+                new Solution().divide("wordgoodgoodgoodbestword", new String[] {"word", "good", "best", "good"}));
         ThreadLocal<Integer> threadLocal = new ThreadLocal<Integer>();
         threadLocal.set(1);
         while (true) {

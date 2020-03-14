@@ -17,8 +17,8 @@ public class TeDeadlock {
     public static void main(String[] args) throws SQLException, InterruptedException {
         Logger logger = LoggerFactory.getLogger(TeDeadlock.class);
         logger.info("");
-//		System.setProperty("socksProxyHost", "127.0.0.1");
-//		System.setProperty("socksProxyPort", "8088");
+        //		System.setProperty("socksProxyHost", "127.0.0.1");
+        //		System.setProperty("socksProxyPort", "8088");
         NamedParameterJdbcTemplate jdbcTemplate = new NamedParameterJdbcTemplate(
                 new SimpleDriverDataSource(new Driver(), args[0], args[1], args[2]));
         String sql = "insert into savor_base_test(hash_key,name) values(:hashKey,:name)";
@@ -29,33 +29,36 @@ public class TeDeadlock {
             CountDownLatch latch2 = new CountDownLatch(len);
             for (int j = 0; j < len; j++) {
                 new Thread(() -> {
-//					while (true) {
+                    //					while (true) {
                     try {
                         latch.await();
                         jdbcTemplate.update(sql, new MapSqlParameterSource().addValue("hashKey", "" + x + "")
                                 .addValue("name", UUID.randomUUID().toString()));
-//						logger.info(x + ":" + jdbcTemplate.update(sql, new MapSqlParameterSource()
-//								.addValue("hashKey", "" + x + "").addValue("name", UUID.randomUUID().toString())));
+                        //						logger.info(x + ":" + jdbcTemplate.update(sql, new
+                        //						MapSqlParameterSource()
+                        //								.addValue("hashKey", "" + x + "").addValue("name", UUID
+                        //								.randomUUID().toString())));
                         latch2.countDown();
                     } catch (Throwable t) {
                         t.printStackTrace();
                     } finally {
                         latch2.countDown();
                     }
-//					}
+                    //					}
                 }).start();
             }
-//			new Thread(() -> {
-////				while (true) {
-//					try {
-//						jdbcTemplate.update("delete from savor_base_test where hash_key = '" + x + "'",
-//								new MapSqlParameterSource());
-////					logger.info("d:" + jdbcTemplate.update("delete from savor_base_test", new MapSqlParameterSource()));
-//					} catch (Throwable t) {
-//						t.printStackTrace();
-//					}
-////				}
-//			}).start();
+            //			new Thread(() -> {
+            ////				while (true) {
+            //					try {
+            //						jdbcTemplate.update("delete from savor_base_test where hash_key = '" + x + "'",
+            //								new MapSqlParameterSource());
+            ////					logger.info("d:" + jdbcTemplate.update("delete from savor_base_test", new
+            // MapSqlParameterSource()));
+            //					} catch (Throwable t) {
+            //						t.printStackTrace();
+            //					}
+            ////				}
+            //			}).start();
             latch.countDown();
             latch2.await();
         }

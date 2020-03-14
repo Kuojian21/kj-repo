@@ -2,6 +2,8 @@ package com.kj.repo.infra.helper;
 
 import java.util.function.Predicate;
 
+import com.kj.repo.infra.base.function.Function;
+
 /**
  * @author kj
  */
@@ -19,7 +21,7 @@ public class RetryHelper {
     }
 
     public static <T, R> R retry(Function<T, R> function, Predicate<R> rPredicate, Predicate<Throwable> tPredicate,
-                                 T input, int times) throws Throwable {
+            T input, int times) throws Throwable {
         Throwable t = null;
         for (int i = 0; i < times; i++) {
             try {
@@ -36,13 +38,4 @@ public class RetryHelper {
         }
         throw t;
     }
-
-    /**
-     * @author kj
-     */
-    @FunctionalInterface
-    public interface Function<T, R> {
-        R apply(T t) throws Exception;
-    }
-
 }

@@ -57,7 +57,8 @@ public class IModel {
             this.modelProperty = null;
         } else {
             this.table = !Strings.isNullOrEmpty(shard.table()) ? shard.table()
-                    : CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, this.name);
+                                                               : CaseFormat.UPPER_CAMEL
+                                 .to(CaseFormat.LOWER_UNDERSCORE, this.name);
             this.modelProperty = !Strings.isNullOrEmpty(shard.shardKey()) ? this.getProperty(shard.shardKey()) : null;
         }
         this.updateDefProperties = Collections.unmodifiableList(

@@ -71,7 +71,14 @@ public class Expr {
      * @author kj
      */
     public enum PType implements Type {
-        EQ("="), IN("in"), LT("<"), LE("<="), GT(">"), GE(">="), NE("!="), NOTIN("not in");
+        EQ("="),
+        IN("in"),
+        LT("<"),
+        LE("<="),
+        GT(">"),
+        GE(">="),
+        NE("!="),
+        NOTIN("not in");
         private final String symbol;
 
         PType(String symbol) {
@@ -87,7 +94,10 @@ public class Expr {
      * @author kj
      */
     public enum VType implements Expr.Type {
-        EQ("="), ADD("+"), SUB("-"), EXPR("EXPR");
+        EQ("="),
+        ADD("+"),
+        SUB("-"),
+        EXPR("EXPR");
         private final String symbol;
 
         VType(String symbol) {

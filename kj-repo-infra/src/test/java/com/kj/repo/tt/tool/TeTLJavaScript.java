@@ -20,7 +20,9 @@ public class TeTLJavaScript {
     static {
         try {
             ScriptEngine engine = TLScriptEngine.jsEngine();
-            engine.eval("function say(module){ if(module=='PULL') return (1000 + Math.floor(Math.random()*1000));else return (100 + Math.floor(Math.random()*100)) }");
+            engine.eval(
+                    "function say(module){ if(module=='PULL') return (1000 + Math.floor(Math.random()*1000));else "
+                            + "return (100 + Math.floor(Math.random()*100)) }");
             js = (Invocable) engine;
         } catch (ScriptException e) {
             e.printStackTrace();

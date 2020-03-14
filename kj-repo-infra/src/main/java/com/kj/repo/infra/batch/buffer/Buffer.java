@@ -13,7 +13,8 @@ public interface Buffer<E, T> {
         return new QueueBuffer<>(capacity, mapper);
     }
 
-    static <E, K, V> Buffer<E, Entry<K, V>> map(Function<E, K> keyMapper, Function<E, V> valMapper, BiFunction<V, V, V> valMerger) {
+    static <E, K, V> Buffer<E, Entry<K, V>> map(Function<E, K> keyMapper, Function<E, V> valMapper,
+            BiFunction<V, V, V> valMerger) {
         return new ConcurrentMapBuffer<>(keyMapper, valMapper, valMerger);
     }
 

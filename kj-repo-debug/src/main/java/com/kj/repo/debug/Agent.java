@@ -17,7 +17,7 @@ public class Agent {
         inst.addTransformer(new ClassFileTransformer() {
             @Override
             public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
-                                    ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+                    ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
                 System.out.println("premain:" + className);
                 return classfileBuffer;
             }
@@ -28,7 +28,7 @@ public class Agent {
         inst.addTransformer(new ClassFileTransformer() {
             @Override
             public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined,
-                                    ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+                    ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
                 System.out.println("agentmain:" + className);
                 return classfileBuffer;
             }

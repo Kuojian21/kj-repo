@@ -31,7 +31,8 @@ import com.google.common.collect.Sets;
 public class TLJson {
     public static final ConcurrentMap<Class<?>, Model> FILEDMAPS = Maps.newConcurrentMap();
     public static final Set<Class<?>> PRIME_CLASSES =
-            Sets.newHashSet(Long.class, Integer.class, Short.class, Byte.class, Float.class, Double.class, Boolean.class, Character.class);
+            Sets.newHashSet(Long.class, Integer.class, Short.class, Byte.class, Float.class, Double.class,
+                    Boolean.class, Character.class);
 
     private static Logger logger = LoggerFactory.getLogger(TLJson.class);
 
@@ -109,17 +110,17 @@ public class TLJson {
             return this.propertyMap.get(name);
         }
 
-		public String getName() {
-			return name;
-		}
+        public String getName() {
+            return name;
+        }
 
-		public List<Property> getProperties() {
-			return properties;
-		}
+        public List<Property> getProperties() {
+            return properties;
+        }
 
-		public Map<String, Property> getPropertyMap() {
-			return propertyMap;
-		}
+        public Map<String, Property> getPropertyMap() {
+            return propertyMap;
+        }
 
     }
 
@@ -173,21 +174,21 @@ public class TLJson {
             }
         }
 
-		public String getName() {
-			return name;
-		}
+        public String getName() {
+            return name;
+        }
 
-		public Class<?> getType() {
-			return type;
-		}
+        public Class<?> getType() {
+            return type;
+        }
 
-		public Field getField() {
-			return field;
-		}
+        public Field getField() {
+            return field;
+        }
 
-		public PropertyDescriptor getDescriptor() {
-			return descriptor;
-		}
+        public PropertyDescriptor getDescriptor() {
+            return descriptor;
+        }
 
     }
 

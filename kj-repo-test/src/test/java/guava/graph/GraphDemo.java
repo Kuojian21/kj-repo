@@ -25,7 +25,10 @@ import com.google.common.graph.MutableGraph;
 import com.google.common.graph.Traverser;
 
 enum NodeType {
-    USER, USER_GROUP, RESOURCE, RESOURCE_GROUP;
+    USER,
+    USER_GROUP,
+    RESOURCE,
+    RESOURCE_GROUP;
 }
 
 interface Node<T> {

@@ -62,8 +62,8 @@ public abstract class SqlBuilder {
     public abstract <T> SqlParams upsert(IModel model, ShardHolder holder, List<T> objs, Map<String, Expr> values);
 
     public abstract SqlParams select(IModel model, ShardHolder holder, Collection<String> columns,
-                                     ParamsBuilder.Params params, List<String> groups, List<String> orders, Integer offset,
-                                     Integer limit);
+            ParamsBuilder.Params params, List<String> groups, List<String> orders, Integer offset,
+            Integer limit);
 
     public SqlParams delete(ShardHolder holder, ParamsBuilder.Params params) {
         StringBuilder sql = new StringBuilder();
@@ -157,7 +157,8 @@ public abstract class SqlBuilder {
             }
             sql.append(" into ").append(holder.getTable()).append("\n").append(" (")
                     .append(Joiner.on(",").join(
-                            model.getInsertProperties().stream().map(IModel.IProperty::getColumn).collect(Collectors.toList())))
+                            model.getInsertProperties().stream().map(IModel.IProperty::getColumn)
+                                    .collect(Collectors.toList())))
                     .append(") ").append("\n").append("values").append("\n")
                     .append(Joiner.on(",\n").join(IntStream
                             .range(0, objs.size()).boxed().map(
@@ -187,8 +188,8 @@ public abstract class SqlBuilder {
 
         @Override
         public SqlParams select(IModel model, ShardHolder holder, Collection<String> columns,
-                                ParamsBuilder.Params params, List<String> groups, List<String> orders, Integer offset,
-                                Integer limit) {
+                ParamsBuilder.Params params, List<String> groups, List<String> orders, Integer offset,
+                Integer limit) {
             StringBuilder sql = new StringBuilder();
             sql.append("select ");
             if (CollectionUtils.isEmpty(columns)) {

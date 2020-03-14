@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.kj.repo.infra.base.ResultInfo;
+import com.kj.repo.infra.base.BaseResultInfo;
 
 /**
  * @author kj
@@ -35,9 +35,9 @@ public class ControllerExceptionAdvice {
     @ExceptionHandler(Throwable.class)
     @ResponseBody
     @ResponseStatus(HttpStatus.OK)
-    public ResultInfo<Void> exceptionHandler(HttpServletRequest request, Throwable t) {
+    public BaseResultInfo<Void> exceptionHandler(HttpServletRequest request, Throwable t) {
         logger.info("", t);
-        return ResultInfo.fail("exception");
+        return BaseResultInfo.fail("exception");
     }
 
 }

@@ -96,7 +96,8 @@ public class TLSearch {
         T get();
 
         enum NodeType {
-            LEAF, COMP
+            LEAF,
+            COMP
         }
 
     }

@@ -54,7 +54,7 @@ public class ParamsBuilder {
 
     public Params build(IModel model, String suffix) {
         Map<String, List<Expr>> result = Maps.newHashMap();
-        int[] index = new int[]{0};
+        int[] index = new int[] {0};
         if (!CollectionUtils.isEmpty(this.major)) {
             this.major.forEach((key, value) -> {
                 String[] s = key.split("#");
@@ -132,7 +132,8 @@ public class ParamsBuilder {
      * @author kj
      */
     public enum CONN {
-        AND, OR
+        AND,
+        OR
     }
 
     /**

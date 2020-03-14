@@ -82,7 +82,8 @@ public class RunHelper {
                 if (extras != null) {
                     tExtras.addAll(Arrays.asList(extras));
                 }
-                PerfHelper.perf(namespace, tag, tExtras.toArray()).count(1).micro(stopwatch.elapsed(TimeUnit.MICROSECONDS)).logstash();
+                PerfHelper.perf(namespace, tag, tExtras.toArray()).count(1)
+                        .micro(stopwatch.elapsed(TimeUnit.MICROSECONDS)).logstash();
             }
         }
     }

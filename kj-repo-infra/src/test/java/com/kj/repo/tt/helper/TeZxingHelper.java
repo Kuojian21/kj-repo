@@ -13,7 +13,9 @@ public class TeZxingHelper {
                 Paths.get(System.getProperty("user.home") + "/text.jpg").toFile());
 
         System.out.println(ZxingHelper.decode(
-                Files.toByteArray(Paths.get(System.getProperty("user.home") + "/Desktop/Screen Shot 2019-06-12 at 17.25.51.png").toFile())));
+                Files.toByteArray(
+                        Paths.get(System.getProperty("user.home") + "/Desktop/Screen Shot 2019-06-12 at 17.25.51.png")
+                                .toFile())));
     }
 
 }

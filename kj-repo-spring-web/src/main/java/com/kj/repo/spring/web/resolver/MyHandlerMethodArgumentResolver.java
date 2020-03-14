@@ -20,7 +20,7 @@ public class MyHandlerMethodArgumentResolver implements HandlerMethodArgumentRes
 
     @Override
     public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer modelAndViewContainer,
-                                  NativeWebRequest webRequest, WebDataBinderFactory webDataBinderFactory) {
+            NativeWebRequest webRequest, WebDataBinderFactory webDataBinderFactory) {
         HttpServletRequest httpServletRequest = webRequest.getNativeRequest(HttpServletRequest.class);
         return httpServletRequest;
     }
