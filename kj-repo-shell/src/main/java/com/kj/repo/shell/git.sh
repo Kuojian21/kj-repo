@@ -1,40 +1,47 @@
 #!/bin/bash
 
 dir=$(cd $(dirname $0);pwd)
-base_path=$1
-base_url=$2
-cd ${base_path}
-for x in $(awk -F '/' '{print $(NF-1)"/"$NF}' ../${base_path}.list)
+path=$1
+cd ${path}
+for gURL in $(cat ../${path}.list)
 do
 	OIFS=$IFS
 	IFS="/"
-	y=($x)
+	p=(${gURL})
 	IFS=$OIFS
 
-	if [ ! -d ${y[0]} ]; then
-		mkdir -p ${y[0]}
+  pLen=${#p[@]}
+
+	if [ ! -d ${p[pLen-2]} ]; then
+		mkdir -p ${p[pLen-2]}
 	fi
 
-	cd ${y[0]}
+	cd ${p[pLen-2]}
 
-	if [ ! -d ${y[1]} ]; then
-		echo "=============================clone ${y[0]}/${y[1]}=============================="
-		git clone "${base_url}:${y[0]}/${y[1]}.git"
-		cd ${y[1]}
+	OIFS=$IFS
+	IFS="."
+	tp=(${p[pLen-1]})
+	IFS=$OIFS
+
+	if [ ! -d ${tp[0]} ]; then
+		echo "=============================clone ${gURL}=============================="
+		git clone "${gURL}"
+		echo ${p[pLen-2]}/${tp[0]}
+		cd ${tp[0]}
 	else
-		echo "===========================reset&pull ${y[0]}/${y[1]}==========================="
-		cd ${y[1]}
+		echo "===========================reset&pull ${gURL}==========================="
+		cd ${tp[0]}
 		git reset --hard
 		git pull --rebase
 	fi
 
 	if [ -f "./pom.xml" ]; then
-		echo "===========================mvn package ${y[0]}/${y[1]}=========================="
+		echo "===========================mvn package ${gURL}=========================="
 		mvn clean package -Dcheckstyle.skip=true -DskipTests -U #-T 4.0C
 		mvn dependency:sources #-T 4.0C
 		mvn dependency:resolve -Dclassifier=javadoc #-T 4.0C
 	fi
-	cd ${dir}/${base_path}
+	cd ${dir}/${path}
 done
 
 cd ${dir}
