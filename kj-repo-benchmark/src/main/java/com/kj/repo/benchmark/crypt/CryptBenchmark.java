@@ -2,11 +2,6 @@ package com.kj.repo.benchmark.crypt;
 
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
@@ -26,9 +21,11 @@ import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
+import org.openjdk.jmh.runner.options.TimeValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
-import com.kj.repo.infra.base.function.BiFunction;
+import com.kj.repo.infra.base.function.Function;
 import com.kj.repo.infra.crypt.CryptCipher;
 import com.kj.repo.infra.crypt.algoritm.AlgoritmCipher;
 import com.kj.repo.infra.crypt.key.CryptKey;
@@ -38,24 +35,22 @@ import com.kj.repo.infra.helper.RunHelper;
  * @author kj
  * Created on 2020-03-14
  */
-@BenchmarkMode(Mode.AverageTime)
+@BenchmarkMode({Mode.AverageTime, Mode.Throughput})
 @State(Scope.Benchmark)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
 public class CryptBenchmark {
-
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final Key key;
     private final IvParameterSpec ivp;
-    private final ExecutorService service1;
-    private final ExecutorService service2;
-    @Param({"10", "100", "1000"})
+    private final CryptCipher cipher;
+    @Param({"1", "3", "9"})
     private int count;
 
     public CryptBenchmark() {
         try {
             key = CryptKey.generateKey(AlgoritmCipher.DESede.getName(), AlgoritmCipher.DESede.getKeysize());
             ivp = CryptKey.loadIvp("kuojian".getBytes());
-            service1 = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-            service2 = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+            cipher = new CryptCipher(AlgoritmCipher.DESede.getName(), key, ivp);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
@@ -64,58 +59,48 @@ public class CryptBenchmark {
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(CryptBenchmark.class.getSimpleName())
-                .forks(2)
-                .warmupIterations(5)
-                .measurementIterations(5)
+                .forks(1)
+                .warmupIterations(1)
+                .warmupBatchSize(1)
+                .warmupTime(TimeValue.minutes(1))
+                .measurementIterations(10)
+                .measurementBatchSize(1)
+                .measurementTime(TimeValue.minutes(10))
+                .threads(Runtime.getRuntime().availableProcessors())
                 .build();
-
         new Runner(opt).run();
     }
 
     @Benchmark
-    public void crypt1() throws ExecutionException, InterruptedException {
-        run(service1,
-                (i, j) -> {
+    public void crypt1() {
+        run(j -> {
                     Cipher encrypt = Cipher.getInstance(AlgoritmCipher.DESede.getName());
                     encrypt.init(Cipher.ENCRYPT_MODE, key, ivp);
 
                     Cipher decrypt = Cipher.getInstance(AlgoritmCipher.DESede.getName());
                     decrypt.init(Cipher.DECRYPT_MODE, key, ivp);
-                    return new String(decrypt.doFinal(encrypt.doFinal(("kuojian_" + i + "_" + j).getBytes())));
-                });
+                    return new String(decrypt.doFinal(encrypt.doFinal(("kuojian_" + j).getBytes())));
+                }
+        );
     }
 
     @Benchmark
-    public void crypt2() throws ExecutionException, InterruptedException {
-        CryptCipher cipher =
-                new CryptCipher(AlgoritmCipher.DESede.getName(), key, ivp);
-        run(service2, (i, j) -> new String(cipher.decrypt(cipher.encrypt(("kuojian_" + i + "_" + j).getBytes()))));
+    public void crypt2() {
+        run((j) -> new String(cipher.decrypt(cipher.encrypt(("kuojian_" + j).getBytes()))));
     }
 
-    public void run(ExecutorService service, BiFunction<Integer, Integer, String> function)
-            throws ExecutionException, InterruptedException {
-        List<Future<?>> futures = Lists.newArrayList();
-        IntStream.range(0, count).boxed().forEach(i ->
-                futures.add(service.submit(() -> {
-                    IntStream.range(0, 10).boxed().forEach(j -> {
-                        System.out.println(RunHelper.run(() -> function.apply(i, j)));
-                    });
-                }))
-        );
-        for (Future<?> future : futures) {
-            future.get();
-        }
+    public void run(Function<Integer, String> function) {
+        IntStream.range(0, count).boxed().forEach(j ->
+                logger.info("j:{} rtn:{}", j, RunHelper.run(() -> function.apply(j))));
     }
 
     @Setup
     public void setup() {
-        System.out.println("setup");
+        logger.info("setup");
     }
 
     @TearDown
     public void down() {
-        service1.shutdown();
-        service2.shutdown();
-        System.out.println("down");
+        logger.info("down");
     }
 }

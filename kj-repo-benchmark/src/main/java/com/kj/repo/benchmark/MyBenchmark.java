@@ -29,16 +29,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.kj.repo;
-
-import org.openjdk.jmh.annotations.Benchmark;
+package com.kj.repo.benchmark;
 
 public class MyBenchmark {
 
-    @Benchmark
-    public void testMethod() {
-        // This is a demo/sample template for building your JMH benchmarks. Edit as needed.
-        // Put your benchmark code here.
+    public static void main(String[] args) {
+        org.openjdk.jmh.runner.options.Options option;
     }
 
 }
