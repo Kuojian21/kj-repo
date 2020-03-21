@@ -19,17 +19,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
+import com.kj.repo.infra.logger.LoggerHelper;
 
 /**
  * @author kj
  */
 public class AccessLogFilter implements Filter {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerHelper.getLogger();
 
     private final Gson gson = new Gson();
 

@@ -9,19 +9,19 @@ import java.util.stream.Collectors;
 import javax.sql.DataSource;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Strings;
+import com.kj.repo.infra.logger.LoggerHelper;
 
 /**
  * @author kj
  */
 public class SavorHelper {
 
-    public static final Logger logger = LoggerFactory.getLogger(SavorHelper.class);
+    public static final Logger logger = LoggerHelper.getLogger();
 
     public static RowMapper<Property> rowMapper = new RowMapper<Property>() {
         @Override

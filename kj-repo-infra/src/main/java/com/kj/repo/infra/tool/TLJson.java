@@ -16,12 +16,12 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.kj.repo.infra.logger.LoggerHelper;
 
 
 /**
@@ -33,8 +33,7 @@ public class TLJson {
     public static final Set<Class<?>> PRIME_CLASSES =
             Sets.newHashSet(Long.class, Integer.class, Short.class, Byte.class, Float.class, Double.class,
                     Boolean.class, Character.class);
-
-    private static Logger logger = LoggerFactory.getLogger(TLJson.class);
+    private static final Logger logger = LoggerHelper.getLogger();
 
     public static String toJson(Object obj) {
         if (obj == null) {

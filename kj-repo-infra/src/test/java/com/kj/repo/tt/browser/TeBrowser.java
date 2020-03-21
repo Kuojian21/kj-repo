@@ -11,7 +11,6 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
@@ -19,11 +18,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.kj.repo.infra.browser.Browser;
 import com.kj.repo.infra.browser.BrowserHelper;
+import com.kj.repo.infra.logger.LoggerHelper;
 import com.kj.repo.tt.net.http.TeHttpCompBuilder;
 
 public class TeBrowser {
 
-    public static Logger logger = LoggerFactory.getLogger(TeBrowser.class);
+    private static final Logger logger = LoggerHelper.getLogger();
 
     public static void main(String[] args) throws Exception {
         //        System.setProperty("socksProxyHost", "127.0.0.1");

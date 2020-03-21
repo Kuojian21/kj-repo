@@ -2,6 +2,7 @@ package com.kj.repo.benchmark.crypt;
 
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
@@ -22,31 +23,31 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
+import org.openjdk.jmh.runner.options.WarmupMode;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.kj.repo.infra.base.function.Function;
 import com.kj.repo.infra.crypt.CryptCipher;
 import com.kj.repo.infra.crypt.algoritm.AlgoritmCipher;
 import com.kj.repo.infra.crypt.key.CryptKey;
-import com.kj.repo.infra.helper.RunHelper;
+import com.kj.repo.infra.logger.LoggerHelper;
 
 /**
  * @author kj
  * Created on 2020-03-14
  */
-@BenchmarkMode({Mode.AverageTime, Mode.Throughput})
+@BenchmarkMode({/*Mode.AverageTime, */Mode.Throughput})
 @State(Scope.Benchmark)
-@OutputTimeUnit(TimeUnit.MICROSECONDS)
-public class CryptBenchmark {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+public class BenchmarkCrypt {
+    private static final Logger logger = LoggerHelper.getLogger();
     private final Key key;
     private final IvParameterSpec ivp;
     private final CryptCipher cipher;
-    @Param({"1", "3", "9"})
+    @Param({"1"/*, "3"*/})
     private int count;
 
-    public CryptBenchmark() {
+    public BenchmarkCrypt() {
         try {
             key = CryptKey.generateKey(AlgoritmCipher.DESede.getName(), AlgoritmCipher.DESede.getKeysize());
             ivp = CryptKey.loadIvp("kuojian".getBytes());
@@ -58,17 +59,31 @@ public class CryptBenchmark {
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(CryptBenchmark.class.getSimpleName())
+                .include(BenchmarkCrypt.class.getSimpleName())
                 .forks(1)
+                .warmupForks(1)
                 .warmupIterations(1)
                 .warmupBatchSize(1)
-                .warmupTime(TimeValue.minutes(1))
-                .measurementIterations(10)
+                .warmupTime(TimeValue.seconds(3))
+                .warmupMode(WarmupMode.INDI)
+                .measurementIterations(1)
                 .measurementBatchSize(1)
-                .measurementTime(TimeValue.minutes(10))
+                .measurementTime(TimeValue.seconds(10))
                 .threads(Runtime.getRuntime().availableProcessors())
+                .timeout(TimeValue.seconds(3))
+                .syncIterations(true)
+                //                .addProfiler(HotspotRuntimeProfiler.class)
+                //                .addProfiler(HotspotCompilationProfiler.class)
                 .build();
         new Runner(opt).run();
+    }
+
+    public static <T> T run(Callable<T> callable) {
+        try {
+            return callable.call();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Benchmark
@@ -91,7 +106,7 @@ public class CryptBenchmark {
 
     public void run(Function<Integer, String> function) {
         IntStream.range(0, count).boxed().forEach(j ->
-                logger.info("j:{} rtn:{}", j, RunHelper.run(() -> function.apply(j))));
+                logger.info("j:{} rtn:{}", j, run(() -> function.apply(j))));
     }
 
     @Setup
@@ -103,4 +118,6 @@ public class CryptBenchmark {
     public void down() {
         logger.info("down");
     }
+
+
 }

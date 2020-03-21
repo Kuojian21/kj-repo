@@ -15,14 +15,15 @@ import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import com.kj.repo.infra.logger.LoggerHelper;
 
 /**
  * @author kj
  */
 public class JavaCompilerHelper {
 
-    private static Logger logger = LoggerFactory.getLogger(JavaCompilerHelper.class);
+    private static final Logger logger = LoggerHelper.getLogger();
     private static JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     private static StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
     private static URLClassLoader classLoader;

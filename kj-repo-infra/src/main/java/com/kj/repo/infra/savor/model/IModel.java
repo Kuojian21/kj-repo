@@ -13,12 +13,12 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.internal.Lists;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
+import com.kj.repo.infra.logger.LoggerHelper;
 import com.kj.repo.infra.savor.annotation.Model;
 import com.kj.repo.infra.savor.annotation.Property;
 
@@ -27,8 +27,8 @@ import com.kj.repo.infra.savor.annotation.Property;
  */
 @SuppressWarnings({"checkstyle:HiddenField", "checkstyle:ParameterNumber", "unchecked"})
 public class IModel {
+    private static final Logger logger = LoggerHelper.getLogger();
     private static final ConcurrentMap<Class<?>, IModel> MODELS = Maps.newConcurrentMap();
-    private static Logger logger = LoggerFactory.getLogger(IModel.class);
     private final String name;
     private final String table;
     private final List<IProperty> properties;

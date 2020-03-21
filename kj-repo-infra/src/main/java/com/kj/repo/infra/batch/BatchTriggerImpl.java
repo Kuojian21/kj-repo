@@ -10,17 +10,17 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.MoreExecutors;
 import com.kj.repo.infra.batch.buffer.Buffer;
+import com.kj.repo.infra.logger.LoggerHelper;
 
 /**
  * @author kj
  */
 public class BatchTriggerImpl<E, T> implements BatchTrigger<E> {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerHelper.getLogger();
 
     private final Consumer<List<T>> consumer;
     private final int batchsize;

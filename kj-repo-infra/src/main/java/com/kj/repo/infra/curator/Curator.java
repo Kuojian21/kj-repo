@@ -9,16 +9,16 @@ import org.apache.curator.framework.recipes.cache.NodeCache;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.kj.repo.infra.base.LocalSupplier;
 import com.kj.repo.infra.helper.RunHelper;
+import com.kj.repo.infra.logger.LoggerHelper;
 
 /**
  * @author kj
  */
 public class Curator<T> {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerHelper.getLogger();
     private final CuratorConf<T> conf;
     private final LocalSupplier<NodeCache> nodecache;
     private final LocalSupplier<T> delegate;

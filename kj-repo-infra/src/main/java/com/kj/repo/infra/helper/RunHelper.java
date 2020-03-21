@@ -7,10 +7,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
+import com.kj.repo.infra.logger.LoggerHelper;
 import com.kj.repo.infra.perf.PerfHelper;
 
 /**
@@ -18,7 +18,7 @@ import com.kj.repo.infra.perf.PerfHelper;
  */
 public class RunHelper {
 
-    public static Logger logger = LoggerFactory.getLogger(RunHelper.class);
+    private static final Logger logger = LoggerHelper.getLogger();
 
     public static void run(Runnable runnable) {
         run(() -> {

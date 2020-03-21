@@ -1,14 +1,15 @@
 package com.kj.repo.infra.algorithm;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import com.kj.repo.infra.logger.LoggerHelper;
 
 /**
  * An object that generates IDs. This is broken into a separate class in case we
  * ever want to support multiple worker threads per process
  */
 public class Snowflake {
-    private static Logger logger = LoggerFactory.getLogger(Snowflake.class);
+    private static final Logger logger = LoggerHelper.getLogger();
     private final long workerIdBits = 5L;
     private final long datacenterIdBits = 5L;
     private final long maxWorkerId = -1L ^ (-1L << workerIdBits);

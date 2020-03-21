@@ -9,12 +9,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.kj.repo.infra.logger.LoggerHelper;
 import com.kj.repo.infra.savor.Savor;
 import com.kj.repo.infra.savor.model.Expr;
 import com.kj.repo.infra.savor.model.IModel;
@@ -30,7 +30,7 @@ public abstract class SqlBuilder {
     private static final String VAR_LIMIT = "$limit$";
     private static final String VAR_OFFSET = "$offset$";
     private static final ConcurrentMap<Savor.DBType, SqlBuilder> BUILDERS = Maps.newConcurrentMap();
-    private static Logger logger = LoggerFactory.getLogger(SqlBuilder.class);
+    private static Logger logger = LoggerHelper.getLogger();
 
     static {
         register(Savor.DBType.MYSQL, new MysqlBuilder());

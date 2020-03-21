@@ -5,17 +5,18 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
+import com.kj.repo.infra.logger.LoggerHelper;
 import com.mysql.cj.jdbc.Driver;
 
 public class TeDeadlock {
 
+    private static final Logger logger = LoggerHelper.getLogger();
+
     public static void main(String[] args) throws SQLException, InterruptedException {
-        Logger logger = LoggerFactory.getLogger(TeDeadlock.class);
         logger.info("");
         //		System.setProperty("socksProxyHost", "127.0.0.1");
         //		System.setProperty("socksProxyPort", "8088");

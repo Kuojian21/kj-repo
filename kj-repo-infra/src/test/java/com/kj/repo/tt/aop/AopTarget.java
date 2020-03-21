@@ -1,13 +1,14 @@
 package com.kj.repo.tt.aop;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
+import com.kj.repo.infra.logger.LoggerHelper;
 
 @Service
 public class AopTarget {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerHelper.getLogger();
 
     public void target() {
         logger.info("{}", "target");

@@ -6,16 +6,16 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.RetryNTimes;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.kj.repo.infra.curator.CuratorConf;
+import com.kj.repo.infra.logger.LoggerHelper;
 
 /**
  *
  */
 public class TeCuratorNode {
 
-    private static Logger logger = LoggerFactory.getLogger(TeCuratorNode.class);
+    private static final Logger logger = LoggerHelper.getLogger();
 
     public static void main(String[] args) throws InterruptedException {
         CuratorFramework curator = CuratorFrameworkFactory.builder()

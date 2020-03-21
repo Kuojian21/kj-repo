@@ -3,7 +3,6 @@ package com.kj.repo.spring.web.advice;
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
@@ -15,13 +14,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import com.kj.repo.infra.base.BaseResultInfo;
+import com.kj.repo.infra.logger.LoggerHelper;
 
 /**
  * @author kj
  */
 @ControllerAdvice
 public class ControllerExceptionAdvice {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerHelper.getLogger();
 
     @InitBinder
     public void initBinder(WebDataBinder binder) {

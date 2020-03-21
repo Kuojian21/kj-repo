@@ -1,11 +1,15 @@
 package com.kj.repo.tt.aop;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import com.kj.repo.infra.logger.LoggerHelper;
+
+/**
+ * @author kj
+ */
 public class AopAspect {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerHelper.getLogger();
 
     public void before() {
         logger.info("{}", "before");

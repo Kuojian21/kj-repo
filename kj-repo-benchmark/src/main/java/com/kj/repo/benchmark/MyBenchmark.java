@@ -31,10 +31,67 @@
 
 package com.kj.repo.benchmark;
 
-public class MyBenchmark {
+import org.openjdk.jmh.profile.ClassloaderProfiler;
+import org.openjdk.jmh.profile.CompilerProfiler;
+import org.openjdk.jmh.profile.DTraceAsmProfiler;
+import org.openjdk.jmh.profile.GCProfiler;
+import org.openjdk.jmh.profile.HotspotClassloadingProfiler;
+import org.openjdk.jmh.profile.HotspotCompilationProfiler;
+import org.openjdk.jmh.profile.HotspotMemoryProfiler;
+import org.openjdk.jmh.profile.HotspotRuntimeProfiler;
+import org.openjdk.jmh.profile.HotspotThreadProfiler;
+import org.openjdk.jmh.profile.LinuxPerfAsmProfiler;
+import org.openjdk.jmh.profile.LinuxPerfNormProfiler;
+import org.openjdk.jmh.profile.LinuxPerfProfiler;
+import org.openjdk.jmh.profile.PausesProfiler;
+import org.openjdk.jmh.profile.SafepointsProfiler;
+import org.openjdk.jmh.profile.StackProfiler;
+import org.openjdk.jmh.profile.WinPerfAsmProfiler;
+import org.openjdk.jmh.runner.Runner;
+import org.openjdk.jmh.runner.RunnerException;
+import org.openjdk.jmh.runner.options.Options;
+import org.openjdk.jmh.runner.options.OptionsBuilder;
+import org.openjdk.jmh.runner.options.TimeValue;
+import org.openjdk.jmh.runner.options.WarmupMode;
 
-    public static void main(String[] args) {
-        org.openjdk.jmh.runner.options.Options option;
+import com.kj.repo.benchmark.crypt.BenchmarkCrypt;
+
+public class MyBenchmark {
+    org.openjdk.jmh.runner.options.Options option;
+
+    public static void main(String[] args) throws RunnerException {
+
+        Options opt = new OptionsBuilder()
+                .include(BenchmarkCrypt.class.getSimpleName())
+                .forks(1)
+                .warmupIterations(1)
+                .warmupBatchSize(1)
+                .warmupTime(TimeValue.seconds(3))
+                .warmupMode(WarmupMode.BULK)
+                .measurementIterations(3)
+                .measurementBatchSize(1)
+                .measurementTime(TimeValue.seconds(30))
+                .threads(Runtime.getRuntime().availableProcessors())
+                .timeout(TimeValue.seconds(10))
+                .syncIterations(true)
+                .addProfiler(DTraceAsmProfiler.class)
+                .addProfiler(LinuxPerfAsmProfiler.class)
+                .addProfiler(WinPerfAsmProfiler.class)
+                .addProfiler(LinuxPerfNormProfiler.class)
+                .addProfiler(SafepointsProfiler.class)
+                .addProfiler(LinuxPerfProfiler.class)
+                .addProfiler(GCProfiler.class)
+                .addProfiler(PausesProfiler.class)
+                .addProfiler(CompilerProfiler.class)
+                .addProfiler(StackProfiler.class)
+                .addProfiler(ClassloaderProfiler.class)
+                .addProfiler(HotspotMemoryProfiler.class)
+                .addProfiler(HotspotClassloadingProfiler.class)
+                .addProfiler(HotspotThreadProfiler.class)
+                .addProfiler(HotspotRuntimeProfiler.class)
+                .addProfiler(HotspotCompilationProfiler.class)
+                .build();
+        new Runner(opt).run();
     }
 
 }

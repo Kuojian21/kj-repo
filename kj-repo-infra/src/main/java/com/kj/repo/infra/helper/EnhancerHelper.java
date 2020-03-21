@@ -5,7 +5,6 @@ import java.util.function.BiFunction;
 
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
-import net.sf.cglib.proxy.MethodProxy;
 
 /**
  * @author kj
@@ -16,12 +15,7 @@ public class EnhancerHelper {
     public static <T> T enhancer(Class<T> clazz, BiFunction<Method, Object[], Object> func) {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(clazz);
-        enhancer.setCallback(new MethodInterceptor() {
-            @Override
-            public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
-                return func.apply(method, args);
-            }
-        });
+        enhancer.setCallback((MethodInterceptor) (obj, method, args, proxy) -> func.apply(method, args));
         return (T) enhancer.create();
     }
 }

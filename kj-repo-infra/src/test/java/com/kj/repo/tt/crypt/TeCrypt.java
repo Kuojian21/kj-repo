@@ -5,18 +5,18 @@ import java.security.KeyPair;
 import java.util.Base64;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.kj.repo.infra.crypt.CryptSign;
 import com.kj.repo.infra.crypt.algoritm.AlgoritmCipher;
 import com.kj.repo.infra.crypt.key.CryptKey;
+import com.kj.repo.infra.logger.LoggerHelper;
 
 /**
  * @author kj
  */
 public class TeCrypt {
 
-    public static Logger logger = LoggerFactory.getLogger(TeCrypt.class);
+    private static final Logger logger = LoggerHelper.getLogger();
 
     public static void main(String[] args) throws Exception {
         Key key = CryptKey.generateKey(AlgoritmCipher.DESede.getName(), AlgoritmCipher.DESede.getKeysize());

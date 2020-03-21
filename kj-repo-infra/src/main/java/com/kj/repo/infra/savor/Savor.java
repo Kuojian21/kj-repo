@@ -10,7 +10,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -18,6 +17,7 @@ import org.springframework.util.CollectionUtils;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.kj.repo.infra.logger.LoggerHelper;
 import com.kj.repo.infra.savor.model.Expr;
 import com.kj.repo.infra.savor.model.IModel;
 import com.kj.repo.infra.savor.model.Pair;
@@ -32,7 +32,7 @@ import com.kj.repo.infra.savor.sql.SqlBuilder;
 @SuppressWarnings({"checkstyle:HiddenField", "checkstyle:ParameterNumber", "unchecked"})
 public abstract class Savor<T> {
 
-    private static Logger logger = LoggerFactory.getLogger(Savor.class);
+    private static final Logger logger = LoggerHelper.getLogger();
     private final Class<T> clazz;
     private final RowMapper<T> rowMapper;
     private final IModel model;

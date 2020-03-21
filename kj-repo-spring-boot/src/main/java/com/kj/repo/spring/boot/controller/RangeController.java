@@ -12,6 +12,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.logging.log4j.util.Strings;
+import org.slf4j.Logger;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,17 +20,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kj.repo.infra.logger.LoggerHelper;
+
 /**
  * @author kj
  */
 @RestController
 public class RangeController {
+    private static final Logger logger = LoggerHelper.getLogger();
 
     List<ByteBuffer> buffers = new ArrayList<ByteBuffer>();
     int chunksize = 1024 * 1024 * 1024;
     long size = 0;
     int chunk = 0;
-    //    private Logger logger = LoggerFactory.getLogger(RangeController.class);
+
 
     @PostConstruct
     public void init() throws IOException {

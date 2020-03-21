@@ -14,7 +14,6 @@ import java.util.stream.LongStream;
 import javax.sql.DataSource;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -22,6 +21,7 @@ import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
+import com.kj.repo.infra.logger.LoggerHelper;
 import com.kj.repo.infra.savor.Savor;
 import com.kj.repo.infra.savor.annotation.Model;
 import com.kj.repo.infra.savor.annotation.Property;
@@ -32,7 +32,7 @@ import com.mysql.cj.jdbc.Driver;
 @SuppressWarnings("unchecked")
 public class TeSavor {
 
-    private static Logger log = LoggerFactory.getLogger(Savor.class);
+    private static final Logger logger = LoggerHelper.getLogger();
 
     public static void main(String[] args) throws SQLException {
         /*
@@ -76,7 +76,7 @@ public class TeSavor {
         IntStream.range(0, 5).boxed().forEach(i -> {
             Map<String, Object> params = Savor.Helper.newHashMap("id", 10);
             Map<String, Object> values = Savor.Helper.newHashMap("age#sub", 5, "name", "kj");
-            log.info("update values:{} params:{} {}", values, params, dao.update(values, params));
+            logger.info("update values:{} params:{} {}", values, params, dao.update(values, params));
         });
         this.select("after-update", dao, Savor.Helper.newHashMap("name", "kj"));
     }
@@ -85,13 +85,13 @@ public class TeSavor {
         this.select("before-upsert", dao, Savor.Helper.newHashMap("id#>", 94));
         List<T> objs = (List<T>) LongStream.range(95, 96).boxed().map(SavorShardTest::new).collect(Collectors.toList());
         List<String> names = Lists.newArrayList("hashKey");
-        log.info("upsert data:{} names:{} {}", objs, names, dao.upsert(objs, names));
+        logger.info("upsert data:{} names:{} {}", objs, names, dao.upsert(objs, names));
         this.select("after-upsert", dao, Savor.Helper.newHashMap("id#GT", 94));
         Map<String, Object> values = Savor.Helper.newHashMap("age#+", 1);
-        log.info("upsert data:{} values:{} {}", objs, values, dao.upsert(objs, values));
+        logger.info("upsert data:{} values:{} {}", objs, values, dao.upsert(objs, values));
         this.select("after-upsert", dao, Savor.Helper.newHashMap("id#GT", 94));
         values = Savor.Helper.newHashMap("age#sub", 3);
-        log.info("upsert data:{} values:{} {}", objs, values, dao.upsert(objs, values));
+        logger.info("upsert data:{} values:{} {}", objs, values, dao.upsert(objs, values));
         this.select("after-upsert", dao, Savor.Helper.newHashMap("id#GT", 94));
     }
 
@@ -103,7 +103,7 @@ public class TeSavor {
         List<String> orders = Lists.newArrayList("id#D");
         Integer offset = 0;
         Integer limit = 10;
-        log.info("select columns:{} params:{} groups:{} orders:{} offset:{} limit:{} {}", columns, paramsBuilder,
+        logger.info("select columns:{} params:{} groups:{} orders:{} offset:{} limit:{} {}", columns, paramsBuilder,
                 groups, orders, offset, limit,
                 dao.select(columns, paramsBuilder, groups, orders, offset, limit, new RowMapper<List<Object>>() {
                     @Override
@@ -125,7 +125,7 @@ public class TeSavor {
     }
 
     public void select(String module, SavorTestDao<?> dao, Map<String, Object> params) {
-        log.info("{} params:{} {}", module, JSON.toJSONString(params), dao.select(params));
+        logger.info("{} params:{} {}", module, JSON.toJSONString(params), dao.select(params));
     }
 
     public static class SavorTestDao<T> extends Savor<T> {
