@@ -3,14 +3,24 @@ package com.kj.repo.infra.logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.kj.repo.infra.helper.JavaHelper;
+
 /**
  * @author kj
  * Created on 2020-03-16
  */
-public class CommonsLoggerHelper {
+public class CommonsHelper {
+
     public static Log getLogger() {
-        StackTraceElement[] elements = Thread.currentThread().getStackTrace();
-        return getLogger(elements[elements.length - 2].getClassName());
+        return getLogger(JavaHelper.stack(2).getClassName());
+    }
+
+    public static Log asyncLogger() {
+        return getLogger(JavaHelper.stack(2).getClassName());
+    }
+
+    public static Log syncLogger() {
+        return getLogger("sync." + JavaHelper.stack(2).getClassName());
     }
 
     public static Log getLogger(Class<?> clazz) {

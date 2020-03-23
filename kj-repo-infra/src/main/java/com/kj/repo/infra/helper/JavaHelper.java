@@ -40,12 +40,14 @@ public class JavaHelper {
      */
     public static StackTraceElement stack(int depth) {
         StackTraceElement[] elements = Thread.currentThread().getStackTrace();
-        if (depth <= 0) {
-            depth = 1;
-        } else if (depth > elements.length) {
-            depth = elements.length;
+        if (depth <= 1) {
+            depth = 2;
+        } else if (depth >= elements.length - 3) {
+            depth = elements.length - 1;
+        } else {
+            depth = depth + 1;
         }
-        return elements[elements.length - depth];
+        return elements[depth];
     }
 
     public static Set<ClassLoader> loaders() {
