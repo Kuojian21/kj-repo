@@ -11,7 +11,6 @@
         </encoder>
     </appender>
 
-    <!--Async:Please note the order-bg-->
     <appender name="kjRepoAsyncRef" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/${LOG_FILE}.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
@@ -30,7 +29,6 @@
         <includeCallerData>true</includeCallerData>
         <appender-ref ref="kjRepoAsyncRef"/>
     </appender>
-    <!--Async:Please note the order-ed-->
 
     <appender name="kjRepoSync" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/${LOG_FILE}-sync.log</file>
@@ -55,7 +53,7 @@
     </logger>
 
     <root level="${KJ_REPO_LOG_ROOT_LEVEL:-error}">
-        <appender-ref ref="stdout"/>
+        <!--<appender-ref ref="stdout"/>-->
         <appender-ref ref="kjRepoAsync"/>
     </root>
 </configuration> 

@@ -5,13 +5,13 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import com.gargoylesoftware.htmlunit.BrowserVersion;
 import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
 import com.gargoylesoftware.htmlunit.WebClient;
-import com.kj.repo.infra.base.BasePool;
+import com.kj.repo.infra.base.pool.Pool;
 import com.kj.repo.infra.helper.GenericPoolHelper;
 
 /**
  * @author kj http://htmlunit.sourceforge.net/
  */
-public class Browser extends BasePool<WebClient> {
+public class Browser extends Pool<WebClient> {
 
     public Browser(GenericObjectPool<WebClient> pool) {
         super(pool);

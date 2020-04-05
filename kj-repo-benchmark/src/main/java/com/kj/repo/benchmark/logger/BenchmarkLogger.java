@@ -9,6 +9,7 @@ import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.profile.StackProfiler;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -16,8 +17,8 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
 import org.slf4j.Logger;
 
-import com.kj.repo.infra.logger.Log4jHelper;
-import com.kj.repo.infra.logger.Slf4jHelper;
+import com.kj.repo.infra.logger.Log4j2Helper;
+import com.kj.repo.infra.logger.LogbackHelper;
 
 /**
  * @author kj
@@ -33,17 +34,16 @@ public class BenchmarkLogger {
     private final Logger logbackAsync;
 
     public BenchmarkLogger() {
-        Log4jHelper.initialize("logger-log4j2.properties");
-        Slf4jHelper.initialize("logger-logback.xml");
-        log4j2Sync = Log4jHelper.syncLogger();
-        log4j2Async = Log4jHelper.asyncLogger();
-        logbackSync = Slf4jHelper.syncLogger();
-        logbackAsync = Slf4jHelper.asyncLogger();
-        System.out.println(Log4jHelper.getName());
-        System.out.println(Slf4jHelper.getName());
+        Log4j2Helper.initialize("logger-log4j2.properties");
+        LogbackHelper.initialize("logger-logback.xml");
+        log4j2Sync = Log4j2Helper.syncLogger();
+        log4j2Async = Log4j2Helper.asyncLogger();
+        logbackSync = LogbackHelper.syncLogger();
+        logbackAsync = LogbackHelper.asyncLogger();
     }
 
     public static void main(String[] args) throws RunnerException {
+        System.out.println(Runtime.getRuntime().availableProcessors() / 2);
         Options opt = new OptionsBuilder()
                 .include(BenchmarkLogger.class.getSimpleName())
                 .forks(1)
@@ -52,10 +52,11 @@ public class BenchmarkLogger {
                 .warmupTime(TimeValue.seconds(3))
                 .measurementIterations(1)
                 .measurementBatchSize(1)
-                .measurementTime(TimeValue.minutes(3))
-                .threads(Runtime.getRuntime().availableProcessors())
-                .timeout(TimeValue.minutes(1))
+                .measurementTime(TimeValue.minutes(1))
+                .threads(Runtime.getRuntime().availableProcessors() / 2)
+                .timeout(TimeValue.seconds(30))
                 .syncIterations(true)
+                .addProfiler(StackProfiler.class, "lines=30;top=6;period=10;detailLine=true")
                 .build();
         new Runner(opt).run();
     }

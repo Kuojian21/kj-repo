@@ -10,11 +10,11 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>kj-repo-benchmark</module>
+        <module>kj-repo-doc</module>
         <module>kj-repo-infra</module>
         <module>kj-repo-shell</module>
         <module>kj-repo-spring-boot</module>
         <module>kj-repo-spring-web</module>
-        <module>kj-repo-debug</module>
         <module>kj-repo-test</module>
     </modules>
 

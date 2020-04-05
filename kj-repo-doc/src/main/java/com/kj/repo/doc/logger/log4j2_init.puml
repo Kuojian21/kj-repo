@@ -1,0 +1,101 @@
+@startuml
+participant Actor as Actor
+participant LogManager as LogManager
+participant Provider as Provider
+participant Log4jContextFactory as Log4jContextFactory
+participant ClassLoaderContextSelector as ClassLoaderContextSelector
+participant LoggerContext as LoggerContext
+Actor -> LogManager:getLogger
+activate LogManager
+    LogManager -> LogManager:spi-Provider
+    activate LogManager
+        LogManager -> Provider:loadLoggerContextFactory
+        activate Provider
+        Provider --> LogManager:Log4jContextFactory.class
+        deactivate Provider
+    deactivate LogManager
+
+    LogManager -> Log4jContextFactory:getContext
+    activate Log4jContextFactory
+        Log4jContextFactory -> ClassLoaderContextSelector:getContext
+        activate ClassLoaderContextSelector
+
+            ClassLoaderContextSelector -> LoggerContext:new
+            activate LoggerContext
+            LoggerContext --> ClassLoaderContextSelector:LoggerContext
+            deactivate LoggerContext
+
+        ClassLoaderContextSelector --> Log4jContextFactory:LoggerContext
+        deactivate ClassLoaderContextSelector
+
+        Log4jContextFactory -> LoggerContext:start
+        activate LoggerContext
+
+            LoggerContext -> LoggerContext:reconfigure
+            activate LoggerContext
+
+                LoggerContext -> ConfigurationFactory.Factory:getConfiguration
+                activate ConfigurationFactory.Factory
+
+                    ConfigurationFactory.Factory -> PropertiesYamlJsonXmlConfigurationFactory:getConfiguration
+                    activate PropertiesYamlJsonXmlConfigurationFactory
+                    PropertiesYamlJsonXmlConfigurationFactory --> ConfigurationFactory.Factory:Configuration
+                    deactivate PropertiesYamlJsonXmlConfigurationFactory
+
+                ConfigurationFactory.Factory --> LoggerContext:Configuration
+                deactivate ConfigurationFactory.Factory
+
+                LoggerContext -> LoggerContext:setConfiguration
+                activate LoggerContext
+                    LoggerContext -> NetUtils:getLocalHostname
+                    activate NetUtils
+                    NetUtils --> LoggerContext:5s
+                    deactivate NetUtils
+
+                    LoggerContext-> PropertiesYamlJsonXmlConfiguration:start
+                    activate PropertiesYamlJsonXmlConfiguration
+                    PropertiesYamlJsonXmlConfiguration --> LoggerContext
+                    deactivate PropertiesYamlJsonXmlConfiguration
+                deactivate LoggerContext
+        deactivate LoggerContext
+
+        LoggerContext --> Log4jContextFactory
+        deactivate LoggerContext
+    Log4jContextFactory --> LogManager:LoggerContext
+    deactivate Log4jContextFactory
+
+    LogManager -> LoggerContext:getLogger
+    activate LoggerContext
+        LoggerContext -> LoggerRegistry:getLogger
+        activate LoggerRegistry
+        LoggerRegistry --> LoggerContext
+        deactivate LoggerRegistry
+
+        alt isNull
+            LoggerContext -> LoggerContext:newInstance
+            activate LoggerContext
+                LoggerContext -> Logger:<init>(LoggerContext)
+                activate Logger
+                    Logger -> PrivateConfig:<init>(Configuration)
+                    activate PrivateConfig
+                        PrivateConfig -> PropertiesYamlJsonXmlConfiguration:getLoggerConfig(logggerName)
+                        activate PropertiesYamlJsonXmlConfiguration
+                        PropertiesYamlJsonXmlConfiguration --> PrivateConfig
+                        deactivate PropertiesYamlJsonXmlConfiguration
+                    PrivateConfig --> Logger
+                    deactivate PrivateConfig
+                Logger --> LoggerContext
+                deactivate Logger
+            deactivate LoggerContext
+
+            LoggerContext -> LoggerRegistry:put
+            activate LoggerRegistry
+            LoggerRegistry --> LoggerContext
+            deactivate LoggerRegistry
+        end
+
+    LoggerContext --> LogManager:Logger
+    deactivate LoggerContext
+LogManager --> Actor:Logger
+deactivate LogManager
+@enduml

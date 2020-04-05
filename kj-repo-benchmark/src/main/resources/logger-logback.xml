@@ -3,7 +3,7 @@
     <property name="LOG_HOME" value="${user.dir}/logs"/>
     <property name="LOG_FILE" value="benchmark-logback"/>
     <property name="logPattern"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %X{UUID} [%thread] %-5level \\(%F\\) - %msg%n"></property>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %X{UUID} [%thread] %-5level \\(%F:%L\\) - %msg%n"></property>
     <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
         <encoder charset="UTF-8">
             <pattern>${logPattern}</pattern>
@@ -14,6 +14,7 @@
     <!--Async:Please note the order-bg-->
     <appender name="kjRepoAsyncRef" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/${LOG_FILE}.log</file>
+        <immediateFlush>true</immediateFlush>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>${LOG_HOME}/${LOG_FILE}.%d{yyyy-MM-dd}-%i.log</fileNamePattern>
             <maxHistory>${KJ_REPO_LOG_MAX_HISTORY:-15}</maxHistory>
@@ -27,13 +28,14 @@
     <appender name="kjRepoAsync" class="ch.qos.logback.classic.AsyncAppender">
         <queueSize>16384</queueSize>
         <neverBlock>false</neverBlock>
-        <includeCallerData>false</includeCallerData>
+        <includeCallerData>true</includeCallerData>
         <appender-ref ref="kjRepoAsyncRef"/>
     </appender>
     <!--Async:Please note the order-ed-->
 
     <appender name="kjRepoSync" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/${LOG_FILE}-sync.log</file>
+        <!--<immediateFlush>true</immediateFlush>-->
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>${LOG_HOME}/${LOG_FILE}-sync.%d{yyyy-MM-dd}-%i.log</fileNamePattern>
             <maxHistory>${KJ_REPO_LOG_MAX_HISTORY:-15}</maxHistory>

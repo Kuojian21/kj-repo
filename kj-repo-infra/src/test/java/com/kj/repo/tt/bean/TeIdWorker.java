@@ -9,12 +9,10 @@ public class TeIdWorker {
         Snowflake worker = new Snowflake(1, 1);
         CountDownLatch latch = new CountDownLatch(100);
         for (int i = 0; i < 100; i++) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (true) {
-                        System.out.println(Long.toHexString(worker.getId()));
-                    }
+            new Thread(() -> {
+                latch.countDown();
+                while (true) {
+                    System.out.println(worker.nextId());
                 }
             }).start();
         }

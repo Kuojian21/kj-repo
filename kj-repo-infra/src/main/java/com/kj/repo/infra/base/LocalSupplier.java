@@ -7,10 +7,13 @@ import java.util.function.Consumer;
 
 import com.google.common.base.Supplier;
 
+/**
+ * @author kj
+ */
 public class LocalSupplier<T> {
 
-    private static LocalSupplier<ExecutorService> asyncExecutor = new LocalSupplier<>(
-            () -> Executors.newFixedThreadPool(2));
+    private static final LocalSupplier<ExecutorService> asyncExecutor = new LocalSupplier<>(
+            () -> Executors.newFixedThreadPool(1));
 
     private final Supplier<T> inner;
     private final Consumer<T> release;

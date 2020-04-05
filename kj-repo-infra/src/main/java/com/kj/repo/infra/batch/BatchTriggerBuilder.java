@@ -8,8 +8,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.kj.repo.infra.base.builder.Builder;
 import com.kj.repo.infra.batch.buffer.Buffer;
-import com.kj.repo.infra.builder.Builder;
 
 /**
  * @author kj

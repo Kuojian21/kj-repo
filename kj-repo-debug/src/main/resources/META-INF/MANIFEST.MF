@@ -1,8 +1,0 @@
-Manifest-Version: 1.0
-Main-Class: com.kj.repo.debug.Main
-Premain-Class: com.kj.repo.debug.Agent
-Agent-Class: com.kj.repo.debug.Agent
-Can-Redefine-Classes: true
-Can-Retransform-Classes: true
-Can-Set-Native-Method-Prefix: true
-Boot-Class-Path: 

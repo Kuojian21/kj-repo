@@ -10,20 +10,20 @@ import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
-import com.kj.repo.infra.base.BasePool;
 import com.kj.repo.infra.base.function.Consumer;
 import com.kj.repo.infra.base.function.Function;
+import com.kj.repo.infra.base.pool.Pool;
 
 /**
  * @author kj
  * Created on 2020-03-14
  */
 public class CryptCipher {
-    private final BasePool<Cipher> encrypt;
-    private final BasePool<Cipher> decrypt;
+    private final Pool<Cipher> encrypt;
+    private final Pool<Cipher> decrypt;
 
     public CryptCipher(String algorithm, Key key, IvParameterSpec ivp) {
-        encrypt = new BasePool<>(new GenericObjectPool<>(new BasePooledObjectFactory<Cipher>() {
+        encrypt = new Pool<>(new GenericObjectPool<>(new BasePooledObjectFactory<Cipher>() {
             @Override
             public PooledObject<Cipher> wrap(Cipher cipher) {
                 return new DefaultPooledObject<>(cipher);
@@ -36,7 +36,7 @@ public class CryptCipher {
                 return cipher;
             }
         }));
-        decrypt = new BasePool<>(new GenericObjectPool<>(new BasePooledObjectFactory<Cipher>() {
+        decrypt = new Pool<>(new GenericObjectPool<>(new BasePooledObjectFactory<Cipher>() {
             @Override
             public PooledObject<Cipher> wrap(Cipher cipher) {
                 return new DefaultPooledObject<>(cipher);

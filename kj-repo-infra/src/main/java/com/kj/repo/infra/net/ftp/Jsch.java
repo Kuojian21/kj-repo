@@ -10,15 +10,15 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import com.kj.repo.infra.base.BasePool;
 import com.kj.repo.infra.base.function.Consumer;
 import com.kj.repo.infra.base.function.Function;
+import com.kj.repo.infra.base.pool.Pool;
 import com.kj.repo.infra.helper.GenericPoolHelper;
 
 /**
  * @author kj
  */
-public class Jsch extends BasePool<ChannelSftp> {
+public class Jsch extends Pool<ChannelSftp> {
 
 
     public Jsch(final GenericObjectPool<ChannelSftp> pool) {

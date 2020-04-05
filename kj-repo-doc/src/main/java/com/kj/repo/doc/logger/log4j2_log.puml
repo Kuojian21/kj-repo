@@ -1,0 +1,66 @@
+@startuml
+Actor -> Logger:info
+activate Logger
+    Logger -> Logger:logIfEnabled
+    activate Logger
+
+    Logger -> PrivateConfig:filter
+        activate PrivateConfig
+            PrivateConfig -> PropertiesYamlJsonXmlConfiguration:getFilter
+            activate PropertiesYamlJsonXmlConfiguration
+            PropertiesYamlJsonXmlConfiguration --> PrivateConfig:Filter
+            deactivate PropertiesYamlJsonXmlConfiguration
+
+            PrivateConfig -> Filter:filter
+            activate Filter
+            Filter --> PrivateConfig
+            deactivate Filter
+        PrivateConfig --> Logger
+        deactivate PrivateConfig
+        alt true
+            Logger -> ReusableMessageFactory:newMessage
+            activate ReusableMessageFactory
+            ReusableMessageFactory --> Logger
+            deactivate ReusableMessageFactory
+
+            Logger -> LogEventFactory:createEvent
+            activate LogEventFactory
+            LogEventFactory --> Logger
+            deactivate LogEventFactory
+
+            Logger -> LoggerConfig:log
+            activate LoggerConfig
+            loop
+                LoggerConfig -> Appender:append
+                activate Appender
+                    Appender -> PatternLayout:encode
+                    activate PatternLayout
+                    loop
+                        PatternLayout -> PatternFormatter:format
+                        activate PatternFormatter
+                            PatternFormatter -> PatternConverter:format
+                            activate PatternConverter
+                            PatternConverter --> PatternFormatter
+                            deactivate PatternConverter
+                            PatternFormatter --> PatternLayout
+                        deactivate PatternFormatter
+                    end
+                    PatternLayout --> Appender
+                    deactivate PatternLayout
+
+                    Appender -> OutputStreamManager:flush
+                    activate OutputStreamManager
+                    OutputStreamManager --> Appender
+                    deactivate OutputStreamManager
+
+                Appender --> LoggerConfig
+                deactivate Appender
+            end
+            LoggerConfig --> Logger
+            deactivate LoggerConfig
+        end
+
+    deactivate Logger
+Logger --> Actor
+deactivate Logger
+@enduml

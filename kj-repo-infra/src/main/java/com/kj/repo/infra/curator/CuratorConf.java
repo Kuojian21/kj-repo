@@ -6,7 +6,7 @@ import java.util.function.BiConsumer;
 import org.apache.curator.framework.CuratorFramework;
 
 import com.google.common.util.concurrent.MoreExecutors;
-import com.kj.repo.infra.base.Conf;
+import com.kj.repo.infra.base.conf.Conf;
 
 /**
  * @author kj

@@ -6,16 +6,16 @@ import java.security.Signature;
 
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
-import com.kj.repo.infra.base.BasePool;
 import com.kj.repo.infra.base.function.Consumer;
 import com.kj.repo.infra.base.function.Function;
+import com.kj.repo.infra.base.pool.Pool;
 import com.kj.repo.infra.helper.GenericPoolHelper;
 
 /**
  * @author kj
  * Created on 2020-03-14
  */
-public abstract class CryptSign extends BasePool<Signature> {
+public abstract class CryptSign extends Pool<Signature> {
     public CryptSign(GenericObjectPool<Signature> pool) {
         super(pool);
     }

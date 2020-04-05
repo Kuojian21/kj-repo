@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.curator.framework.CuratorFramework;
 
 import com.google.common.base.Supplier;
-import com.kj.repo.infra.builder.Builder;
+import com.kj.repo.infra.base.builder.Builder;
 
 
 /**

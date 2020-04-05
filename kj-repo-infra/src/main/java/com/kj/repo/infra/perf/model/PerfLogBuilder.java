@@ -3,7 +3,7 @@ package com.kj.repo.infra.perf.model;
 import java.util.List;
 
 import com.google.common.collect.Lists;
-import com.kj.repo.infra.builder.Builder;
+import com.kj.repo.infra.base.builder.Builder;
 
 /**
  * @author kj
