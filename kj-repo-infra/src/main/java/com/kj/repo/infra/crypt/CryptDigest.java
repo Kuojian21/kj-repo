@@ -7,16 +7,16 @@ import javax.crypto.SecretKey;
 
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
-import com.kj.repo.infra.base.BasePool;
 import com.kj.repo.infra.base.function.Consumer;
 import com.kj.repo.infra.base.function.Function;
+import com.kj.repo.infra.base.pool.Pool;
 import com.kj.repo.infra.helper.GenericPoolHelper;
 
 /**
  * @author kj
  * Created on 2020-03-14
  */
-public abstract class CryptDigest<T> extends BasePool<T> {
+public abstract class CryptDigest<T> extends Pool<T> {
 
     private final Consumer<T> reset;
 
