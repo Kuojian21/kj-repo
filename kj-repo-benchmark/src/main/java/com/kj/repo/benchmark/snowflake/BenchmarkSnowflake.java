@@ -54,7 +54,7 @@ public class BenchmarkSnowflake {
 
     @Benchmark
     public void run(Blackhole bh) {
-        bh.consume(snowflake.nextId());
+        bh.consume(snowflake.next());
     }
 
 

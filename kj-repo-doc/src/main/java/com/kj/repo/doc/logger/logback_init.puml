@@ -1,7 +1,71 @@
 @startuml
-Alice -> Bob: Authentication Request
-Bob --> Alice: Authentication Response
+Invoker -> LoggerContext:<init>
+activate LoggerContext
+LoggerContext --> Invoker
+deactivate LoggerContext
 
-Alice -> Bob: Another authentication Request
-Alice <-- Bob: another authentication Response
+Invoker -> ContextInitializer:<init>(LoggerContext)
+activate ContextInitializer
+ContextInitializer --> Invoker
+deactivate ContextInitializer
+
+Invoker -> ContextInitializer:autoConfig
+activate ContextInitializer
+    ContextInitializer -> ContextInitializer:findURLOfDefaultConfigurationFile
+    activate ContextInitializer
+    deactivate ContextInitializer
+
+    ContextInitializer -> ContextInitializer:configureByResource
+    activate ContextInitializer
+
+    ContextInitializer -> JoranConfigurator
+    activate JoranConfigurator
+    JoranConfigurator --> ContextInitializer
+    deactivate JoranConfigurator
+
+    ContextInitializer -> JoranConfigurator:setContext
+    activate JoranConfigurator
+    JoranConfigurator --> ContextInitializer
+    deactivate JoranConfigurator
+
+    ContextInitializer -> JoranConfigurator:doConfigure
+    activate JoranConfigurator
+        JoranConfigurator -> SaxEventRecorder:recordEvents
+        SaxEventRecorder --> JoranConfigurator:saxEventList
+        JoranConfigurator -> Interpreter:<init>
+        Interpreter --> JoranConfigurator
+        loop
+            JoranConfigurator -> Interpreter:play(SaxEvent)
+            activate Interpreter
+            alt logger
+                Interpreter -> LoggerAction:begin
+                activate LoggerAction
+                    LoggerAction -> LoggerContext:getLogger
+                    activate LoggerContext
+                        LoggerContext -> Logger:createChildByName
+                        activate Logger
+                        Logger --> LoggerContext
+                        deactivate Logger
+                    LoggerContext --> LoggerAction
+                    deactivate LoggerContext
+                LoggerAction --> Interpreter
+                deactivate LoggerAction
+
+                Interpreter -> LoggerAction:end
+                activate LoggerAction
+                LoggerAction --> Interpreter
+                deactivate LoggerAction
+            end
+            Interpreter --> JoranConfigurator
+            deactivate Interpreter
+        end
+    JoranConfigurator --> ContextInitializer
+    deactivate JoranConfigurator
+    deactivate ContextInitializer
+ContextInitializer --> Invoker
+deactivate ContextInitializer
+Invoker -> LoggerContext:getLogger
+activate LoggerContext
+LoggerContext --> Invoker
+deactivate LoggerContext
 @enduml

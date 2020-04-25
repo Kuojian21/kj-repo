@@ -1,11 +1,11 @@
 @startuml
-participant Actor as Actor
+participant Invoker as Invoker
 participant LogManager as LogManager
 participant Provider as Provider
 participant Log4jContextFactory as Log4jContextFactory
 participant ClassLoaderContextSelector as ClassLoaderContextSelector
 participant LoggerContext as LoggerContext
-Actor -> LogManager:getLogger
+Invoker -> LogManager:getLogger
 activate LogManager
     LogManager -> LogManager:spi-Provider
     activate LogManager
@@ -96,6 +96,6 @@ activate LogManager
 
     LoggerContext --> LogManager:Logger
     deactivate LoggerContext
-LogManager --> Actor:Logger
+LogManager --> Invoker:Logger
 deactivate LogManager
 @enduml

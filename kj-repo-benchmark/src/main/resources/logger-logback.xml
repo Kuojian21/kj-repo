@@ -3,7 +3,7 @@
     <property name="LOG_HOME" value="${user.dir}/logs"/>
     <property name="LOG_FILE" value="benchmark-logback"/>
     <property name="logPattern"
-              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %X{UUID} [%thread] %-5level \\(%F:%L\\) - %msg%n"></property>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %X{UUID} [%t] %-5p - %msg%n"></property>
     <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
         <encoder charset="UTF-8">
             <pattern>${logPattern}</pattern>
@@ -12,7 +12,7 @@
     </appender>
 
     <!--Async:Please note the order-bg-->
-    <appender name="kjRepoAsyncRef" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="asyncRef" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/${LOG_FILE}.log</file>
         <immediateFlush>true</immediateFlush>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
@@ -25,17 +25,17 @@
             <prudent>true</prudent>
         </encoder>
     </appender>
-    <appender name="kjRepoAsync" class="ch.qos.logback.classic.AsyncAppender">
+    <appender name="async" class="ch.qos.logback.classic.AsyncAppender">
         <queueSize>16384</queueSize>
         <neverBlock>false</neverBlock>
-        <includeCallerData>true</includeCallerData>
-        <appender-ref ref="kjRepoAsyncRef"/>
+        <includeCallerData>false</includeCallerData>
+        <appender-ref ref="asyncRef"/>
     </appender>
     <!--Async:Please note the order-ed-->
 
-    <appender name="kjRepoSync" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <appender name="sync" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_HOME}/${LOG_FILE}-sync.log</file>
-        <!--<immediateFlush>true</immediateFlush>-->
+        <immediateFlush>true</immediateFlush>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
             <fileNamePattern>${LOG_HOME}/${LOG_FILE}-sync.%d{yyyy-MM-dd}-%i.log</fileNamePattern>
             <maxHistory>${KJ_REPO_LOG_MAX_HISTORY:-15}</maxHistory>
@@ -49,15 +49,15 @@
 
     <logger name="com.kj.repo.benchmark.logger" level="info" additivity="false">
         <!--<appender-ref ref="stdout"/>-->
-        <appender-ref ref="kjRepoAsync"/>
+        <appender-ref ref="async"/>
     </logger>
     <logger name="sync.com.kj.repo.benchmark.logger" level="info" additivity="false">
         <!--<appender-ref ref="stdout"/>-->
-        <appender-ref ref="kjRepoSync"/>
+        <appender-ref ref="sync"/>
     </logger>
 
-    <root level="${KJ_REPO_LOG_ROOT_LEVEL:-error}">
+    <root level="error">
         <appender-ref ref="stdout"/>
-        <appender-ref ref="kjRepoAsync"/>
+        <appender-ref ref="sync"/>
     </root>
 </configuration> 

@@ -12,7 +12,7 @@ public class TeIdWorker {
             new Thread(() -> {
                 latch.countDown();
                 while (true) {
-                    System.out.println(worker.nextId());
+                    System.out.println(worker.next());
                 }
             }).start();
         }

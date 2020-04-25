@@ -1,7 +1,35 @@
 @startuml
-Alice -> Bob: Authentication Request
-Bob --> Alice: Authentication Response
-
-Alice -> Bob: Another authentication Request
-Alice <-- Bob: another authentication Response
+Invoker -> Logger:info
+activate Logger
+    Logger -> LoggingEvent:<init>
+    activate LoggingEvent
+    LoggingEvent --> Logger
+    deactivate LoggingEvent
+    Logger -> Logger:callAppenders
+        activate Logger
+        Logger -> Appender:append
+        activate Appender
+            Appender -> PatternLayoutEncoder:encode
+            activate PatternLayoutEncoder
+                PatternLayoutEncoder -> PatternLayout:doLayout
+                activate PatternLayout
+                loop
+                    PatternLayout -> Converter:convert&write
+                    activate Converter
+                    Converter --> PatternLayout
+                    deactivate Converter
+                end
+                PatternLayout --> PatternLayoutEncoder
+                deactivate PatternLayout
+            PatternLayoutEncoder --> Appender
+            deactivate PatternLayoutEncoder
+            Appender -> OutputStream:write
+            activate OutputStream
+            OutputStream --> Appender
+            deactivate OutputStream
+        Appender --> Logger
+        deactivate Appender
+        deactivate Logger
+Logger --> Invoker
+deactivate Logger
 @enduml

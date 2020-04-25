@@ -1,5 +1,5 @@
 @startuml
-Actor -> Logger:info
+Invoker -> Logger:info
 activate Logger
     Logger -> Logger:logIfEnabled
     activate Logger
@@ -61,6 +61,6 @@ activate Logger
         end
 
     deactivate Logger
-Logger --> Actor
+Logger --> Invoker
 deactivate Logger
 @enduml

@@ -3,7 +3,6 @@ package com.kj.repo.infra.logger;
 import java.net.URL;
 
 import org.slf4j.Logger;
-import org.slf4j.impl.StaticLoggerBinder;
 
 import com.kj.repo.infra.helper.JavaHelper;
 
@@ -39,7 +38,8 @@ public class LogbackHelper {
 
     public static void initialize(URL location) {
         try {
-            LoggerContext loggerContext = (LoggerContext) StaticLoggerBinder.getSingleton().getLoggerFactory();
+            //            LoggerContext loggerContext = (LoggerContext) StaticLoggerBinder.getSingleton()
+            //            .getLoggerFactory();
             loggerContext.reset();
             JoranConfigurator joranConfigurator = new JoranConfigurator();
             joranConfigurator.setContext(loggerContext);

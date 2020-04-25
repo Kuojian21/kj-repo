@@ -9,7 +9,6 @@ import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.profile.StackProfiler;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -49,14 +48,14 @@ public class BenchmarkLogger {
                 .forks(1)
                 .warmupIterations(1)
                 .warmupBatchSize(1)
-                .warmupTime(TimeValue.seconds(3))
+                .warmupTime(TimeValue.seconds(30))
                 .measurementIterations(1)
                 .measurementBatchSize(1)
-                .measurementTime(TimeValue.minutes(1))
+                .measurementTime(TimeValue.minutes(3))
                 .threads(Runtime.getRuntime().availableProcessors() / 2)
                 .timeout(TimeValue.seconds(30))
                 .syncIterations(true)
-                .addProfiler(StackProfiler.class, "lines=30;top=6;period=10;detailLine=true")
+                //                .addProfiler(StackProfiler.class, "lines=30;top=6;period=10;detailLine=true")
                 .build();
         new Runner(opt).run();
     }
