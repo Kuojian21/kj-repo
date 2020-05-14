@@ -1,4 +1,4 @@
-# MySQL的N次踩坑经验总结-性能优化与故障分析
+# MySQL的N次踩坑经验总结（一）
 
 ## 零.本篇测试环境
 
@@ -85,7 +85,9 @@
 - SQL 耗时:8.45 sec
 
     ```
-    select dimen1,dimen2 from mark group by dimen1,dimen2;
+    select dimen1,dimen2 
+  from mark 
+  group by dimen1,dimen2;
     ```
 
 - 执行计划
@@ -127,7 +129,8 @@
 - SQL 耗时:0.00 sec
 
     ```
-    select distinct dimen1,dimen2 from (select distinct status,dimen1,dimen2 from mark) as t;
+    select distinct dimen1,dimen2 
+  from (select distinct status,dimen1,dimen2 from mark) as t;
     ```
 
 - 执行计划
@@ -171,7 +174,8 @@
 - SQL 耗时:0.00 sec
 
     ```
-    select distinct dimen1,dimen2 from (select status,dimen1,dimen2 from mark group by status,dimen1,dimen2) as t;
+    select distinct dimen1,dimen2 
+  from (select status,dimen1,dimen2 from mark group by status,dimen1,dimen2) as t;
     ```
 
 - 执行计划
@@ -218,7 +222,8 @@
 - SQL 耗时:0.00 sec
 
     ```
-    select distinct dimen2,dimen1 from (select status,dimen2,dimen1 from mark group by status,dimen1,dimen2) as t;
+    select distinct dimen2,dimen1 
+  from (select status,dimen2,dimen1 from mark group by status,dimen1,dimen2) as t;
     ```
 
 - 执行计划
@@ -262,7 +267,8 @@
 - SQL 耗时:8.89 sec
 
     ```
-    select distinct dimen2,dimen1 from (select status,dimen2,dimen1 from mark group by status,dimen2,dimen1) as t
+    select distinct dimen2,dimen1 
+  from (select status,dimen2,dimen1 from mark group by status,dimen2,dimen1) as t
     ```
 
 - 执行计划
@@ -378,7 +384,13 @@
 - SQL
 
     ```
-    select * from mark where status=1 and dimen1 = 90 and dimen2 = 1 and create_time <= unix_timestamp(now())*1000 - 120000 order by priority limit 1000;
+    select * 
+  from mark 
+  where status=1 
+  and dimen1 = 90 
+  and dimen2 = 1 
+  and create_time <= unix_timestamp(now())*1000 - 120000 
+  order by priority limit 1000;
     ```
   
 - 说明
@@ -390,7 +402,14 @@
 - SQL 耗时:0.01 sec
 
     ```
-    select * from mark force index(idx_status_dimen12_priority) where status=1 and dimen1 = 90 and dimen2 = 1 and create_time <= unix_timestamp(now())*1000 - 120000 order by priority,id limit 1000;
+    select * 
+  from mark 
+  force index(idx_status_dimen12_priority) 
+  where status=1 
+  and dimen1 = 90 
+  and dimen2 = 1 
+  and create_time <= unix_timestamp(now())*1000 - 120000 
+  order by priority,id limit 1000;
     ```
 
 - 执行计划
@@ -408,7 +427,13 @@
 - SQL 耗时:0.10 sec
 
     ```
-    select * from mark force index(idx_status_dimen12_ctime) where status=1 and dimen1 = 90 and dimen2 = 1 and create_time <= unix_timestamp(now())*1000 - 120000 order by priority,id limit 1000;
+    select * 
+  from mark force index(idx_status_dimen12_ctime) 
+  where status=1 
+  and dimen1 = 90 
+  and dimen2 = 1 
+  and create_time <= unix_timestamp(now())*1000 - 120000 
+  order by priority,id limit 1000;
     ```
 
 - 执行计划
@@ -447,7 +472,13 @@
 - SQL 耗时:0.02 sec
 
     ```
-    select * from mark force index(idx_status_dimen12_priority_ctime) where status=1 and dimen1 = 90 and dimen2 = 1 and create_time <= unix_timestamp(now())*1000 - 120000 order by priority limit 1000;    
+    select * 
+  from mark force index(idx_status_dimen12_priority_ctime) 
+  where status=1 
+  and dimen1 = 90 
+  and dimen2 = 1 
+  and create_time <= unix_timestamp(now())*1000 - 120000 
+  order by priority limit 1000;    
     ```
 
 - 执行计划
@@ -495,7 +526,13 @@
 - SQL 耗时:1.04 sec
 
     ```
-    select * from mark force index(idx_status_dimen12_priority) where status=1 and dimen1 = 1 and dimen2 = 1 and create_time <= unix_timestamp('2019-10-22')*1000 order by priority,id limit 1000;
+    select * 
+  from mark force index(idx_status_dimen12_priority) 
+  where status=1 
+  and dimen1 = 1 
+  and dimen2 = 1 
+  and create_time <= unix_timestamp('2019-10-22')*1000 
+  order by priority,id limit 1000;
     ```
 
 - 执行计划
@@ -513,7 +550,13 @@
 - SQL 耗时:0.02 sec
 
     ```
-    select * from mark force index(idx_status_dimen12_priority) where status=1 and dimen1 = 1 and dimen2 = 1 and create_time <= unix_timestamp('2019-11-02')*1000 order by priority,id limit 1000;
+    select * 
+  from mark force index(idx_status_dimen12_priority) 
+  where status=1 
+  and dimen1 = 1 
+  and dimen2 = 1 
+  and create_time <= unix_timestamp('2019-11-02')*1000 
+  order by priority,id limit 1000;
     ```
 
 - 执行计划
@@ -531,7 +574,13 @@
 - SQL 耗时:0.02 sec
 
     ```
-    select * from mark force index(idx_status_dimen12_ctime) where status=1 and dimen1 = 1 and dimen2 = 1 and create_time <= unix_timestamp('2019-10-22')*1000 order by priority,id limit 1000;
+    select * 
+  from mark force index(idx_status_dimen12_ctime) 
+  where status=1 
+  and dimen1 = 1 
+  and dimen2 = 1 
+  and create_time <= unix_timestamp('2019-10-22')*1000 
+  order by priority,id limit 1000;
     ```
       
 - 执行计划
@@ -549,7 +598,13 @@
 - SQL 耗时:0.88 sec
 
     ```
-    select * from mark force index(idx_status_dimen12_ctime) where status=1 and dimen1 = 1 and dimen2 = 1 and create_time <= unix_timestamp('2019-11-02')*1000 order by priority,id limit 1000;
+    select * 
+  from mark force index(idx_status_dimen12_ctime) 
+  where status=1 
+  and dimen1 = 1 
+  and dimen2 = 1 
+  and create_time <= unix_timestamp('2019-11-02')*1000 
+  order by priority,id limit 1000;
     ```
       
 - 执行计划 
@@ -579,7 +634,13 @@
 - SQL 耗时:0.06 sec
 
     ```
-    select * from mark force index(idx_status_dimen12_priority_ctime) where status=1 and dimen1 = 1 and dimen2 = 1 and create_time <= unix_timestamp('2019-10-22')*1000 order by priority,create_time,id limit 1000;
+    select * 
+  from mark force index(idx_status_dimen12_priority_ctime) 
+  where status=1 
+  and dimen1 = 1 
+  and dimen2 = 1 
+  and create_time <= unix_timestamp('2019-10-22')*1000 
+  order by priority,create_time,id limit 1000;
     ```
       
 - 执行计划
@@ -597,7 +658,13 @@
 - SQL 耗时:0.01 sec
 
     ```
-    select * from mark force index(idx_status_dimen12_priority_ctime) where status=1 and dimen1 = 1 and dimen2 = 1 and create_time <= unix_timestamp('2019-11-02')*1000 order by priority,create_time,id limit 1000;
+    select * 
+  from mark force index(idx_status_dimen12_priority_ctime) 
+  where status=1 
+  and dimen1 = 1 
+  and dimen2 = 1 
+  and create_time <= unix_timestamp('2019-11-02')*1000 
+  order by priority,create_time,id limit 1000;
     ```
       
 - 执行计划
@@ -629,20 +696,32 @@
 - SQL
 
     ```
-    select * from mark where status=1 and dimen1 in(0,1) and dimen2 in(0,1) and create_time <= unix_timestamp(now())*1000 - 120000 order by priority limit 1000;
+    select * 
+  from mark 
+  where status=1 
+  and dimen1 in(0,1) 
+  and dimen2 in(0,1) 
+  and create_time <= unix_timestamp(now())*1000 - 120000 
+  order by priority limit 1000;
     ```
   
 ### 1.方案一:优先走排序索引(idx_status_dimen12_priority)
 
-- 查询1 耗时:4.63 sec
+##### &nbsp;&nbsp;1)&nbsp;查询1:create_time <= unix_timestamp('2019-10-22')*1000
 
-    - SQL:create_time <= unix_timestamp('2019-10-22')*1000
+- SQL 耗时:4.63 sec
     
     ```
-    select * from mark force index(idx_status_dimen12_priority) where status=1 and dimen1 in(0,1) and dimen2 in(0,1) and create_time <= unix_timestamp('2019-10-22')*1000 order by priority limit 1000;
+    select * 
+  from mark force index(idx_status_dimen12_priority) 
+  where status=1 
+  and dimen1 in(0,1) 
+  and dimen2 in(0,1) 
+  and create_time <= unix_timestamp('2019-10-22')*1000 
+  order by priority limit 1000;
     ```
       
-    - 执行计划
+- 执行计划
     
     ```
     +----+-------------+-------+------------+-------+-----------------------------+-----------------------------+---------+------+--------+----------+-----------------------------+
@@ -652,7 +731,7 @@
     +----+-------------+-------+------------+-------+-----------------------------+-----------------------------+---------+------+--------+----------+-----------------------------+
     ```
       
-    - trace:Using filesort
+- trace:Using filesort
     
     ```
     "filesort_summary": {
@@ -664,15 +743,21 @@
     }            
     ```
         
-- 查询2 耗时:4.77 sec
+##### &nbsp;&nbsp;2)&nbsp;查询2:create_time <= unix_timestamp('2019-11-02')*1000
 
-    - SQL:create_time <= unix_timestamp('2019-11-02')*1000
+- SQL 耗时:4.77 sec
     
     ```
-    select * from mark force index(idx_status_dimen12_priority) where status=1 and dimen1 in(0,1) and dimen2 in(0,1) and create_time <= unix_timestamp('2019-11-02')*1000 order by priority limit 1000;
+    select * 
+  from mark force index(idx_status_dimen12_priority) 
+  where status=1 
+  and dimen1 in(0,1) 
+  and dimen2 in(0,1) 
+  and create_time <= unix_timestamp('2019-11-02')*1000 
+  order by priority limit 1000;
     ```
       
-    - 执行计划
+- 执行计划
     
     ```
     +----+-------------+-------+------------+-------+-----------------------------+-----------------------------+---------+------+--------+----------+-----------------------------+
@@ -682,7 +767,7 @@
     +----+-------------+-------+------------+-------+-----------------------------+-----------------------------+---------+------+--------+----------+-----------------------------+
     ```
           
-    - trace:Using filesort
+- trace:Using filesort
     
     ```
     "filesort_summary": {
@@ -696,15 +781,21 @@
 
 ### 2.方案二:优先走排序索引(idx_status_dimen12_ctime)
 
-- 查询1 耗时:0.10 sec
+##### &nbsp;&nbsp;1)&nbsp; 查询1:create_time <= unix_timestamp('2019-10-22')*1000
 
-    - SQL:create_time <= unix_timestamp('2019-10-22')*1000
+- SQL 耗时:0.10 sec
     
     ```
-    select * from mark force index(idx_status_dimen12_ctime) where status=1 and dimen1 in(0,1) and dimen2 in(0,1) and create_time <= unix_timestamp('2019-10-22')*1000 order by priority limit 1000;
+    select * 
+  from mark force index(idx_status_dimen12_ctime) 
+  where status=1 
+  and dimen1 in(0,1) 
+  and dimen2 in(0,1) 
+  and create_time <= unix_timestamp('2019-10-22')*1000 
+  order by priority limit 1000;
     ```
       
-    - 执行计划
+- 执行计划
     
     ```
     +----+-------------+-------+------------+-------+--------------------------+--------------------------+---------+------+-------+----------+-----------------------------+
@@ -714,7 +805,7 @@
     +----+-------------+-------+------------+-------+--------------------------+--------------------------+---------+------+-------+----------+-----------------------------+
     ```
       
-    - trace:Using filesort
+- trace:Using filesort
     
     ```
     "filesort_summary": {
@@ -726,16 +817,20 @@
     }          
     ```
       
-- 查询2 耗时:3.83 sec
+##### &nbsp;&nbsp;2)&nbsp; 查询2:create_time <= unix_timestamp('2019-11-02')*1000
+- SQL 耗时:3.83 sec
 
-    - SQL:create_time <= unix_timestamp('2019-11-02')*1000
-    
     ```
-    select * from mark force index(idx_status_dimen12_ctime) where status=1 and dimen1 in(0,1) and dimen2 in(0,1) and create_time <= unix_timestamp('2019-11-02')*1000 order by priority limit 1000;
+    select * 
+  from mark force index(idx_status_dimen12_ctime) 
+  where status=1 
+  and dimen1 in(0,1) 
+  and dimen2 in(0,1) 
+  and create_time <= unix_timestamp('2019-11-02')*1000 
+  order by priority limit 1000;
     ```
       
-    - 执行计划
-    
+- 执行计划
     ```
     +----+-------------+-------+------------+-------+--------------------------+--------------------------+---------+------+---------+----------+-----------------------------+
     | id | select_type | table | partitions | type  | possible_keys            | key                      | key_len | ref  | rows    | filtered | Extra                       |
@@ -744,8 +839,7 @@
     +----+-------------+-------+------------+-------+--------------------------+--------------------------+---------+------+---------+----------+-----------------------------+
     ```
       
-    - trace:Using filesort
-    
+- trace:Using filesort
     ```
     "filesort_summary": {
       "rows": 427462,
@@ -758,63 +852,111 @@
           
 ### 3.方案三:拆解SQL+应用代码排序
 
-- 查询一:create_time <= unix_timestamp('2019-10-22')*1000
+##### &nbsp;&nbsp;1)&nbsp;查询一:create_time <= unix_timestamp('2019-10-22')*1000
 
-    - SQL1 耗时:0.03 sec
+- SQL1 耗时:0.03 sec
     
     ```
-    select * from mark where status=1 and dimen1 = 0 and dimen2 = 0 and create_time <= unix_timestamp('2019-10-22')*1000 order by priority,create_time,id limit 1000;
+    select * 
+  from mark 
+  where status=1 
+  and dimen1 = 0 
+  and dimen2 = 0 
+  and create_time <= unix_timestamp('2019-10-22')*1000 
+  order by priority,create_time,id limit 1000;
     ```
       
-    - SQL2 耗时:0.01 sec
+- SQL2 耗时:0.01 sec
     
     ```
-    select * from mark where status=1 and dimen1 = 0 and dimen2 = 1 and create_time <= unix_timestamp('2019-10-22')*1000 order by priority,create_time,id limit 1000;
+    select * 
+  from mark 
+  where status=1 
+  and dimen1 = 0 
+  and dimen2 = 1 
+  and create_time <= unix_timestamp('2019-10-22')*1000 
+  order by priority,create_time,id limit 1000;
     ```    
       
-    - SQL3 耗时:0.04 sec
+- SQL3 耗时:0.04 sec
     
     ```
-    select * from mark where status=1 and dimen1 = 1 and dimen2 = 0 and create_time <= unix_timestamp('2019-10-22')*1000 order by priority,create_time,id limit 1000;
+    select * 
+  from mark 
+  where status=1 
+  and dimen1 = 1 
+  and dimen2 = 0 
+  and create_time <= unix_timestamp('2019-10-22')*1000 
+  order by priority,create_time,id limit 1000;
     ```    
       
-    - SQL4 耗时:0.01 sec
+- SQL4 耗时:0.01 sec
     
     ```
-    select * from mark where status=1 and dimen1 = 1 and dimen2 = 2 and create_time <= unix_timestamp('2019-10-22')*1000 order by priority,create_time,id limit 1000;
+    select * 
+  from mark 
+  where status=1 
+  and dimen1 = 1 
+  and dimen2 = 2 
+  and create_time <= unix_timestamp('2019-10-22')*1000 
+  order by priority,create_time,id limit 1000;
     ```
       
-- 查询二:create_time <= unix_timestamp('2019-11-02')*1000
+##### &nbsp;&nbsp;2)&nbsp;查询二:create_time <= unix_timestamp('2019-11-02')*1000
 
-   - SQL1 耗时:0.01 sec
+- SQL1 耗时:0.01 sec
    
     ```
-    select * from mark force index(idx_status_dimen12_priority_ctime) where status=1 and dimen1 = 0 and dimen2 = 0 and create_time <= unix_timestamp('2019-11-02')*1000 order by priority,create_time,id limit 1000;
+    select * 
+  from mark force index(idx_status_dimen12_priority_ctime) 
+  where status=1 
+  and dimen1 = 0 
+  and dimen2 = 0 
+  and create_time <= unix_timestamp('2019-11-02')*1000 
+  order by priority,create_time,id limit 1000;
     ```
      
-    - SQL2 耗时:0.01 sec
+- SQL2 耗时:0.01 sec
     
     ```
-    select * from mark force index(idx_status_dimen12_priority_ctime) where status=1 and dimen1 = 0 and dimen2 = 1 and create_time <= unix_timestamp('2019-11-02')*1000 order by priority,create_time,id limit 1000;
+    select * 
+  from mark force index(idx_status_dimen12_priority_ctime) 
+  where status=1 
+  and dimen1 = 0 
+  and dimen2 = 1 
+  and create_time <= unix_timestamp('2019-11-02')*1000 
+  order by priority,create_time,id limit 1000;
     ```    
       
-    - SQL3 耗时:0.01 sec
+- SQL3 耗时:0.01 sec
     
     ```
-    select * from mark force index(idx_status_dimen12_priority_ctime) where status=1 and dimen1 = 1 and dimen2 = 0 and create_time <= unix_timestamp('2019-11-02')*1000 order by priority,create_time,id limit 1000;
+    select * 
+  from mark force index(idx_status_dimen12_priority_ctime) 
+  where status=1 
+  and dimen1 = 1 
+  and dimen2 = 0 
+  and create_time <= unix_timestamp('2019-11-02')*1000 
+  order by priority,create_time,id limit 1000;
     ```
           
-    - SQL4 耗时:0.01 sec
+- SQL4 耗时:0.01 sec
     
     ```
-    select * from mark force index(idx_status_dimen12_priority_ctime) where status=1 and dimen1 = 1 and dimen2 = 2 and create_time <= unix_timestamp('2019-11-02')*1000 order by priority,create_time,id limit 1000;  
+    select * 
+  from mark force index(idx_status_dimen12_priority_ctime) 
+  where status=1 
+  and dimen1 = 1 
+  and dimen2 = 2 
+  and create_time <= unix_timestamp('2019-11-02')*1000 
+  order by priority,create_time,id limit 1000;  
     ```  
           
-- 总结&分析
+### 4.总结&分析
 
-    - 当排序字段的前缀字段有多个值(in,>=,<=...)时，无法使用排序索引，虽然通过多路归并排序可以加快性能，但是MySQL并未直接这么多做。
-    - 当经过create_time过滤后剩余数据量比较小时，适合走过滤索引(idx_status_dimen12_ctime),filesort可以在内存完成。
-    - 当经过create_time过滤后剩余数据量比较大时，没有合适的索引可以走，可以考虑将SQL拆解为多个SQL分别查询再在应用服务上合并。 
+- 当排序字段的前缀字段有多个值(in,>=,<=...)时，无法使用排序索引，虽然通过多路归并排序可以加快性能，但是MySQL并未直接这么多做。
+- 当经过create_time过滤后剩余数据量比较小时，适合走过滤索引(idx_status_dimen12_ctime),filesort可以在内存完成。
+- 当经过create_time过滤后剩余数据量比较大时，没有合适的索引可以走，可以考虑将SQL拆解为多个SQL分别查询再在应用服务上合并。 
         
 ## 八.order by + limit 翻页
 
@@ -829,13 +971,17 @@
 - SQL1 耗时:3.92 sec
 
     ```
-    select * from mark where dimen2 = 1 order by priority limit 100000,10;
+    select * from mark where dimen2 = 1 order by priority limit 100000,100;
     ```
   
 - SQL2 耗时:0.00 sec
 
     ```
-    select * from mark where dimen2 = 1 and ((priority = 47139845304 and id > 9791227) or priority > 47139845304) order by priority limit 100;
+    select * 
+  from mark 
+  where dimen2 = 1 
+  and ((priority = 47139845304 and id > 9791227) or priority > 47139845304) 
+  order by priority limit 100;
     ```      
       
 ### 2.场景二
@@ -855,7 +1001,11 @@
 - SQL2 耗时:0.00 sec
 
     ```
-    select * from mark where dimen2 = 1 and ((priority = 47139845304 and id > 9791227) or priority > 47139845304) order by priority limit 100;
+    select * 
+  from mark 
+  where dimen2 = 1 
+  and ((priority = 47139845304 and id > 9791227) or priority > 47139845304) 
+  order by priority limit 100;
     ```
       
 ### 3.总结&分析
