@@ -1063,7 +1063,8 @@
   
 - 注意
 
-    只有单行更新时，batchUpdate才返回影响的行数，多行时返回的是java.sql.Statement.SUCCESS_NO_INFO(-2)。    
+    - 对于insert语句:会被改写成multi-value的方式，只有单行更新时，batchUpdate才返回影响的行数，多行时返回的是java.sql.Statement.SUCCESS_NO_INFO(-2)。
+    - 对于update语句:执行的是com.mysql.jdbc.PreparedStatement.executeBatchSerially, one-by-one执行。    
 
 ### 3.NamedParameterJdbcTemplate只会把【:property】解析为动态变量【?】吗？
 
