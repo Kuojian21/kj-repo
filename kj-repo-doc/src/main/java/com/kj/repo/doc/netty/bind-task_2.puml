@@ -1,0 +1,11 @@
+@startuml
+autonumber
+EventLoop -> ChannelInitializer
+activate ChannelInitializer
+    ChannelInitializer -> ChannelPipeline:addLast(ServerBootstrapAcceptor)
+    activate ChannelPipeline
+    ChannelPipeline --> ChannelInitializer
+    deactivate ChannelPipeline
+ChannelInitializer --> EventLoop
+deactivate ChannelInitializer
+@enduml

@@ -1,0 +1,42 @@
+@startuml
+
+autonumber
+
+NioEventLoop -> NioEventLoop:run
+activate NioEventLoop
+
+    loop
+
+        NioEventLoop -> java.nio.channels.Selector:selectNow
+        activate java.nio.channels.Selector
+
+        java.nio.channels.Selector --> NioEventLoop
+        deactivate java.nio.channels.Selector
+
+        NioEventLoop -> NioEventLoop:processSelectedKeys()
+        activate NioEventLoop
+        loop
+            NioEventLoop -> NioEventLoop:processSelectedKey()
+            activate NioEventLoop
+            deactivate NioEventLoop
+        end
+        deactivate NioEventLoop
+
+        alt hasTask
+            loop
+                NioEventLoop -> NioEventLoop:pollTask & saftExecute(Task)
+                activate NioEventLoop
+                deactivate NioEventLoop
+            end
+        else
+            NioEventLoop -> java.nio.channels.Selector:select()[blocking]
+            activate java.nio.channels.Selector
+            java.nio.channels.Selector --> NioEventLoop
+            deactivate java.nio.channels.Selector
+        end
+
+    end
+
+
+deactivate NioEventLoop
+@enduml

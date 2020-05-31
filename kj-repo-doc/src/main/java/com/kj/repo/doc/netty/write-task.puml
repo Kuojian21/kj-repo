@@ -1,0 +1,17 @@
+@startuml
+autonumber
+EventLoop -> WriteTask:run()
+activate WriteTask
+    WriteTask -> AbstractChannelHandlerContext:invokeWriteAndFlush()
+    activate AbstractChannelHandlerContext
+        AbstractChannelHandlerContext -> AbstractChannelHandlerContext:invokeWrite0()
+        activate AbstractChannelHandlerContext
+        deactivate AbstractChannelHandlerContext
+        AbstractChannelHandlerContext -> AbstractChannelHandlerContext:invokeFlush0()
+        activate AbstractChannelHandlerContext
+        deactivate AbstractChannelHandlerContext
+    AbstractChannelHandlerContext --> WriteTask
+    deactivate AbstractChannelHandlerContext
+WriteTask --> EventLoop
+deactivate WriteTask
+@enduml

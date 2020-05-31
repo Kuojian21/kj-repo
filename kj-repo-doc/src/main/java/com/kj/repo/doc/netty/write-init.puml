@@ -1,0 +1,27 @@
+@startuml
+
+Invoker -> Channel:writeAndFlush
+activate Channel
+
+    Channel -> DefaultChannelPipeline:writeAndFlush
+    activate DefaultChannelPipeline
+        DefaultChannelPipeline -> AbstractChannelHandlerContext:writeAndFlush
+        activate AbstractChannelHandlerContext
+            AbstractChannelHandlerContext -> WriteTask:newInstance
+            activate WriteTask
+            WriteTask --> AbstractChannelHandlerContext
+            deactivate WriteTask
+
+            AbstractChannelHandlerContext -> EventLoop:addTask()
+            activate EventLoop
+            EventLoop --> AbstractChannelHandlerContext
+            deactivate EventLoop
+
+        AbstractChannelHandlerContext --> DefaultChannelPipeline
+        deactivate
+    DefaultChannelPipeline --> Channel
+    deactivate DefaultChannelPipeline
+
+Channel --> Invoker
+deactivate Channel
+@enduml

@@ -1,0 +1,62 @@
+@startuml
+autonumber
+    EventLoop -> Unsafe:register0
+    activate Unsafe
+
+        Unsafe -> Channel:doRegister
+        activate Channel
+            Channel -> SelectableChannel:register(ops=0)
+            activate SelectableChannel
+            SelectableChannel --> Channel
+            deactivate SelectableChannel
+        Channel --> Unsafe
+        deactivate Channel
+
+        Unsafe -> ChannelPipeline:invokeHandlerAddedIfNeeded
+        activate ChannelPipeline
+            ChannelPipeline -> ChannelInitializer:handlerAdded
+            activate ChannelInitializer
+                ChannelInitializer -> ChannelPipeline:addLast(Bootstrap.handler)
+                activate ChannelInitializer
+                ChannelPipeline -> ChannelInitializer
+                deactivate ChannelInitializer
+
+                ChannelInitializer -> EventLoop:addTask(()->ChannelPipeline.add(ServerBootstrapAcceptor))
+                activate EventLoop
+                EventLoop --> ChannelInitializer
+                deactivate EventLoop
+
+                ChannelInitializer -> ChannelPipeline:remove(self)
+                activate ChannelPipeline
+                ChannelPipeline --> ChannelInitializer
+                deactivate ChannelPipeline
+            ChannelInitializer --> ChannelPipeline
+            deactivate ChannelInitializer
+        ChannelPipeline --> Unsafe
+        deactivate ChannelPipeline
+
+        Unsafe -> ChannelFuture:trySuccess
+        activate ChannelFuture
+            ChannelFuture -> Bootstrap:doBind0()
+            activate Bootstrap
+                Bootstrap -> EventLoop:addTask(Channel.bind())
+                activate EventLoop
+                EventLoop --> Bootstrap
+                deactivate EventLoop
+            Bootstrap --> ChannelFuture
+            deactivate Bootstrap
+        ChannelFuture -> Unsafe
+        deactivate ChannelFuture
+
+        Unsafe -> ChannelPipeline:fireChannelRegistered
+        activate ChannelPipeline
+           ChannelPipeline -> AbstractChannelHandlerContext:invokeChannelRegistered(head)
+           activate AbstractChannelHandlerContext
+           AbstractChannelHandlerContext --> ChannelPipeline
+           deactivate AbstractChannelHandlerContext
+        ChannelPipeline --> Unsafe
+        deactivate ChannelPipeline
+
+    Unsafe --> EventLoop
+    deactivate Unsafe
+@enduml

@@ -1,0 +1,21 @@
+@startuml
+ChildEventLoop -> NioByteUnsafe:read()
+activate NioByteUnsafe
+
+    NioByteUnsafe -> NioSocketChannel:doReadBytes
+    activate NioSocketChannel
+    NioSocketChannel --> NioByteUnsafe
+    deactivate NioSocketChannel
+
+    NioByteUnsafe -> DefaultChannelPipeline:fireChannelRead
+    activate DefaultChannelPipeline
+        DefaultChannelPipeline -> AbstractChannelHandlerContext:invokeChannelRead(head, msg)
+        activate AbstractChannelHandlerContext
+        AbstractChannelHandlerContext --> DefaultChannelPipeline
+        deactivate AbstractChannelHandlerContext
+    DefaultChannelPipeline --> NioByteUnsafe
+    deactivate DefaultChannelPipeline
+
+NioByteUnsafe --> ChildEventLoop
+deactivate NioByteUnsafe
+@enduml

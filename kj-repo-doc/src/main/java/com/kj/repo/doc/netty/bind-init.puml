@@ -1,0 +1,65 @@
+@startuml
+
+autonumber
+ServerBootstrap -> ServerBootstrap:bind
+activate ServerBootstrap
+    ServerBootstrap -> ServerBootstrap:ChannelFuture initAndRegister()
+    activate ServerBootstrap
+        ServerBootstrap -> ReflectiveChannelFactory:newChannel()
+        activate ReflectiveChannelFactory
+            ReflectiveChannelFactory -> NioServerSocketChannel:<init>
+            activate NioServerSocketChannel
+                NioServerSocketChannel -> SelectorProvider:SelectorProvider.provider().openServerSocketChannel()
+                activate SelectorProvider
+                SelectorProvider --> NioServerSocketChannel:ServerSocketChannel
+                deactivate SelectorProvider
+
+                NioServerSocketChannel -> NioMessageUnsafe:<init>
+                activate NioMessageUnsafe
+                NioMessageUnsafe --> NioServerSocketChannel
+                deactivate NioMessageUnsafe
+
+                NioServerSocketChannel -> DefaultChannelPipeline:<init>
+                activate DefaultChannelPipeline
+                DefaultChannelPipeline --> NioServerSocketChannel
+                deactivate DefaultChannelPipeline
+
+            NioServerSocketChannel --> ReflectiveChannelFactory
+            deactivate NioServerSocketChannel
+        ReflectiveChannelFactory --> ServerBootstrap
+        deactivate ReflectiveChannelFactory
+
+        ServerBootstrap -> ServerBootstrap:init()
+        activate ServerBootstrap
+            ServerBootstrap -> DefaultChannelPipeline:addLast(ChannelInitializer) -> EventLoop.addLast(ServerBootstrapAcceptor)
+            activate DefaultChannelPipeline
+            DefaultChannelPipeline --> ServerBootstrap
+            deactivate DefaultChannelPipeline
+        deactivate ServerBootstrap
+
+        ServerBootstrap -> EventLoop:register()
+        activate EventLoop
+            EventLoop -> NioMessageUnsafe:register()
+            activate NioMessageUnsafe
+
+                NioMessageUnsafe -> EventLoop:addTask(register1) & thread.start()
+                activate EventLoop
+                EventLoop --> NioMessageUnsafe
+                deactivate EventLoop
+
+            NioMessageUnsafe --> EventLoop
+            deactivate NioMessageUnsafe
+        EventLoop --> ServerBootstrap
+        deactivate EventLoop
+
+    deactivate ServerBootstrap
+
+    ServerBootstrap -> ChannelFuture:addListener(doBind0())
+    activate ChannelFuture
+    ChannelFuture --> ServerBootstrap
+    deactivate ChannelFuture
+deactivate ServerBootstrap
+
+
+
+@enduml

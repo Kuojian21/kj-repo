@@ -1,0 +1,39 @@
+@startuml
+BossEventLoop -> NioMessageUnsafe:read()
+activate NioMessageUnsafe
+
+    NioMessageUnsafe -> NioServerSocketChannel:doReadMessages
+    activate NioServerSocketChannel
+        NioServerSocketChannel -> java.nio.channels.ServerSocketChannel:accept()
+        activate java.nio.channels.ServerSocketChannel
+        java.nio.channels.ServerSocketChannel -> NioServerSocketChannel
+        deactivate java.nio.channels.ServerSocketChannel
+
+        NioServerSocketChannel -> NioSocketChannel:<init>
+        activate NioSocketChannel
+        NioSocketChannel --> NioServerSocketChannel
+        deactivate NioSocketChannel
+    NioServerSocketChannel --> NioMessageUnsafe
+    deactivate NioServerSocketChannel
+
+
+    NioMessageUnsafe -> ChannelPipeline:fireChannelRead
+    activate ChannelPipeline
+        ChannelPipeline -> ServerBootstrapAcceptor:channelRead
+        activate ServerBootstrapAcceptor
+            ServerBootstrapAcceptor -> NioSocketChannel:pipeline().addLast(childHandler)
+            activate NioSocketChannel
+            NioSocketChannel --> ServerBootstrapAcceptor
+            deactivate NioSocketChannel
+            ServerBootstrapAcceptor -> ChildEventLoop:register(NioSocketChannel)
+            activate ChildEventLoop
+            ChildEventLoop --> ServerBootstrapAcceptor
+            deactivate ChildEventLoop
+        ServerBootstrapAcceptor --> ChannelPipeline
+        deactivate ServerBootstrapAcceptor
+    ChannelPipeline --> NioMessageUnsafe
+    deactivate ChannelPipeline
+
+NioMessageUnsafe --> BossEventLoop
+deactivate NioMessageUnsafe
+@enduml

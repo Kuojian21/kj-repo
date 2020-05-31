@@ -1,0 +1,38 @@
+@startuml
+autonumber
+EventLoop -> ChannelPipeline:fireChannelActive()
+activate ChannelPipeline
+    ChannelPipeline -> AbstractChannelHandlerContext:invokeChannelActive()
+    activate AbstractChannelHandlerContext
+        AbstractChannelHandlerContext -> HeadContext:channelActive
+        activate HeadContext
+            HeadContext -> HeadContext:readIfIsAutoRead
+            activate HeadContext
+                HeadContext -> ChannelPipeline:read()
+                activate ChannelPipeline
+                    ChannelPipeline -> HeadContext:read()
+                    activate HeadContext
+                        HeadContext -> Unsafe:beginRead()
+                        activate Unsafe
+                            Unsafe -> Channel:doBeginRead()
+                            activate Channel
+                                Channel -> SelectionKey:interestOps
+                                activate SelectionKey
+                                SelectionKey --> Channel
+                                deactivate SelectionKey
+                            Channel --> Unsafe
+                            deactivate Channel
+                        Unsafe --> HeadContext
+                        deactivate Unsafe
+                    HeadContext --> ChannelPipeline
+                    deactivate HeadContext
+                ChannelPipeline --> HeadContext
+                deactivate ChannelPipeline
+            deactivate HeadContext
+        HeadContext --> AbstractChannelHandlerContext
+        deactivate HeadContext
+    AbstractChannelHandlerContext --> ChannelPipeline
+    deactivate AbstractChannelHandlerContext
+ChannelPipeline --> EventLoop
+deactivate ChannelPipeline
+@enduml

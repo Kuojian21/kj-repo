@@ -1,0 +1,28 @@
+@startuml
+autonumber
+EventLoop -> Channel:bind
+activate Channel
+    Channel -> ChannelPipeline:bind
+    activate ChannelPipeline
+        ChannelPipeline -> HeadContext
+        activate HeadContext
+            HeadContext -> Unsafe:bind
+            activate Unsafe
+                Unsafe -> Channel:doBind
+                activate Channel
+                Channel --> Unsafe
+                deactivate Channel
+
+                Unsafe -> EventLoop:addTask(()->ChannelPipeline.fireChannelActive())
+                activate EventLoop
+                EventLoop --> Unsafe
+                deactivate EventLoop
+            Unsafe --> HeadContext
+            deactivate Unsafe
+        HeadContext --> ChannelPipeline
+        deactivate HeadContext
+    ChannelPipeline --> Channel
+    deactivate ChannelPipeline
+Channel --> EventLoop
+deactivate Channel
+@enduml
