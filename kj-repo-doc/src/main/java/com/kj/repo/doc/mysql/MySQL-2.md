@@ -220,10 +220,11 @@
     +-----------------------+-----------+----------+------------+-----------+---------------+-------------+------------------------+
     | ENGINE_TRANSACTION_ID | THREAD_ID | EVENT_ID | INDEX_NAME | LOCK_TYPE | LOCK_MODE     | LOCK_STATUS | LOCK_DATA              |
     +-----------------------+-----------+----------+------------+-----------+---------------+-------------+------------------------+
-    |                  2979 |        61 |      332 | NULL       | TABLE     | IX            | GRANTED     | NULL                   |
-    |                  2979 |        61 |      332 | PRIMARY    | RECORD    | X             | GRANTED     | supremum pseudo-record |
-    |                  2979 |        61 |      332 | PRIMARY    | RECORD    | X,REC_NOT_GAP | GRANTED     | 5                      |
-    |                  2979 |        61 |      332 | PRIMARY    | RECORD    | X             | GRANTED     | 6                      |
+    |                  4153 |        49 |      154 | NULL       | TABLE     | IX            | GRANTED     | NULL                   |
+    |                  4153 |        49 |      154 | PRIMARY    | RECORD    | X,REC_NOT_GAP | GRANTED     | 5                      |
+    |                  4153 |        49 |      154 | PRIMARY    | RECORD    | X             | GRANTED     | supremum pseudo-record |
+    |                  4153 |        49 |      154 | PRIMARY    | RECORD    | X             | GRANTED     | 6                      |
+    +-----------------------+-----------+----------+------------+-----------+---------------+-------------+------------------------+
     ```     
 ##### &emsp; 1) 唯一键
 - CASE1:等值&存在/不存在
@@ -733,12 +734,15 @@
 - 当有唯一约束冲突时,加锁同update
 
 ## 四.不同数据库版本问题
-### 1.insert & insert on duplicate key update
-- 8.0.19&5.7.30版本:按照implict lock的加锁规则。
-- 5.7.18&5.7.25版本:对于唯一键insert使用explict的方式加record锁，insert on duplicate key update使用explict的方式加next-key锁，下面的死锁case就是在5.7.18&5.7.25这两个版本重现的。
+### 1.insert on duplicate key update
+- 8.0.19&5.7.30版本:按照implict方式加锁规则:先不加锁，冲突再加锁。
+- 5.7.18&5.7.25版本:在唯一键索引上使用explict方式加gap锁，下面的死锁case1就是在5.7.18&5.7.25这两个版本重现的。
 
 ## 五.死锁
-### 1.case1
+### 1.case1 
+- 环境说明
+    
+    数据版本:5.7.18或5.7.25 事务隔离级别:REPEATABLE-READ
 - 触发场景    
 
     time/session|session1|session2
@@ -746,7 +750,51 @@
     t1|insert into stu(no,name) values(2,'x') on duplicate key update name=values(name);| 
     t2| |insert into stu(no,name) values(3,'x') on duplicate key update name=values(name);
     t3|insert into stu(no,name) values(4,'x') on duplicate key update name=values(name);| 
-- 总结&分析
-    - t2时刻session2会被阻塞住，t3时刻session2直接报deadlock异常。
-    - 分析，t1时session1在唯一索引uidx_no(,5)加gap,t2时session2尝试在唯一索引uidx_no(2,5)加gap和插入意向锁,所以session2被block住，t3时session1尝试在唯一索引uidx_no(2,5)加gap和插入意向锁。
-    - 在极限情况下只需要两条insert语句就会产生死锁:session1和session2同时在(,5)上加了gap然后又同时去申请插入意向锁。PS:这个case我们线上遇到过，并发高的时候产生大量死锁，把事务隔离级别改成read commit可以解决问题。  
+- 现象
+
+    t2时刻session2会被阻塞住，t3时刻session2直接报deadlock异常。
+    
+- 分析1
+    
+    t1时session1在唯一索引uidx_no(-,5)加gap锁,t2时session2尝试在唯一索引uidx_no(2,5)加gap锁和插入意向锁,session2的gap锁不冲突可以加成功，但是插入意向锁与session1的gap锁冲突，所以session2被block住，t3时session1尝试在唯一索引uidx_no(2,5)加gap和插入意向锁，同t2时刻session2加锁情况类似，最终产生死锁。
+- 分析2
+    
+    在极限情况下只需要两条insert语句就会产生死锁:session1和session2同时在(,5)上加了gap然后又同时去申请插入意向锁。PS:这个case线上遇到过，并发高的时候产生大量死锁，把事务隔离级别改成read commit可以解决问题。
+
+### 2.case2  
+- 环境说明
+
+    事务隔离级别:REPEATABLE-READ
+- 触发场景    
+
+    time/session|session1|session2|session3
+    ---|---|---|---
+    t1|insert into stu(no,name) values(6,'K');| 
+    t2| |insert into stu(no,name) values(6,'K');
+    t3| | |insert into stu(no,name) values(6,'K');
+    t4|rollback;
+
+- 分析
+    
+    t2,t3时刻发生duplicate-error,session2/session3会在uidx_no的(5,6]加S-Next Key锁以便session1释放锁时自己可以被通知到，t4时刻session1释放锁，session2/session3的S-Next key锁同时被转为(5,10)的间隙锁，然后又都去获取插入意向锁，最终产生死锁。
+
+### 3.case3
+
+- 环境说明
+
+    事务隔离级别:REPEATABLE-READ    
+- 触发场景    
+
+    time/session|session1|session2
+    ---|---|---
+    t1|delete from stu where no = 25;| 
+    t2| |delete from stu where no = 30;
+    t3|insert into stu(no,name) values(25,'I');| 
+    t4| |insert into stu(no,name) values(30,'K');
+
+- 分析
+    
+    t3时刻session1发生duplicate-error,并且触发了duplicate checking，尝试在uidx_no(20,30]上加S-Next Key锁，与session2的记录锁冲突，因此session1被block住，但是S-Next Key中的S-Gap已经加上了。
+    
+    t4时刻session2去申请uidx_no(25,supremum)上的插入意向锁，其与session1的uidx_no(20,30]-gap冲突，最终产生死锁。    
+             
