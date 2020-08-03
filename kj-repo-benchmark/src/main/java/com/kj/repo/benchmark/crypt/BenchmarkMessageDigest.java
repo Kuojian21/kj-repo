@@ -29,6 +29,8 @@ import com.kj.repo.infra.crypt.algoritm.AlgoritmDigest.Digest;
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 public class BenchmarkMessageDigest {
 
+    private CryptDigest digest = CryptDigest.digest(Digest.MD5.getName());
+
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(BenchmarkMessageDigest.class.getSimpleName())
@@ -46,8 +48,6 @@ public class BenchmarkMessageDigest {
                 .build();
         new Runner(opt).run();
     }
-
-    private CryptDigest digest = CryptDigest.digest(Digest.MD5.getName());
 
     @Benchmark
     public void digest1(Blackhole bh) throws Exception {
