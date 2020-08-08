@@ -57,10 +57,7 @@ import org.openjdk.jmh.runner.options.WarmupMode;
 import com.kj.repo.benchmark.crypt.BenchmarkCrypt;
 
 public class MyBenchmark {
-    org.openjdk.jmh.runner.options.Options option;
-
     public static void main(String[] args) throws RunnerException {
-
         Options opt = new OptionsBuilder()
                 .include(BenchmarkCrypt.class.getSimpleName())
                 .forks(1)

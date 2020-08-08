@@ -1,4 +1,4 @@
-package com.kj.repo.infra.ognl;
+package com.kj.repo.infra.el.ognl;
 
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Member;

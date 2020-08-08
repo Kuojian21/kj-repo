@@ -1,5 +1,12 @@
 package com.kj.repo.benchmark.jit;
 
+import static com.kj.repo.infra.el.ognl.OgnlHelper.DEFAULT_CLASS_RESOLVER;
+import static com.kj.repo.infra.el.ognl.OgnlHelper.DEFAULT_MEMBER_ACCESS;
+import static com.kj.repo.infra.el.ognl.OgnlHelper.DEFAULT_TYPE_CONVERTER;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import org.openjdk.jmh.annotations.Benchmark;
@@ -12,6 +19,7 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.profile.CompilerProfiler;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -19,6 +27,14 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
 import org.openjdk.jmh.runner.options.WarmupMode;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.kj.repo.infra.el.mvel.MvelHelper;
+import com.kj.repo.infra.el.ognl.OgnlHelper;
+
+import ognl.Ognl;
+import ognl.OgnlContext;
 
 /**
  * @author kj
@@ -45,7 +61,7 @@ public class BenchmarkJIT {
                 .measurementIterations(1)
                 .measurementBatchSize(1)
                 .measurementTime(TimeValue.seconds(300))
-                .threads(1)
+                .threads(3)
                 .timeout(TimeValue.seconds(3))
                 .syncIterations(true)
                 .addProfiler(CompilerProfiler.class)
@@ -54,8 +70,82 @@ public class BenchmarkJIT {
     }
 
     @Benchmark
-    public void jit() {
-        distance(40.2143, 50.43243, 56.43214, 54.535);
+    public void random(Blackhole bh) {
+        bh.consume(40.2143 + ThreadLocalRandom.current().nextInt(1000));
+        bh.consume(50.4324 + ThreadLocalRandom.current().nextInt(1000));
+        bh.consume(56.4321 + ThreadLocalRandom.current().nextInt(1000));
+        bh.consume(54.5353 + ThreadLocalRandom.current().nextInt(1000));
+    }
+
+    @Benchmark
+    public void randomMap(Blackhole bh) {
+        bh.consume(ImmutableMap.of(
+                "lat1", 40.2143 + ThreadLocalRandom.current().nextInt(1000),
+                "lng1", 50.4324 + ThreadLocalRandom.current().nextInt(1000),
+                "lat2", 56.4321 + ThreadLocalRandom.current().nextInt(1000),
+                "lng2", 54.5353 + ThreadLocalRandom.current().nextInt(1000)
+        ));
+    }
+
+    @Benchmark
+    public void randomMapOgnlContext(Blackhole bh) {
+        OgnlContext ognlContext =
+                (OgnlContext) Ognl.createDefaultContext(this, DEFAULT_MEMBER_ACCESS, DEFAULT_CLASS_RESOLVER,
+                        DEFAULT_TYPE_CONVERTER);
+        ImmutableMap.of(
+                "lat1", 40.2143 + ThreadLocalRandom.current().nextInt(1000),
+                "lng1", 50.4324 + ThreadLocalRandom.current().nextInt(1000),
+                "lat2", 56.4321 + ThreadLocalRandom.current().nextInt(1000),
+                "lng2", 54.5353 + ThreadLocalRandom.current().nextInt(1000)
+        ).forEach(ognlContext::put);
+        bh.consume(ognlContext);
+    }
+
+    @Benchmark
+    public void randomMapOgnl(Blackhole bh) {
+        Map<String, Object> params =
+                ImmutableMap.of(
+                        "lat1", 40.2143 + ThreadLocalRandom.current().nextInt(1000),
+                        "lng1", 50.4324 + ThreadLocalRandom.current().nextInt(1000),
+                        "lat2", 56.4321 + ThreadLocalRandom.current().nextInt(1000),
+                        "lng2", 54.5353 + ThreadLocalRandom.current().nextInt(1000)
+                );
+        bh.consume(OgnlHelper.execute(this, params, "distance(#lat1, #lng1, #lat2, #lng2)", 0d));
+    }
+
+    @Benchmark
+    public void randomDriect(Blackhole bh) {
+        bh.consume(distance(
+                40.2143 + ThreadLocalRandom.current().nextInt(1000),
+                50.4324 + ThreadLocalRandom.current().nextInt(1000),
+                56.4321 + ThreadLocalRandom.current().nextInt(1000),
+                54.5353 + ThreadLocalRandom.current().nextInt(1000))
+        );
+    }
+
+    @Benchmark
+    public void randomMvel(Blackhole bh) {
+        Map<String, Object> vars =
+                ImmutableMap.of(
+                        "lat1", 40.2143 + ThreadLocalRandom.current().nextInt(1000),
+                        "lng1", 50.4324 + ThreadLocalRandom.current().nextInt(1000),
+                        "lat2", 56.4321 + ThreadLocalRandom.current().nextInt(1000),
+                        "lng2", 54.5353 + ThreadLocalRandom.current().nextInt(1000),
+                        "it", this
+                );
+        bh.consume(MvelHelper.execute("it.distance(lat1,lng1,lat2,lng2)", vars));
+    }
+
+    private ConcurrentMap<String, Double> map = Maps.newConcurrentMap();
+
+    @Benchmark
+    public void randomExecuteMap(Blackhole bh) {
+        double lat1 = 40.2143 + ThreadLocalRandom.current().nextInt(1);
+        double lng1 = 50.4324 + ThreadLocalRandom.current().nextInt(1);
+        double lat2 = 56.4321 + ThreadLocalRandom.current().nextInt(1);
+        double lng2 = 54.5353 + ThreadLocalRandom.current().nextInt(1);
+        bh.consume(map.computeIfAbsent(lat1 + "#" + lng1 + "#" + lat2 + "#" + lng2,
+                key -> distance(lat1, lng1, lat2, lng2)));
     }
 
     @CompilerControl(CompilerControl.Mode.INLINE)

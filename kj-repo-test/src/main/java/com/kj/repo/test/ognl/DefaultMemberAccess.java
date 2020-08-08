@@ -41,7 +41,6 @@ public class DefaultMemberAccess implements MemberAccess {
 
     @Override
     public void restore(Map context, Object target, Member member, String propertyName, Object state) {
-        new Exception().printStackTrace();
         if (state != null) {
             ((AccessibleObject) member).setAccessible((Boolean) state);
         }
@@ -49,7 +48,6 @@ public class DefaultMemberAccess implements MemberAccess {
 
     @Override
     public boolean isAccessible(Map context, Object target, Member member, String propertyName) {
-        new Exception().printStackTrace();
         int modifiers = member.getModifiers();
         if (Modifier.isPublic(modifiers)) {
             return true;

@@ -1,5 +1,8 @@
 package com.kj.repo.test.ognl;
 
+import com.google.common.collect.ImmutableMap;
+import com.kj.repo.infra.el.ognl.OgnlHelper;
+
 import ognl.DefaultClassResolver;
 import ognl.DefaultTypeConverter;
 import ognl.Ognl;
@@ -12,7 +15,8 @@ import ognl.OgnlException;
  */
 public class OgnlTest {
 
-    public static void main(String[] args) throws OgnlException {
+    public static void main(String[] args) throws OgnlException, ClassNotFoundException {
+        Class.forName("com.kj.repo.test.ognl.OgnlTest");
         Item root = new Item();
         root.setKey("key");
         root.setValue("value");
@@ -27,6 +31,8 @@ public class OgnlTest {
                         ognlContext.getRoot()));
         System.out.println(
                 Ognl.getValue(Ognl.parseExpression("#item.key"), ognlContext, ognlContext.getRoot(), String.class));
+        System.out.println(
+                (Object) OgnlHelper.execute(root, ImmutableMap.of(), "com.kj.repo.test.ognl.OgnlTest.class", null));
     }
 
 

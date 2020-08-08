@@ -7,6 +7,6 @@ package com.kj.repo.test.leetcode;
 public class RunSolution {
     public static void main(String[] args) {
         Solution solution = new Solution();
-        System.out.print(solution.isValid(""));
+        System.out.print(solution.canFinish(2, new int[][] {{1, 0}}));
     }
 }
