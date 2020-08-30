@@ -5,12 +5,12 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Strings;
-import org.slf4j.Logger;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
-import com.kj.repo.infra.logger.LoggerHelper;
+import com.kj.repo.infra.logger.Log4j2Helper;
 import com.kj.repo.infra.perf.PerfHelper;
 
 /**
@@ -18,7 +18,7 @@ import com.kj.repo.infra.perf.PerfHelper;
  */
 public class RunHelper {
 
-    private static final Logger logger = LoggerHelper.getLogger();
+    private static final Logger logger = Log4j2Helper.getLogger();
 
     public static void run(Runnable runnable) {
         run(() -> {

@@ -1,39 +1,63 @@
 package com.kj.repo.test.leetcode;
 
-import java.util.HashSet;
-import java.util.Set;
-
 class Solution {
-    public boolean canFinish(int numCourses, int[][] prerequisites) {
-        Set<Integer> set1 = new HashSet<Integer>();
-        Set<Integer> set2 = new HashSet<Integer>();
-        for (int i = 0; i < prerequisites.length; i++) {
-            set1.add(prerequisites[i][0]);
-            for (int j = 1; j < prerequisites[i].length; j++) {
-                set2.add(prerequisites[i][j]);
-            }
+    public void solveSudoku(char[][] board) {
+        int[][] row = new int[9][9];
+        int[][] col = new int[9][9];
+        int[][] rec = new int[9][9];
+        solve(board, 0, row, col, rec);
+    }
+
+    public boolean solve(char[][] board, int i, int[][] row, int[][] col, int[][] rec) {
+        if (i >= 81) {
+            return true;
         }
-        set2.removeAll(set1);
-        numCourses = numCourses - set2.size();
-        while (numCourses > 0) {
-            boolean f = false;
-            for (int i = 0; i < prerequisites.length; i++) {
-                int j = 1;
-                for (; j < prerequisites[i].length; j++) {
-                    if (!set2.contains(prerequisites[i][j])) {
-                        break;
-                    }
+        int r = i / 9;
+        int c = i % 9;
+        if (board[r][c] != '.') {
+            if (isValid(board, row, col, rec, r, c)) {
+                row[r][board[r][c] - '1']++;
+                col[c][board[r][c] - '1']++;
+                rec[r / 3 * 3 + c / 3][board[r][c] - '1']++;
+                boolean rtn = solve(board, i + 1, row, col, rec);
+                if (rtn) {
+                    return true;
                 }
-                if (j == prerequisites[i].length) {
-                    f = true;
-                    set2.add(prerequisites[i][0]);
-                    set1.remove(prerequisites[i][0]);
-                    numCourses--;
-                }
-            }
-            if (!f) {
+                row[r][board[r][c] - '1']--;
+                col[c][board[r][c] - '1']--;
+                rec[r / 3 * 3 + c / 3][board[r][c] - '1']--;
                 return false;
             }
+            return false;
+        } else {
+            for (char cc : new char[] {'1', '2', '3', '4', '5', '6', '7', '8', '9'}) {
+                board[r][c] = cc;
+                if (isValid(board, row, col, rec, r, c)) {
+                    row[r][board[r][c] - '1']++;
+                    col[c][board[r][c] - '1']++;
+                    rec[r / 3 * 3 + c / 3][board[r][c] - '1']++;
+                    boolean rtn = solve(board, i + 1, row, col, rec);
+                    if (rtn) {
+                        return true;
+                    }
+                    row[r][board[r][c] - '1']--;
+                    col[c][board[r][c] - '1']--;
+                    rec[r / 3 * 3 + c / 3][board[r][c] - '1']--;
+                }
+            }
+            return false;
+        }
+    }
+
+    public boolean isValid(char[][] board, int[][] row, int[][] col, int[][] rec, int r, int c) {
+        if (row[r][board[r][c] - '1'] >= 1) {
+            return false;
+        }
+        if (col[c][board[r][c] - '1'] >= 1) {
+            return false;
+        }
+        if (rec[r / 3 * 3 + c / 3][board[r][c] - '1'] >= 1) {
+            return false;
         }
         return true;
     }
