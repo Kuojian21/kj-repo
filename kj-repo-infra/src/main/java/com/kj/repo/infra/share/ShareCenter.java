@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Lists;
@@ -51,6 +52,9 @@ public class ShareCenter<T> {
                                         Objects::nonNull).collect(Collectors.toSet())).orElse(null)))
                         .filter(pair -> pair.getValue() != null)
                         .collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
+            }
+            if (MapUtils.isEmpty(items)) {
+                return;
             }
             Map<Long, T> datas = task.apply(items.keySet());
             datas.forEach((k, v) -> items.remove(k).forEach(item -> item.getDataMap().get(k).complete(v)));
