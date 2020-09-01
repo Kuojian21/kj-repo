@@ -8,7 +8,7 @@ import com.kj.repo.infra.perf.PerfHelper;
 public class PerfBuilder {
 
     private final PerfLog perfLog;
-    private long count;
+    private long count = 1;
     private long micro;
 
     public PerfBuilder(PerfLog perfLog) {
