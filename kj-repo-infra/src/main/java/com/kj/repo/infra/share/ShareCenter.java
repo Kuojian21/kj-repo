@@ -26,13 +26,13 @@ import com.google.common.collect.Sets;
 public class ShareCenter<T> {
     private final Map<Long, Set<WeakReference<ShareClient<T>>>> idMap = Maps.newHashMap();
     private final Function<Set<Long>, Map<Long, T>> task;
-    private final int batchsize;
-    private final int threshold;
+    private final int loadBatchSize;
+    private final int loadBatchThreshold;
 
-    public ShareCenter(Function<Set<Long>, Map<Long, T>> task, int batchsize, int threshold) {
+    public ShareCenter(Function<Set<Long>, Map<Long, T>> task, int loadBatchSize, int loadBatchThreshold) {
         this.task = task;
-        this.batchsize = batchsize;
-        this.threshold = threshold;
+        this.loadBatchSize = loadBatchSize;
+        this.loadBatchThreshold = loadBatchThreshold;
     }
 
     public void add(Set<Long> ids, WeakReference<ShareClient<T>> reference) {
@@ -56,8 +56,8 @@ public class ShareCenter<T> {
                         .filter(pair -> pair.getValue() != null)
                         .collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
                 int size = items.size();
-                if ((size > 0 || idMap.size() > this.threshold) && size < this.batchsize) {
-                    items.putAll(Lists.newArrayList(idMap.keySet()).stream().limit(this.batchsize - size)
+                if ((size > 0 || idMap.size() > this.loadBatchThreshold) && size < this.loadBatchSize) {
+                    items.putAll(Lists.newArrayList(idMap.keySet()).stream().limit(this.loadBatchSize - size)
                             .map(id -> Pair.of(id, Optional.ofNullable(idMap.remove(id))
                                     .map(s -> s.stream().map(WeakReference::get).filter(
                                             Objects::nonNull).collect(Collectors.toSet())).orElse(null)))

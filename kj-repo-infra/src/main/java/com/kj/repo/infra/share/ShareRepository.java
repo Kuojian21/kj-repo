@@ -17,37 +17,42 @@ import com.google.common.util.concurrent.MoreExecutors;
  */
 public class ShareRepository<T> {
 
-    public static final int DEFAULT_BATCHSIZE = 100;
-    public static final double DEFAULT_FACTOR = 0.5D;
+    public static final int DEFAULT_LOAD_BATCH_SIZE = 100;
+    public static final double DEFAULT_LOAD_BATCH_FACTOR = 0.5D;
+    public static final int DEFAULT_CLIENT_SLEEP_MILLS = 0;
 
     private final ConcurrentMap<Long, ShareCenter<T>> repo = Maps.newConcurrentMap();
     private final Function<Set<Long>, Map<Long, T>> task;
     private final Function<Long, Long> shard;
     private final Supplier<Executor> executor;
-    private final int batchsize;
-    private final int threshold;
+    private final int loadBatchSize;
+    private final int loadBatchThreshold;
+    private final long clientSleepMills;
 
     public ShareRepository(
             Function<Set<Long>, Map<Long, T>> task, Function<Long, Long> shard,
-            Supplier<Executor> executor, int batchsize, double factor) {
+            Supplier<Executor> executor, int loadBatchSize, double centerBatchFactor, long clientSleepMills) {
         this.task = task;
         this.shard = shard;
         this.executor = executor;
-        this.batchsize = batchsize;
-        this.threshold = (int) (batchsize * factor);
+        this.loadBatchSize = loadBatchSize;
+        this.loadBatchThreshold = (int) (loadBatchSize * centerBatchFactor);
+        this.clientSleepMills = clientSleepMills;
     }
 
     public static <T> ShareRepository<T> repo(Function<Set<Long>, Map<Long, T>> task, Function<Long, Long> shard,
-            Supplier<Executor> executor, int batchsize, double factor) {
-        return new ShareRepository<>(task, shard, executor, batchsize, factor);
+            Supplier<Executor> executor, int loadBatchSize, double loadBatchFactor, long clientSleepMills) {
+        return new ShareRepository<>(task, shard, executor, loadBatchSize, loadBatchFactor, clientSleepMills);
     }
 
     public static <T> ShareRepository<T> repo(Function<Set<Long>, Map<Long, T>> task, Function<Long, Long> shard) {
-        return repo(task, shard, MoreExecutors::directExecutor, DEFAULT_BATCHSIZE, DEFAULT_FACTOR);
+        return repo(task, shard, MoreExecutors::directExecutor, DEFAULT_LOAD_BATCH_SIZE, DEFAULT_LOAD_BATCH_FACTOR,
+                DEFAULT_CLIENT_SLEEP_MILLS);
     }
 
     public ShareClient<T> client(Collection<Long> ids) {
         return new ShareClient<>(ids, id -> repo
-                .computeIfAbsent(shard.apply(id), key -> new ShareCenter<>(task, batchsize, threshold)), this.executor);
+                .computeIfAbsent(shard.apply(id), key -> new ShareCenter<>(task, loadBatchSize, loadBatchThreshold)),
+                this.executor, clientSleepMills);
     }
 }

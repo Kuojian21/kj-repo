@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.Uninterruptibles;
 
 /**
  * @author kj
@@ -23,12 +25,16 @@ public class ShareClient<T> {
     private final Map<Long, CompletableFuture<T>> dataMap = Maps.newHashMap();
     private final Function<Long, ShareCenter<T>> shard;
     private final WeakReference<ShareClient<T>> reference;
+    private final long sleepMills;
     private volatile boolean get = false;
+    private volatile long time;
 
-    public ShareClient(Collection<Long> ids, Function<Long, ShareCenter<T>> shard, Supplier<Executor> executor) {
+    public ShareClient(Collection<Long> ids, Function<Long, ShareCenter<T>> shard, Supplier<Executor> executor,
+            long sleepMills) {
         this.shard = shard;
         this.executor = executor;
         this.reference = new WeakReference<>(this);
+        this.sleepMills = sleepMills;
         this.add(ids);
     }
 
@@ -38,12 +44,17 @@ public class ShareClient<T> {
 
     public void add(Collection<Long> ids) {
         this.get = false;
+        this.time = System.currentTimeMillis();
         ids.forEach(id -> dataMap.putIfAbsent(id, new CompletableFuture<>()));
         ids.stream().collect(Collectors.groupingBy(this.shard, Collectors.toSet()))
                 .forEach((k, v) -> k.add(v, this.reference));
     }
 
     public Map<Long, T> get() {
+        long internal = System.currentTimeMillis() - time;
+        if (internal < sleepMills) {
+            Uninterruptibles.sleepUninterruptibly(sleepMills - internal, TimeUnit.MILLISECONDS);
+        }
         this.dataMap.entrySet().stream()
                 .collect(Collectors.groupingBy(e -> shard.apply(e.getKey()), Collectors.toSet()))
                 .forEach((center, vSet) -> executor.get().execute(() -> center
@@ -71,5 +82,4 @@ public class ShareClient<T> {
             throw new RuntimeException(e);
         }
     }
-
 }
