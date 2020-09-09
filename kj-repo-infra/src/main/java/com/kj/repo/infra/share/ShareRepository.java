@@ -31,12 +31,12 @@ public class ShareRepository<T> {
 
     public ShareRepository(
             Function<Set<Long>, Map<Long, T>> task, Function<Long, Long> shard,
-            Supplier<Executor> executor, int loadBatchSize, double centerBatchFactor, long clientSleepMills) {
+            Supplier<Executor> executor, int loadBatchSize, double loadBatchFactor, long clientSleepMills) {
         this.task = task;
         this.shard = shard;
         this.executor = executor;
         this.loadBatchSize = loadBatchSize;
-        this.loadBatchThreshold = (int) (loadBatchSize * centerBatchFactor);
+        this.loadBatchThreshold = (int) (loadBatchSize * loadBatchFactor);
         this.clientSleepMills = clientSleepMills;
     }
 

@@ -26,8 +26,8 @@ public class ShareClient<T> {
     private final Function<Long, ShareCenter<T>> shard;
     private final WeakReference<ShareClient<T>> reference;
     private final long sleepMills;
-    private volatile boolean get = false;
     private volatile long time;
+    private volatile boolean get = true;
 
     public ShareClient(Collection<Long> ids, Function<Long, ShareCenter<T>> shard, Supplier<Executor> executor,
             long sleepMills) {
@@ -43,8 +43,10 @@ public class ShareClient<T> {
     }
 
     public void add(Collection<Long> ids) {
+        if (this.get) {
+            this.time = System.currentTimeMillis();
+        }
         this.get = false;
-        this.time = System.currentTimeMillis();
         ids.forEach(id -> dataMap.putIfAbsent(id, new CompletableFuture<>()));
         ids.stream().collect(Collectors.groupingBy(this.shard, Collectors.toSet()))
                 .forEach((k, v) -> k.add(v, this.reference));
