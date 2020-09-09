@@ -2,11 +2,9 @@ package com.kj.repo.infra.share;
 
 import java.lang.ref.WeakReference;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -21,13 +19,13 @@ import com.google.common.collect.Maps;
  * Created on 2020-08-27
  */
 public class ShareClient<T> {
-    private final Supplier<ExecutorService> executor;
+    private final Supplier<Executor> executor;
     private final Map<Long, CompletableFuture<T>> dataMap = Maps.newHashMap();
     private final Function<Long, ShareCenter<T>> shard;
     private final WeakReference<ShareClient<T>> reference;
     private volatile boolean get = false;
 
-    public ShareClient(Collection<Long> ids, Function<Long, ShareCenter<T>> shard, Supplier<ExecutorService> executor) {
+    public ShareClient(Collection<Long> ids, Function<Long, ShareCenter<T>> shard, Supplier<Executor> executor) {
         this.shard = shard;
         this.executor = executor;
         this.reference = new WeakReference<>(this);
@@ -46,17 +44,11 @@ public class ShareClient<T> {
     }
 
     public Map<Long, T> get() {
-        Iterator<Map.Entry<ShareCenter<T>, Set<Long>>> iterator =
-                this.dataMap.entrySet().stream().filter(e -> !e.getValue().isDone()).map(Map.Entry::getKey)
-                        .collect(Collectors.groupingBy(shard, Collectors.toSet())).entrySet().iterator();
-        if (iterator.hasNext()) {
-            Map.Entry<ShareCenter<T>, Set<Long>> shareCenter = iterator.next();
-            while (iterator.hasNext()) {
-                Map.Entry<ShareCenter<T>, Set<Long>> tShareCenter = iterator.next();
-                executor.get().submit(() -> tShareCenter.getKey().run(this, tShareCenter.getValue()));
-            }
-            shareCenter.getKey().run(this, shareCenter.getValue());
-        }
+        this.dataMap.entrySet().stream()
+                .collect(Collectors.groupingBy(e -> shard.apply(e.getKey()), Collectors.toSet()))
+                .forEach((center, vSet) -> executor.get().execute(() -> center
+                        .run(this.reference, vSet.stream().filter(e -> !e.getValue().isDone()).map(Map.Entry::getKey)
+                                .collect(Collectors.toSet()))));
         this.get = true;
         return this.dataMap.entrySet().stream()
                 .map(e -> Pair.of(e.getKey(), getUnchecked(e.getValue())))
@@ -64,14 +56,12 @@ public class ShareClient<T> {
     }
 
     @Override
-    protected void finalize() throws Throwable {
+    protected void finalize() {
         if (this.get) {
             return;
         }
         this.dataMap.entrySet().stream().filter(e -> !e.getValue().isDone()).map(Map.Entry::getKey)
-                .collect(Collectors.groupingBy(shard)).forEach((k, v) -> {
-            k.clear(this.reference, v);
-        });
+                .collect(Collectors.groupingBy(shard)).forEach((center, v) -> center.clear(this.reference, v));
     }
 
     public T getUnchecked(Future<T> future) {

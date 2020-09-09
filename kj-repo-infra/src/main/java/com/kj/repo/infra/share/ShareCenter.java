@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -25,9 +26,13 @@ import com.google.common.collect.Sets;
 public class ShareCenter<T> {
     private final Map<Long, Set<WeakReference<ShareClient<T>>>> idMap = Maps.newHashMap();
     private final Function<Set<Long>, Map<Long, T>> task;
+    private final int batchsize;
+    private final int threshold;
 
-    public ShareCenter(Function<Set<Long>, Map<Long, T>> task) {
+    public ShareCenter(Function<Set<Long>, Map<Long, T>> task, int batchsize, int threshold) {
         this.task = task;
+        this.batchsize = batchsize;
+        this.threshold = threshold;
     }
 
     public void add(Set<Long> ids, WeakReference<ShareClient<T>> reference) {
@@ -36,22 +41,29 @@ public class ShareCenter<T> {
         }
     }
 
-    public void run(ShareClient<T> shareClient, Set<Long> ids) {
+    public void run(WeakReference<ShareClient<T>> reference, Set<Long> ids) {
         try {
+            if (CollectionUtils.isEmpty(ids)) {
+                return;
+            }
             Map<Long, Set<ShareClient<T>>> items = Maps.newHashMap();
             synchronized (this) {
                 items.putAll(ids.stream()
-                        .map(id -> Pair.of(id,
-                                Optional.ofNullable(idMap.remove(id)).map(s -> s.stream().map(Reference::get).filter(
-                                        Objects::nonNull).collect(Collectors.toSet())).orElse(null)))
+                        .map(id -> Pair.of(id, Optional.ofNullable(idMap.get(id)).filter(s -> s.contains(reference))
+                                .map(s -> idMap.remove(id))
+                                .map(s -> s.stream().map(Reference::get).filter(Objects::nonNull)
+                                        .collect(Collectors.toSet())).orElse(null)))
                         .filter(pair -> pair.getValue() != null)
                         .collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
-                items.putAll(Lists.newArrayList(idMap.keySet()).stream().limit(100)
-                        .map(id -> Pair.of(id, Optional.ofNullable(idMap.remove(id))
-                                .map(s -> s.stream().map(WeakReference::get).filter(
-                                        Objects::nonNull).collect(Collectors.toSet())).orElse(null)))
-                        .filter(pair -> pair.getValue() != null)
-                        .collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
+                int size = items.size();
+                if ((size > 0 || idMap.size() > this.threshold) && size < this.batchsize) {
+                    items.putAll(Lists.newArrayList(idMap.keySet()).stream().limit(this.batchsize - size)
+                            .map(id -> Pair.of(id, Optional.ofNullable(idMap.remove(id))
+                                    .map(s -> s.stream().map(WeakReference::get).filter(
+                                            Objects::nonNull).collect(Collectors.toSet())).orElse(null)))
+                            .filter(pair -> pair.getValue() != null)
+                            .collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
+                }
             }
             if (MapUtils.isEmpty(items)) {
                 return;
@@ -68,9 +80,8 @@ public class ShareCenter<T> {
         ids.forEach(id -> Optional.ofNullable(idMap.get(id)).ifPresent(s -> {
             s.remove(reference);
             synchronized (this) {
-                if (s.isEmpty()) {
-                    idMap.remove(id);
-                }
+                Optional.ofNullable(idMap.get(id)).filter(Set::isEmpty)
+                        .ifPresent(inner -> idMap.remove(id));
             }
         }));
     }
