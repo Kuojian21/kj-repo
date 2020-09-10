@@ -15,22 +15,22 @@ import com.google.common.util.concurrent.MoreExecutors;
  * @author kj
  * Created on 2020-08-29
  */
-public class ShareRepository<T> {
+public class ShareRepository<K, S, V> {
 
     public static final int DEFAULT_LOAD_BATCH_SIZE = 100;
     public static final double DEFAULT_LOAD_BATCH_FACTOR = 0.5D;
     public static final int DEFAULT_CLIENT_SLEEP_MILLS = 0;
 
-    private final ConcurrentMap<Long, ShareCenter<T>> repo = Maps.newConcurrentMap();
-    private final Function<Set<Long>, Map<Long, T>> task;
-    private final Function<Long, Long> shard;
+    private final ConcurrentMap<S, ShareCenter<K, S, V>> repo = Maps.newConcurrentMap();
+    private final Function<Set<K>, Map<K, V>> task;
+    private final Function<K, S> shard;
     private final Supplier<Executor> executor;
     private final int loadBatchSize;
     private final int loadBatchThreshold;
     private final long clientSleepMills;
 
     public ShareRepository(
-            Function<Set<Long>, Map<Long, T>> task, Function<Long, Long> shard,
+            Function<Set<K>, Map<K, V>> task, Function<K, S> shard,
             Supplier<Executor> executor, int loadBatchSize, double loadBatchFactor, long clientSleepMills) {
         this.task = task;
         this.shard = shard;
@@ -40,25 +40,26 @@ public class ShareRepository<T> {
         this.clientSleepMills = clientSleepMills;
     }
 
-    public static <T> ShareRepository<T> repo(Function<Set<Long>, Map<Long, T>> task, Function<Long, Long> shard,
+    public static <K, S, V> ShareRepository<K, S, V> repo(Function<Set<K>, Map<K, V>> task, Function<K, S> shard,
             Supplier<Executor> executor, int loadBatchSize, double loadBatchFactor, long clientSleepMills) {
         return new ShareRepository<>(task, shard, executor, loadBatchSize, loadBatchFactor, clientSleepMills);
     }
 
-    public static <T> ShareRepository<T> repo(Function<Set<Long>, Map<Long, T>> task, Function<Long, Long> shard,
-            Supplier<Executor> executor) {
+    public static <K, S, V> ShareRepository<K, S, V> repo(Function<Set<K>, Map<K, V>> task,
+            Function<K, S> shard, Supplier<Executor> executor) {
         return repo(task, shard, executor, DEFAULT_LOAD_BATCH_SIZE, DEFAULT_LOAD_BATCH_FACTOR,
                 DEFAULT_CLIENT_SLEEP_MILLS);
     }
 
-    public static <T> ShareRepository<T> repo(Function<Set<Long>, Map<Long, T>> task, Function<Long, Long> shard) {
+    public static <K, S, V> ShareRepository<K, S, V> repo(Function<Set<K>, Map<K, V>> task,
+            Function<K, S> shard) {
         return repo(task, shard, MoreExecutors::directExecutor, DEFAULT_LOAD_BATCH_SIZE, DEFAULT_LOAD_BATCH_FACTOR,
                 DEFAULT_CLIENT_SLEEP_MILLS);
     }
 
-    public ShareClient<T> client(Collection<Long> ids) {
-        return new ShareClient<>(ids, id -> repo
-                .computeIfAbsent(shard.apply(id), key -> new ShareCenter<>(task, loadBatchSize, loadBatchThreshold)),
+    public ShareClient<K, S, V> client(Collection<K> keys) {
+        return new ShareClient<>(keys, key -> repo
+                .computeIfAbsent(shard.apply(key), sKey -> new ShareCenter<>(task, loadBatchSize, loadBatchThreshold)),
                 this.executor, clientSleepMills);
     }
 }

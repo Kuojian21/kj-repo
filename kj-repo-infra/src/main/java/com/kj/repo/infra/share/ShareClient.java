@@ -23,56 +23,56 @@ import com.google.common.util.concurrent.Uninterruptibles;
  * @author kj
  * Created on 2020-08-27
  */
-public class ShareClient<T> {
+public class ShareClient<K, S, V> {
     private final Supplier<Executor> executor;
-    private final Map<Long, CompletableFuture<T>> dataMap = Maps.newHashMap();
-    private final Function<Long, ShareCenter<T>> shard;
-    private final WeakReference<ShareClient<T>> reference;
+    private final Map<K, CompletableFuture<V>> data = Maps.newHashMap();
+    private final Function<K, ShareCenter<K, S, V>> shard;
+    private final WeakReference<ShareClient<K, S, V>> reference;
     private final long sleepMills;
     private volatile long time;
     private volatile boolean get = true;
 
-    public ShareClient(Collection<Long> ids, Function<Long, ShareCenter<T>> shard, Supplier<Executor> executor,
+    public ShareClient(Collection<K> keys, Function<K, ShareCenter<K, S, V>> shard, Supplier<Executor> executor,
             long sleepMills) {
         this.shard = shard;
         this.executor = executor;
         this.reference = new WeakReference<>(this);
         this.sleepMills = sleepMills;
-        this.add(ids);
+        this.add(keys);
     }
 
-    Map<Long, CompletableFuture<T>> getDataMap() {
-        return dataMap;
+    Map<K, CompletableFuture<V>> getData() {
+        return data;
     }
 
-    public void add(Collection<Long> ids) {
+    public void add(Collection<K> keys) {
         if (this.get) {
             this.time = System.currentTimeMillis();
         }
         this.get = false;
-        ids.forEach(id -> dataMap.putIfAbsent(id, new CompletableFuture<>()));
-        ids.stream().collect(Collectors.groupingBy(this.shard, Collectors.toSet()))
-                .forEach((k, v) -> k.add(v, this.reference));
+        keys.forEach(key -> data.putIfAbsent(key, new CompletableFuture<>()));
+        keys.stream().collect(Collectors.groupingBy(this.shard, Collectors.toSet()))
+                .forEach((center, vKeys) -> center.add(vKeys, this.reference));
     }
 
-    public Map<Long, T> get() {
+    public Map<K, V> get() {
         long internal = System.currentTimeMillis() - time;
         if (internal < sleepMills) {
             Uninterruptibles.sleepUninterruptibly(sleepMills - internal, TimeUnit.MILLISECONDS);
         }
-        Iterator<Entry<ShareCenter<T>, Set<Long>>> iterator =
-                this.dataMap.entrySet().stream().filter(e -> !e.getValue().isDone()).map(Map.Entry::getKey)
+        Iterator<Entry<ShareCenter<K, S, V>, Set<K>>> iterator =
+                this.data.entrySet().stream().filter(entry -> !entry.getValue().isDone()).map(Map.Entry::getKey)
                         .collect(Collectors.groupingBy(shard, Collectors.toSet())).entrySet().iterator();
         if (iterator.hasNext()) {
-            Map.Entry<ShareCenter<T>, Set<Long>> entry = iterator.next();
+            Map.Entry<ShareCenter<K, S, V>, Set<K>> entry = iterator.next();
             while (iterator.hasNext()) {
-                Map.Entry<ShareCenter<T>, Set<Long>> tEntry = iterator.next();
+                Map.Entry<ShareCenter<K, S, V>, Set<K>> tEntry = iterator.next();
                 executor.get().execute(() -> tEntry.getKey().run(this.reference, tEntry.getValue()));
             }
             entry.getKey().run(this.reference, entry.getValue());
         }
         this.get = true;
-        return this.dataMap.entrySet().stream()
+        return this.data.entrySet().stream()
                 .map(e -> Pair.of(e.getKey(), getUnchecked(e.getValue())))
                 .filter(e -> e.getValue() != null).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
     }
@@ -82,11 +82,11 @@ public class ShareClient<T> {
         if (this.get) {
             return;
         }
-        this.dataMap.entrySet().stream().filter(e -> !e.getValue().isDone()).map(Map.Entry::getKey)
-                .collect(Collectors.groupingBy(shard)).forEach((center, v) -> center.clear(this.reference, v));
+        this.data.entrySet().stream().filter(entry -> !entry.getValue().isDone()).map(Map.Entry::getKey)
+                .collect(Collectors.groupingBy(shard)).forEach((center, keys) -> center.clear(this.reference, keys));
     }
 
-    public T getUnchecked(Future<T> future) {
+    public V getUnchecked(Future<V> future) {
         try {
             return future.get();
         } catch (Exception e) {
