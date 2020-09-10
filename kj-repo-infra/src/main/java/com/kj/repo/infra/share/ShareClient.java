@@ -2,7 +2,10 @@ package com.kj.repo.infra.share;
 
 import java.lang.ref.WeakReference;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
@@ -57,11 +60,17 @@ public class ShareClient<T> {
         if (internal < sleepMills) {
             Uninterruptibles.sleepUninterruptibly(sleepMills - internal, TimeUnit.MILLISECONDS);
         }
-        this.dataMap.entrySet().stream()
-                .collect(Collectors.groupingBy(e -> shard.apply(e.getKey()), Collectors.toSet()))
-                .forEach((center, vSet) -> executor.get().execute(() -> center
-                        .run(this.reference, vSet.stream().filter(e -> !e.getValue().isDone()).map(Map.Entry::getKey)
-                                .collect(Collectors.toSet()))));
+        Iterator<Entry<ShareCenter<T>, Set<Long>>> iterator =
+                this.dataMap.entrySet().stream().filter(e -> !e.getValue().isDone()).map(Map.Entry::getKey)
+                        .collect(Collectors.groupingBy(shard, Collectors.toSet())).entrySet().iterator();
+        if (iterator.hasNext()) {
+            Map.Entry<ShareCenter<T>, Set<Long>> entry = iterator.next();
+            while (iterator.hasNext()) {
+                Map.Entry<ShareCenter<T>, Set<Long>> tEntry = iterator.next();
+                executor.get().execute(() -> tEntry.getKey().run(this.reference, tEntry.getValue()));
+            }
+            entry.getKey().run(this.reference, entry.getValue());
+        }
         this.get = true;
         return this.dataMap.entrySet().stream()
                 .map(e -> Pair.of(e.getKey(), getUnchecked(e.getValue())))

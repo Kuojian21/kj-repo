@@ -45,6 +45,12 @@ public class ShareRepository<T> {
         return new ShareRepository<>(task, shard, executor, loadBatchSize, loadBatchFactor, clientSleepMills);
     }
 
+    public static <T> ShareRepository<T> repo(Function<Set<Long>, Map<Long, T>> task, Function<Long, Long> shard,
+            Supplier<Executor> executor) {
+        return repo(task, shard, executor, DEFAULT_LOAD_BATCH_SIZE, DEFAULT_LOAD_BATCH_FACTOR,
+                DEFAULT_CLIENT_SLEEP_MILLS);
+    }
+
     public static <T> ShareRepository<T> repo(Function<Set<Long>, Map<Long, T>> task, Function<Long, Long> shard) {
         return repo(task, shard, MoreExecutors::directExecutor, DEFAULT_LOAD_BATCH_SIZE, DEFAULT_LOAD_BATCH_FACTOR,
                 DEFAULT_CLIENT_SLEEP_MILLS);
