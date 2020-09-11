@@ -48,13 +48,11 @@ public class ShareCenter<K, S, V> {
             }
             Map<K, Set<ShareClient<K, S, V>>> items = Maps.newHashMap();
             synchronized (this) {
-                items.putAll(keys.stream()
-                        .map(key -> Pair
-                                .of(key, Optional.ofNullable(keyClients.get(key))
-                                        .filter(clients -> clients.contains(reference))
-                                        .map(clients -> keyClients.remove(key))
-                                        .map(clients -> clients.stream().map(Reference::get).filter(Objects::nonNull)
-                                                .collect(Collectors.toSet())).orElse(null)))
+                items.putAll(keys.stream().map(key -> Pair.of(key,
+                        Optional.ofNullable(keyClients.get(key)).filter(clients -> clients.contains(reference))
+                                .map(clients -> keyClients.remove(key))
+                                .map(clients -> clients.stream().map(Reference::get).filter(Objects::nonNull)
+                                        .collect(Collectors.toSet())).orElse(null)))
                         .filter(pair -> pair.getValue() != null)
                         .collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
                 int size = items.size();
