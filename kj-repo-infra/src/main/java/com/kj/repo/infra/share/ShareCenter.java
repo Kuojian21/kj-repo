@@ -50,9 +50,10 @@ public class ShareCenter<K, S, V> {
             synchronized (this) {
                 items.putAll(keys.stream()
                         .map(key -> Pair
-                                .of(key, Optional.ofNullable(keyClients.get(key)).filter(s -> s.contains(reference))
-                                        .map(s -> keyClients.remove(key))
-                                        .map(s -> s.stream().map(Reference::get).filter(Objects::nonNull)
+                                .of(key, Optional.ofNullable(keyClients.get(key))
+                                        .filter(clients -> clients.contains(reference))
+                                        .map(clients -> keyClients.remove(key))
+                                        .map(clients -> clients.stream().map(Reference::get).filter(Objects::nonNull)
                                                 .collect(Collectors.toSet())).orElse(null)))
                         .filter(pair -> pair.getValue() != null)
                         .collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
