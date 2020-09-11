@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -25,11 +25,13 @@ import com.google.common.collect.Sets;
 
 public class ShareCenter<K, S, V> {
     private final Map<K, Set<WeakReference<ShareClient<K, S, V>>>> keyClients = Maps.newHashMap();
-    private final Function<Set<K>, Map<K, V>> task;
+    private final BiFunction<S, Set<K>, Map<K, V>> task;
+    private final S sKey;
     private final int loadBatchSize;
     private final int loadBatchThreshold;
 
-    public ShareCenter(Function<Set<K>, Map<K, V>> task, int loadBatchSize, int loadBatchThreshold) {
+    public ShareCenter(S sKey, BiFunction<S, Set<K>, Map<K, V>> task, int loadBatchSize, int loadBatchThreshold) {
+        this.sKey = sKey;
         this.task = task;
         this.loadBatchSize = loadBatchSize;
         this.loadBatchThreshold = loadBatchThreshold;
@@ -68,7 +70,7 @@ public class ShareCenter<K, S, V> {
             if (MapUtils.isEmpty(items)) {
                 return;
             }
-            Map<K, V> datas = task.apply(items.keySet());
+            Map<K, V> datas = task.apply(this.sKey, items.keySet());
             datas.forEach((key, value) -> items.remove(key).forEach(item -> item.getData().get(key).complete(value)));
             items.forEach((key, value) -> value.forEach(item -> item.getData().get(key).complete(null)));
         } catch (Exception e) {
