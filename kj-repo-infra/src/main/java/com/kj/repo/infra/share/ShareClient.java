@@ -73,8 +73,8 @@ public class ShareClient<K, S, V> {
         }
         this.get = true;
         return this.data.entrySet().stream()
-                .map(e -> Pair.of(e.getKey(), getUnchecked(e.getValue())))
-                .filter(e -> e.getValue() != null).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+                .map(entry -> Pair.of(entry.getKey(), getUnchecked(entry.getValue())))
+                .filter(entry -> entry.getValue() != null).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
     }
 
     @Override
