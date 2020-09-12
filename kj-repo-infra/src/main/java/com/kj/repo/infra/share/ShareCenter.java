@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -29,6 +31,7 @@ public class ShareCenter<K, S, V> {
     private final S sKey;
     private final int loadBatchSize;
     private final int loadBatchThreshold;
+    private final Lock lock = new ReentrantLock(true);
 
     public ShareCenter(S sKey, BiFunction<S, Set<K>, Map<K, V>> task, int loadBatchSize, int loadBatchThreshold) {
         this.sKey = sKey;
@@ -38,9 +41,8 @@ public class ShareCenter<K, S, V> {
     }
 
     public void add(Set<K> keys, WeakReference<ShareClient<K, S, V>> reference) {
-        synchronized (this) {
-            keys.forEach(key -> this.keyClients.computeIfAbsent(key, tKey -> Sets.newHashSet()).add(reference));
-        }
+        runInLock(() -> keys
+                .forEach(key -> this.keyClients.computeIfAbsent(key, tKey -> Sets.newHashSet()).add(reference)));
     }
 
     public void run(WeakReference<ShareClient<K, S, V>> reference, Set<K> keys) {
@@ -49,7 +51,7 @@ public class ShareCenter<K, S, V> {
                 return;
             }
             Map<K, Set<ShareClient<K, S, V>>> items = Maps.newHashMap();
-            synchronized (this) {
+            runInLock(() -> {
                 items.putAll(keys.stream().map(key -> Pair.of(key,
                         Optional.ofNullable(keyClients.get(key)).filter(clients -> clients.contains(reference))
                                 .map(clients -> keyClients.remove(key))
@@ -66,7 +68,7 @@ public class ShareCenter<K, S, V> {
                             .filter(pair -> pair.getValue() != null)
                             .collect(Collectors.toMap(Pair::getKey, Pair::getValue)));
                 }
-            }
+            });
             if (MapUtils.isEmpty(items)) {
                 return;
             }
@@ -81,10 +83,17 @@ public class ShareCenter<K, S, V> {
     public void clear(WeakReference<ShareClient<K, S, V>> reference, Collection<K> keys) {
         keys.forEach(key -> Optional.ofNullable(keyClients.get(key)).ifPresent(tKeys -> {
             tKeys.remove(reference);
-            synchronized (this) {
-                Optional.ofNullable(keyClients.get(key)).filter(Set::isEmpty)
-                        .ifPresent(itKeys -> keyClients.remove(key));
-            }
+            runInLock(() -> Optional.ofNullable(keyClients.get(key)).filter(Set::isEmpty)
+                    .ifPresent(itKeys -> keyClients.remove(key)));
         }));
+    }
+
+    public void runInLock(Runnable runnable) {
+        try {
+            lock.lock();
+            runnable.run();
+        } finally {
+            lock.unlock();
+        }
     }
 }

@@ -1,5 +1,7 @@
 package com.kj.repo.infra.perf.model;
 
+import java.util.concurrent.TimeUnit;
+
 import com.kj.repo.infra.perf.PerfHelper;
 
 /**
@@ -31,6 +33,11 @@ public class PerfBuilder {
 
     public long getMicro() {
         return micro;
+    }
+
+    public PerfBuilder millis(long millis) {
+        this.micro = TimeUnit.MILLISECONDS.toMicros(millis);
+        return this;
     }
 
     public PerfBuilder micro(long micro) {
