@@ -1,5 +1,6 @@
 package com.kj.repo.infra.perf;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,7 +30,9 @@ public abstract class PerfLogger {
         @Override
         public void display(List<Map.Entry<PerfLog, Perf>> entries) {
             System.out.println(header);
-            for (Map.Entry<PerfLog, Perf> entry : entries) {
+            for (Map.Entry<PerfLog, Perf> entry : entries.stream().sorted(Comparator.comparing(e -> Joiner.on(".")
+                    .join(e.getKey().getNamespace(), e.getKey().getTag(), Joiner.on(".").join(e.getKey().getExtras()))))
+                    .collect(Collectors.toList())) {
                 PerfLog perfLog = entry.getKey();
                 List<Object> params = Lists.newArrayList();
                 List<Object> names = Lists.newArrayList(perfLog.getNamespace(), perfLog.getTag());

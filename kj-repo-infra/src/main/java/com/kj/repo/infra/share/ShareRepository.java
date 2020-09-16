@@ -19,7 +19,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 public class ShareRepository<K, S, V> {
 
     public static final int DEFAULT_LOAD_BATCH_SIZE = 100;
-    public static final double DEFAULT_LOAD_BATCH_FACTOR = 0.5D;
+    public static final double DEFAULT_LOAD_BATCH_FACTOR = 1.0D;
     public static final int DEFAULT_CLIENT_SLEEP_MILLS = 0;
 
     private final ConcurrentMap<S, ShareCenter<K, S, V>> repo = Maps.newConcurrentMap();

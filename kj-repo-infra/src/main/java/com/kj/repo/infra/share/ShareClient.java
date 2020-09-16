@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -18,6 +19,8 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
+
+import redis.clients.util.MurmurHash;
 
 /**
  * @author kj
@@ -29,6 +32,7 @@ public class ShareClient<K, S, V> {
     private final Function<K, ShareCenter<K, S, V>> shard;
     private final WeakReference<ShareClient<K, S, V>> reference;
     private final long sleepMills;
+    private final int hashcode;
     private volatile long time;
     private volatile boolean get = true;
 
@@ -38,6 +42,9 @@ public class ShareClient<K, S, V> {
         this.executor = executor;
         this.reference = new WeakReference<>(this);
         this.sleepMills = sleepMills;
+        this.hashcode =
+                (int) new MurmurHash()
+                        .hash("ShareClientV0" + ThreadLocalRandom.current().nextLong(Long.MAX_VALUE) + this.hashCode());
         this.add(keys);
     }
 
@@ -67,9 +74,9 @@ public class ShareClient<K, S, V> {
             Map.Entry<ShareCenter<K, S, V>, Set<K>> entry = iterator.next();
             while (iterator.hasNext()) {
                 Map.Entry<ShareCenter<K, S, V>, Set<K>> tEntry = iterator.next();
-                executor.get().execute(() -> tEntry.getKey().run(this.reference, tEntry.getValue()));
+                executor.get().execute(() -> tEntry.getKey().run(this.reference));
             }
-            entry.getKey().run(this.reference, entry.getValue());
+            entry.getKey().run(this.reference);
         }
         this.get = true;
         return this.data.entrySet().stream()
@@ -83,7 +90,7 @@ public class ShareClient<K, S, V> {
             return;
         }
         this.data.entrySet().stream().filter(entry -> !entry.getValue().isDone()).map(Map.Entry::getKey)
-                .collect(Collectors.groupingBy(shard)).forEach((center, keys) -> center.clear(this.reference, keys));
+                .collect(Collectors.groupingBy(shard)).forEach((center, keys) -> center.clear(this.reference));
     }
 
     public V getUnchecked(Future<V> future) {
@@ -92,5 +99,10 @@ public class ShareClient<K, S, V> {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return this.hashcode;
     }
 }
