@@ -1,19 +1,19 @@
 package com.kj.repo.infra.share;
 
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
@@ -40,23 +40,30 @@ public class ShareCenter<K, S, V> {
     }
 
     public void run(WeakReference<ShareClient<K, S, V>> reference) {
+        Map<WeakReference<ShareClient<K, S, V>>, Set<K>> clientRefMap = new HashMap<>();
+        clientRefMap.put(reference, Sets.newHashSet());
+        Iterator<WeakReference<ShareClient<K, S, V>>> iterator =
+                Lists.newArrayList(this.clients.keySet()).iterator();
+        Set<K> keys = clients.remove(reference);
+        if (keys == null) {
+            return;
+        }
+        while (iterator.hasNext()) {
+            WeakReference<ShareClient<K, S, V>> clientRef = iterator.next();
+            Set<K> tKeys = clients.remove(clientRef);
+            if (tKeys != null) {
+                clientRefMap.put(clientRef, tKeys);
+            }
+        }
         try {
-            Map<K, Set<ShareClient<K, S, V>>> clientMap = Maps.newHashMap();
-            Set<K> keys = clients.remove(reference);
-            if (CollectionUtils.isNotEmpty(keys)) {
-                keys.forEach(key -> clientMap.computeIfAbsent(key, tKey -> Sets.newHashSet()).add(reference.get()));
-            } else if (clients.size() < loadBatchThreshold) {
-                return;
-            }
-            Iterator<WeakReference<ShareClient<K, S, V>>> iterator =
-                    Lists.newArrayList(this.clients.keySet()).iterator();
-            while (clientMap.size() < this.loadBatchSize && iterator.hasNext()) {
-                Optional.ofNullable(iterator.next())
-                        .map(clientRef -> Pair.of(clientRef.get(), clients.remove(clientRef)))
-                        .filter(pair -> pair.getKey() != null && pair.getValue() != null)
-                        .ifPresent(pair -> pair.getValue().forEach(
-                                key -> clientMap.computeIfAbsent(key, tKey -> Sets.newHashSet()).add(pair.getKey())));
-            }
+            clientRefMap.put(reference, keys);
+            Map<K, List<ShareClient<K, S, V>>> clientMap =
+                    clientRefMap.entrySet().stream().map(e -> Pair.of(e.getKey().get(), e.getValue()))
+                            .filter(pair -> pair.getKey() != null && pair.getValue() != null)
+                            .flatMap(pair -> pair.getValue().stream().map(key -> Pair.of(key, pair.getKey())))
+                            .collect(Collectors.groupingBy(Pair::getKey)).entrySet().stream()
+                            .collect(Collectors.toMap(Map.Entry::getKey,
+                                    e -> e.getValue().stream().map(Pair::getValue).collect(Collectors.toList())));
             Map<K, V> datas = task.apply(this.sKey, clientMap.keySet());
             datas.forEach((k, v) -> clientMap.remove(k).forEach(client -> client.getData().get(k).complete(v)));
             clientMap.forEach((k, v) -> v.forEach(client -> client.getData().get(k).complete(null)));

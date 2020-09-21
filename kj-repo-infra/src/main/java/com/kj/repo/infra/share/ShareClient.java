@@ -9,7 +9,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -20,8 +19,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Uninterruptibles;
 
-import redis.clients.util.MurmurHash;
-
 /**
  * @author kj
  * Created on 2020-08-27
@@ -31,41 +28,31 @@ public class ShareClient<K, S, V> {
     private final Map<K, CompletableFuture<V>> data = Maps.newHashMap();
     private final Function<K, ShareCenter<K, S, V>> shard;
     private final WeakReference<ShareClient<K, S, V>> reference;
-    private final long sleepMills;
-    private final int hashcode;
+    private final long sleepNano;
     private volatile long time;
-    private volatile boolean get = true;
+    private volatile boolean get;
 
     public ShareClient(Collection<K> keys, Function<K, ShareCenter<K, S, V>> shard, Supplier<Executor> executor,
-            long sleepMills) {
+            long sleepNano) {
         this.shard = shard;
         this.executor = executor;
         this.reference = new WeakReference<>(this);
-        this.sleepMills = sleepMills;
-        this.hashcode =
-                (int) new MurmurHash()
-                        .hash("ShareClientV0" + ThreadLocalRandom.current().nextLong(Long.MAX_VALUE) + this.hashCode());
-        this.add(keys);
-    }
-
-    Map<K, CompletableFuture<V>> getData() {
-        return data;
-    }
-
-    public void add(Collection<K> keys) {
-        if (this.get) {
-            this.time = System.currentTimeMillis();
-        }
+        this.sleepNano = sleepNano;
+        this.time = System.nanoTime();
         this.get = false;
         keys.forEach(key -> data.putIfAbsent(key, new CompletableFuture<>()));
         keys.stream().collect(Collectors.groupingBy(this.shard, Collectors.toSet()))
                 .forEach((center, vKeys) -> center.add(vKeys, this.reference));
     }
 
+    Map<K, CompletableFuture<V>> getData() {
+        return data;
+    }
+
     public Map<K, V> get() {
-        long internal = System.currentTimeMillis() - time;
-        if (internal < sleepMills) {
-            Uninterruptibles.sleepUninterruptibly(sleepMills - internal, TimeUnit.MILLISECONDS);
+        long internal = System.nanoTime() - time;
+        if (internal < sleepNano) {
+            Uninterruptibles.sleepUninterruptibly(sleepNano - internal, TimeUnit.NANOSECONDS);
         }
         Iterator<Entry<ShareCenter<K, S, V>, Set<K>>> iterator =
                 this.data.entrySet().stream().filter(entry -> !entry.getValue().isDone()).map(Map.Entry::getKey)
@@ -99,10 +86,5 @@ public class ShareClient<K, S, V> {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public int hashCode() {
-        return this.hashcode;
     }
 }
