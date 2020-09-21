@@ -14,6 +14,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Lists;
@@ -67,12 +68,14 @@ public class ShareClient<K, S, V> {
                 new ArrayList<>(
                         this.data.entrySet().stream().filter(entry -> !entry.getValue().isDone()).map(Entry::getKey)
                                 .collect(Collectors.groupingBy(shard, Collectors.toSet())).keySet());
-        for (int i = 1, len = centers.size(); i < len; i++) {
-            ShareCenter<K, S, V> center = centers.get(i);
-            executor.get().execute(() -> center.run(this.requests.get(center)));
+        if (CollectionUtils.isNotEmpty(centers)) {
+            for (int i = 1, len = centers.size(); i < len; i++) {
+                ShareCenter<K, S, V> center = centers.get(i);
+                executor.get().execute(() -> center.run(this.requests.get(center)));
+            }
+            ShareCenter<K, S, V> center = centers.get(0);
+            center.run(this.requests.get(center));
         }
-        ShareCenter<K, S, V> center = centers.get(0);
-        center.run(this.requests.get(center));
         return this.data.entrySet().stream()
                 .map(entry -> Pair.of(entry.getKey(), getUnchecked(entry.getValue())))
                 .filter(entry -> entry.getValue() != null).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
