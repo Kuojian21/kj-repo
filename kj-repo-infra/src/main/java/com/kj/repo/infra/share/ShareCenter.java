@@ -51,22 +51,22 @@ public class ShareCenter<K, S, V> {
     public void run(List<ShareClientRequest<K, S, V>> requests) {
         Map<ShareClientRequest<K, S, V>, Set<K>> cRequestMap =
                 this.loadLock == null ? requests(requests) : this.runInLock(this.loadLock, () -> requests(requests));
+        if (MapUtils.isEmpty(cRequestMap)) {
+            return;
+        }
+        Map<K, Set<ShareClient<K, S, V>>> clientMap =
+                cRequestMap.entrySet().stream().map(e -> Pair.of(e.getKey().getClient(), e.getValue()))
+                        .filter(pair -> pair.getKey() != null && pair.getValue() != null)
+                        .flatMap(pair -> pair.getValue().stream().map(key -> Pair.of(key, pair.getKey())))
+                        .collect(Collectors.groupingBy(Pair::getKey)).entrySet().stream()
+                        .collect(Collectors.toMap(Map.Entry::getKey,
+                                e -> e.getValue().stream().map(Pair::getValue).collect(Collectors.toSet())));
         try {
-            if (MapUtils.isEmpty(cRequestMap)) {
-                return;
-            }
-            Map<K, Set<ShareClient<K, S, V>>> clientMap =
-                    cRequestMap.entrySet().stream().map(e -> Pair.of(e.getKey().getClient(), e.getValue()))
-                            .filter(pair -> pair.getKey() != null && pair.getValue() != null)
-                            .flatMap(pair -> pair.getValue().stream().map(key -> Pair.of(key, pair.getKey())))
-                            .collect(Collectors.groupingBy(Pair::getKey)).entrySet().stream()
-                            .collect(Collectors.toMap(Map.Entry::getKey,
-                                    e -> e.getValue().stream().map(Pair::getValue).collect(Collectors.toSet())));
             Map<K, V> datas = task.apply(this.sKey, clientMap.keySet());
             datas.forEach((k, v) -> clientMap.remove(k).forEach(client -> client.getData().get(k).complete(v)));
             clientMap.forEach((k, v) -> v.forEach(client -> client.getData().get(k).complete(null)));
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Throwable e) {
+            clientMap.forEach((k, v) -> v.forEach(client -> client.getData().get(k).obtrudeException(e)));
         }
     }
 
