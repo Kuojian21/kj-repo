@@ -13,7 +13,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -25,15 +24,16 @@ import com.google.common.collect.Sets;
 
 public class ShareCenter<K, S, V> {
     private final ConcurrentMap<ShareClientRequest<K, S, V>, Set<K>> iRequests = new ConcurrentHashMap<>(512);
-    private final BiFunction<S, Set<K>, Map<K, V>> task;
+    private final BiFunction<S, Set<K>, Map<K, List<V>>> task;
     private final S sKey;
     private final int loadBatchSize;
     private final int loadBatchThreshold;
     private final Lock loadLock;
-    private final ShareClientRequest<K, S, V> empty = new ShareClientRequest<>(null);
+    private final ShareClientRequest<K, S, V> empty =
+            new ShareClientRequest<>(Sets.newHashSet(), new WeakReference<>(null));
 
 
-    public ShareCenter(S sKey, BiFunction<S, Set<K>, Map<K, V>> task, int loadBatchSize, int loadBatchThreshold,
+    public ShareCenter(S sKey, BiFunction<S, Set<K>, Map<K, List<V>>> task, int loadBatchSize, int loadBatchThreshold,
             Lock loadLock) {
         this.sKey = sKey;
         this.task = task;
@@ -43,7 +43,7 @@ public class ShareCenter<K, S, V> {
     }
 
     public ShareClientRequest<K, S, V> add(Set<K> keys, WeakReference<ShareClient<K, S, V>> reference) {
-        ShareClientRequest<K, S, V> request = new ShareClientRequest<>(reference);
+        ShareClientRequest<K, S, V> request = new ShareClientRequest<>(keys, reference);
         iRequests.put(request, keys);
         return request;
     }
@@ -54,19 +54,13 @@ public class ShareCenter<K, S, V> {
         if (MapUtils.isEmpty(cRequestMap)) {
             return;
         }
-        Map<K, Set<ShareClient<K, S, V>>> clientMap =
-                cRequestMap.entrySet().stream().map(e -> Pair.of(e.getKey().getClient(), e.getValue()))
-                        .filter(pair -> pair.getKey() != null && pair.getValue() != null)
-                        .flatMap(pair -> pair.getValue().stream().map(key -> Pair.of(key, pair.getKey())))
-                        .collect(Collectors.groupingBy(Pair::getKey)).entrySet().stream()
-                        .collect(Collectors.toMap(Map.Entry::getKey,
-                                e -> e.getValue().stream().map(Pair::getValue).collect(Collectors.toSet())));
         try {
-            Map<K, V> datas = task.apply(this.sKey, clientMap.keySet());
-            datas.forEach((k, v) -> clientMap.remove(k).forEach(client -> client.getData().get(k).complete(v)));
-            clientMap.forEach((k, v) -> v.forEach(client -> client.getData().get(k).complete(null)));
-        } catch (Throwable e) {
-            clientMap.forEach((k, v) -> v.forEach(client -> client.getData().get(k).obtrudeException(e)));
+            Map<K, List<V>> datas =
+                    task.apply(this.sKey, cRequestMap.entrySet().stream().flatMap(e -> e.getValue().stream())
+                            .collect(Collectors.toSet()));
+            cRequestMap.keySet().forEach(request -> request.setValue(datas));
+        } catch (Throwable throwable) {
+            cRequestMap.keySet().forEach(request -> request.setThrowable(throwable));
         }
     }
 
