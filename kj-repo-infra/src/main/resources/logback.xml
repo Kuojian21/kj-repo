@@ -46,11 +46,11 @@
     </appender>
 
     <logger name="com.kj.repo" level="${KJ_REPO_LOG_LEVEL:-info}" additivity="false">
-        <appender-ref ref="stdout"/>
+        <!--<appender-ref ref="stdout"/>-->
         <appender-ref ref="kjRepoAsync"/>
     </logger>
     <logger name="sync.com.kj.repo" level="${KJ_REPO_LOG_LEVEL:-info}" additivity="false">
-        <appender-ref ref="stdout"/>
+        <!--<appender-ref ref="stdout"/>-->
         <appender-ref ref="kjRepoSync"/>
     </logger>
 

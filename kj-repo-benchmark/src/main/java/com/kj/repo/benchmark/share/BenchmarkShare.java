@@ -16,6 +16,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -39,11 +40,13 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
+import org.slf4j.Logger;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
+import com.alibaba.fastjson.JSON;
 import com.github.phantomthief.util.MoreSuppliers;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
@@ -51,6 +54,7 @@ import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.kj.repo.benchmark.share.model.Data;
+import com.kj.repo.infra.logger.LogbackHelper;
 import com.kj.repo.infra.perf.PerfHelper;
 import com.kj.repo.infra.share.ShareClient;
 import com.kj.repo.infra.share.ShareRepository;
@@ -107,6 +111,10 @@ public class BenchmarkShare {
                     DEFAULT_LOAD_BATCH_SIZE, DEFAULT_LOAD_BATCH_FACTOR, 0, new ReentrantLock(true));
     @Param({"10"})
     private int count;
+    @Param({"0", "1"})
+    private int flag;
+    private Logger logger = LogbackHelper.getLogger();
+    private Consumer<Object> consumer;
 
     public BenchmarkShare() {
         shards = MoreSuppliers.lazy(() -> new NamedParameterJdbcTemplate[] {
@@ -142,85 +150,85 @@ public class BenchmarkShare {
     }
 
     //    @Benchmark
-    public void run0(Blackhole bh) {
+    public void run0() {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        bh.consume(repo10.client(ids(false)));
+        consumer.accept(repo10.client(ids(false)));
         Uninterruptibles.sleepUninterruptibly(10, TimeUnit.MICROSECONDS);
         PerfHelper.perf("share", "run0").count(1).micro(stopwatch.elapsed(TimeUnit.MICROSECONDS)).logstash();
     }
 
     @Benchmark
-    public void run01(Blackhole bh) {
+    public void run01() {
         Stopwatch stopwatch = Stopwatch.createStarted();
         ids(false).stream().flatMap(id -> this.shard(id).stream().map(sKey -> Pair.of(sKey, id)))
                 .collect(Collectors.groupingBy(Pair::getKey))
-                .forEach((sKey, keys) -> bh
-                        .consume(run(sKey, keys.stream().map(Pair::getValue).collect(Collectors.toSet()), "run01")));
+                .forEach((sKey, keys) -> consumer
+                        .accept(run(sKey, keys.stream().map(Pair::getValue).collect(Collectors.toSet()), "run01")));
         PerfHelper.perf("share", "run01").count(1).micro(stopwatch.elapsed(TimeUnit.MICROSECONDS)).logstash();
     }
 
     @Benchmark
-    public void run10(Blackhole bh) {
+    public void run10() {
         Stopwatch stopwatch = Stopwatch.createStarted();
         ShareClient<Long, Long, Data> client = repo10.client(ids(false));
-        bh.consume(client.get());
+        consumer.accept(client.get());
         PerfHelper.perf("share", "run10").count(1).micro(stopwatch.elapsed(TimeUnit.MICROSECONDS)).logstash();
     }
 
     @Benchmark
-    public void run11(Blackhole bh) {
+    public void run11() {
         Stopwatch stopwatch = Stopwatch.createStarted();
         ShareClient<Long, Long, Data> client = repo11.client(ids(false));
-        bh.consume(client.get());
+        consumer.accept(client.get());
         PerfHelper.perf("share", "run11").count(1).micro(stopwatch.elapsed(TimeUnit.MICROSECONDS))
                 .logstash();
     }
 
     @Benchmark
-    public void run12(Blackhole bh) {
+    public void run12() {
         Stopwatch stopwatch = Stopwatch.createStarted();
         ShareClient<Long, Long, Data> client = repo12.client(ids(false));
-        bh.consume(client.get());
+        consumer.accept(client.get());
         PerfHelper.perf("share", "run12").count(1).micro(stopwatch.elapsed(TimeUnit.MICROSECONDS))
                 .logstash();
     }
 
     //    @Benchmark
-    public void run10Fair(Blackhole bh) {
+    public void run10Fair() {
         Stopwatch stopwatch = Stopwatch.createStarted();
         ShareClient<Long, Long, Data> client = repo10Fair.client(ids(false));
-        bh.consume(client.get());
+        consumer.accept(client.get());
         PerfHelper.perf("share", "run10").count(1).micro(stopwatch.elapsed(TimeUnit.MICROSECONDS)).logstash();
     }
 
     //    @Benchmark
-    public void run11Fair(Blackhole bh) {
+    public void run11Fair() {
         Stopwatch stopwatch = Stopwatch.createStarted();
         ShareClient<Long, Long, Data> client = repo11Fair.client(ids(false));
-        bh.consume(client.get());
+        consumer.accept(client.get());
         PerfHelper.perf("share", "run11").count(1).micro(stopwatch.elapsed(TimeUnit.MICROSECONDS))
                 .logstash();
     }
 
     //    @Benchmark
-    public void run10NoFair(Blackhole bh) {
+    public void run10NoFair() {
         Stopwatch stopwatch = Stopwatch.createStarted();
         ShareClient<Long, Long, Data> client = repo10NoFair.client(ids(false));
-        bh.consume(client.get());
+        consumer.accept(client.get());
         PerfHelper.perf("share", "run10").count(1).micro(stopwatch.elapsed(TimeUnit.MICROSECONDS)).logstash();
     }
 
     //    @Benchmark
-    public void run11NoFair(Blackhole bh) {
+    public void run11NoFair() {
         Stopwatch stopwatch = Stopwatch.createStarted();
         ShareClient<Long, Long, Data> client = repo11NoFair.client(ids(false));
-        bh.consume(client.get());
+        consumer.accept(client.get());
         PerfHelper.perf("share", "run11").count(1).micro(stopwatch.elapsed(TimeUnit.MICROSECONDS))
                 .logstash();
     }
 
     @Benchmark
-    public void run2(Blackhole bh) {
+    public void run2() {
         Stopwatch stopwatch = Stopwatch.createStarted();
         Map<Long, Data> rtn = Maps.newHashMap();
         ids(false).stream().flatMap(id -> this.shard(id).stream().map(sKey -> Pair.of(sKey, id)))
@@ -231,21 +239,24 @@ public class BenchmarkShare {
                                 entry.getValue().stream().map(Pair::getValue).collect(Collectors.toSet()), "run2")))
                 .collect(Collectors.toList())
                 .forEach(f -> rtn.putAll(getUnchecked(f)));
-        bh.consume(rtn);
+        consumer.accept(rtn);
         PerfHelper.perf("share", "run2").count(1).micro(stopwatch.elapsed(TimeUnit.MICROSECONDS)).logstash();
     }
 
     //    @Benchmark
-    public void run3(Blackhole bh) {
+    public void run3() {
         Stopwatch stopwatch = Stopwatch.createStarted();
         Set<Long> ids = ids(true);
         Map<Long, Data> rtn = run(ids.iterator().next() % shard, ids, "run3");
-        bh.consume(rtn);
+        consumer.accept(rtn);
         PerfHelper.perf("share", "run3").count(1).micro(stopwatch.elapsed(TimeUnit.MICROSECONDS)).logstash();
     }
 
     @Setup
     public void setup() {
+        consumer = flag == 0 ? new Blackhole(
+                "Today's password is swordfish. I understand instantiating Blackholes directly is dangerous.")::consume
+                             : obj -> logger.info("{}", JSON.toJSONString(obj));
     }
 
     @TearDown
