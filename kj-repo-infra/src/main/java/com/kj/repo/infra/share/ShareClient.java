@@ -27,7 +27,7 @@ public class ShareClient<K, S, V> {
     private final Function<K, Set<ShareCenter<K, S, V>>> shard;
     private final long sleepNano;
     private final WeakReference<ShareClient<K, S, V>> reference = new WeakReference<>(this);
-    private final Map<ShareCenter<K, S, V>, List<ShareClientRequest<K, S, V>>> requests = Maps.newHashMap();
+    private final Map<ShareCenter<K, S, V>, List<ShareClientRequest<K, V>>> requests = Maps.newHashMap();
     private volatile long time;
     private volatile boolean get = true;
 
@@ -48,7 +48,7 @@ public class ShareClient<K, S, V> {
                 .collect(Collectors.groupingBy(Pair::getKey))
                 .forEach((center, vKeys) -> this.requests.computeIfAbsent(center, t -> Lists.newArrayList())
                         .add(center
-                                .add(vKeys.stream().map(Pair::getValue).collect(Collectors.toSet()), this.reference)));
+                                .add(vKeys.stream().map(Pair::getValue).collect(Collectors.toSet()))));
     }
 
     public Map<K, List<V>> get() {
@@ -57,14 +57,14 @@ public class ShareClient<K, S, V> {
         if (internal < sleepNano) {
             Uninterruptibles.sleepUninterruptibly(sleepNano - internal, TimeUnit.NANOSECONDS);
         }
-        List<Map.Entry<ShareCenter<K, S, V>, List<ShareClientRequest<K, S, V>>>> tRequests =
+        List<Map.Entry<ShareCenter<K, S, V>, List<ShareClientRequest<K, V>>>> tRequests =
                 Lists.newArrayList(this.requests.entrySet());
         if (CollectionUtils.isNotEmpty(tRequests)) {
             for (int i = 1, len = tRequests.size(); i < len; i++) {
-                Map.Entry<ShareCenter<K, S, V>, List<ShareClientRequest<K, S, V>>> request = tRequests.get(i);
+                Map.Entry<ShareCenter<K, S, V>, List<ShareClientRequest<K, V>>> request = tRequests.get(i);
                 executor.get().execute(() -> request.getKey().run(request.getValue()));
             }
-            Map.Entry<ShareCenter<K, S, V>, List<ShareClientRequest<K, S, V>>> request = tRequests.get(0);
+            Map.Entry<ShareCenter<K, S, V>, List<ShareClientRequest<K, V>>> request = tRequests.get(0);
             executor.get().execute(() -> request.getKey().run(request.getValue()));
         }
         return this.requests.values().stream().flatMap(requests -> requests.stream()
@@ -72,8 +72,7 @@ public class ShareClient<K, S, V> {
                 .collect(Collectors.groupingBy(Map.Entry::getKey))
                 .entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey,
-                        entry -> entry.getValue().stream().flatMap(t -> t.getValue().stream())
-                                .collect(Collectors.toList())));
+                        entry -> entry.getValue().stream().map(Map.Entry::getValue).collect(Collectors.toList())));
     }
 
     @Override

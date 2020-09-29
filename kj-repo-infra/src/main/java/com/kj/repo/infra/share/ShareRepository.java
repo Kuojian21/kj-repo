@@ -1,7 +1,6 @@
 package com.kj.repo.infra.share;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
@@ -26,7 +25,7 @@ public class ShareRepository<K, S, V> {
     public static final int DEFAULT_CLIENT_SLEEP_NANO = 0;
 
     private final ConcurrentMap<S, ShareCenter<K, S, V>> repo = Maps.newConcurrentMap();
-    private final BiFunction<S, Set<K>, Map<K, List<V>>> task;
+    private final BiFunction<S, Set<K>, Map<K, V>> task;
     private final Function<K, Set<S>> shard;
     private final Supplier<Executor> executor;
     private final int loadBatchSize;
@@ -34,7 +33,7 @@ public class ShareRepository<K, S, V> {
     private final long clientSleepNano;
     private final Lock loadLock;
 
-    public ShareRepository(BiFunction<S, Set<K>, Map<K, List<V>>> task, Function<K, Set<S>> shard,
+    public ShareRepository(BiFunction<S, Set<K>, Map<K, V>> task, Function<K, Set<S>> shard,
             Supplier<Executor> executor, int loadBatchSize, double loadBatchFactor, long clientSleepNano,
             Lock loadLock) {
         this.task = task;
@@ -46,19 +45,19 @@ public class ShareRepository<K, S, V> {
         this.loadLock = loadLock;
     }
 
-    public static <K, S, V> ShareRepository<K, S, V> repo(BiFunction<S, Set<K>, Map<K, List<V>>> task,
+    public static <K, S, V> ShareRepository<K, S, V> repo(BiFunction<S, Set<K>, Map<K, V>> task,
             Function<K, Set<S>> shard, Supplier<Executor> executor, int loadBatchSize, double loadBatchFactor,
             long clientSleepMills, Lock loadLock) {
         return new ShareRepository<>(task, shard, executor, loadBatchSize, loadBatchFactor, clientSleepMills, loadLock);
     }
 
-    public static <K, S, V> ShareRepository<K, S, V> repo(BiFunction<S, Set<K>, Map<K, List<V>>> task,
+    public static <K, S, V> ShareRepository<K, S, V> repo(BiFunction<S, Set<K>, Map<K, V>> task,
             Function<K, Set<S>> shard, Supplier<Executor> executor) {
         return repo(task, shard, executor, DEFAULT_LOAD_BATCH_SIZE, DEFAULT_LOAD_BATCH_FACTOR,
                 DEFAULT_CLIENT_SLEEP_NANO, null);
     }
 
-    public static <K, S, V> ShareRepository<K, S, V> repo(BiFunction<S, Set<K>, Map<K, List<V>>> task,
+    public static <K, S, V> ShareRepository<K, S, V> repo(BiFunction<S, Set<K>, Map<K, V>> task,
             Function<K, Set<S>> shard) {
         return repo(task, shard, MoreExecutors::directExecutor, DEFAULT_LOAD_BATCH_SIZE, DEFAULT_LOAD_BATCH_FACTOR,
                 DEFAULT_CLIENT_SLEEP_NANO, null);

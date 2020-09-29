@@ -16,6 +16,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -178,7 +179,7 @@ public class BenchmarkShare {
     @Benchmark
     public void run12(Blackhole bh) {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        ShareClient<Long, Long, Data> client = repo11.client(ids(false));
+        ShareClient<Long, Long, Data> client = repo12.client(ids(false));
         bh.consume(client.get());
         PerfHelper.perf("share", "run12").count(1).micro(stopwatch.elapsed(TimeUnit.MICROSECONDS))
                 .logstash();
@@ -221,7 +222,7 @@ public class BenchmarkShare {
     @Benchmark
     public void run2(Blackhole bh) {
         Stopwatch stopwatch = Stopwatch.createStarted();
-        Map<Long, List<Data>> rtn = Maps.newHashMap();
+        Map<Long, Data> rtn = Maps.newHashMap();
         ids(false).stream().flatMap(id -> this.shard(id).stream().map(sKey -> Pair.of(sKey, id)))
                 .collect(Collectors.groupingBy(Pair::getKey))
                 .entrySet().stream()
@@ -238,7 +239,7 @@ public class BenchmarkShare {
     public void run3(Blackhole bh) {
         Stopwatch stopwatch = Stopwatch.createStarted();
         Set<Long> ids = ids(true);
-        Map<Long, List<Data>> rtn = run(ids.iterator().next() % shard, ids, "run3");
+        Map<Long, Data> rtn = run(ids.iterator().next() % shard, ids, "run3");
         bh.consume(rtn);
         PerfHelper.perf("share", "run3").count(1).micro(stopwatch.elapsed(TimeUnit.MICROSECONDS)).logstash();
     }
@@ -251,20 +252,20 @@ public class BenchmarkShare {
     public void down() {
     }
 
-    public Map<Long, List<Data>> run(long sKey, Set<Long> ids, String tag) {
+    public Map<Long, Data> run(long sKey, Set<Long> ids, String tag) {
         if (CollectionUtils.isEmpty(ids)) {
             throw new RuntimeException();
         }
         Stopwatch stopwatch = Stopwatch.createStarted();
-        Map<Long, List<Data>> rtn = Maps.newHashMap();
+        Map<Long, Data> rtn = Maps.newHashMap();
         if (mac) {
-            Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MICROSECONDS);
+            Uninterruptibles.sleepUninterruptibly(100 + 10 * ids.size(), TimeUnit.MICROSECONDS);
         } else {
             rtn = shards.get()[(int) (sKey % 5)]
                     .query("select id,global_id,source_key,source_id,status,extra,create_time,update_time from "
                                     + "ares_mini_data_2_" + sKey + " where global_id in(:globalIds)",
                             new MapSqlParameterSource("globalIds", ids), this.rowMapper)
-                    .stream().collect(Collectors.groupingBy(Data::getGlobalId));
+                    .stream().collect(Collectors.toMap(Data::getGlobalId, Function.identity()));
         }
         PerfHelper.perf("share", tag, "count").count(1).micro(ids.size()).logstash();
         PerfHelper.perf("share", tag, "elapsed").count(1).micro(stopwatch.elapsed(TimeUnit.MICROSECONDS))

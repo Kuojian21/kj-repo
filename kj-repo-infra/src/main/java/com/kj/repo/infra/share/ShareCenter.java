@@ -1,6 +1,5 @@
 package com.kj.repo.infra.share;
 
-import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,17 +22,16 @@ import com.google.common.collect.Sets;
  */
 
 public class ShareCenter<K, S, V> {
-    private final ConcurrentMap<ShareClientRequest<K, S, V>, Set<K>> iRequests = new ConcurrentHashMap<>(512);
-    private final BiFunction<S, Set<K>, Map<K, List<V>>> task;
+    private final ConcurrentMap<ShareClientRequest<K, V>, Set<K>> iRequests = new ConcurrentHashMap<>(512);
+    private final BiFunction<S, Set<K>, Map<K, V>> task;
     private final S sKey;
     private final int loadBatchSize;
     private final int loadBatchThreshold;
     private final Lock loadLock;
-    private final ShareClientRequest<K, S, V> empty =
-            new ShareClientRequest<>(Sets.newHashSet(), new WeakReference<>(null));
+    private final ShareClientRequest<K, V> empty = new ShareClientRequest<>(Sets.newHashSet());
 
 
-    public ShareCenter(S sKey, BiFunction<S, Set<K>, Map<K, List<V>>> task, int loadBatchSize, int loadBatchThreshold,
+    public ShareCenter(S sKey, BiFunction<S, Set<K>, Map<K, V>> task, int loadBatchSize, int loadBatchThreshold,
             Lock loadLock) {
         this.sKey = sKey;
         this.task = task;
@@ -42,20 +40,20 @@ public class ShareCenter<K, S, V> {
         this.loadLock = loadLock;
     }
 
-    public ShareClientRequest<K, S, V> add(Set<K> keys, WeakReference<ShareClient<K, S, V>> reference) {
-        ShareClientRequest<K, S, V> request = new ShareClientRequest<>(keys, reference);
+    public ShareClientRequest<K, V> add(Set<K> keys) {
+        ShareClientRequest<K, V> request = new ShareClientRequest<>(keys);
         iRequests.put(request, keys);
         return request;
     }
 
-    public void run(List<ShareClientRequest<K, S, V>> requests) {
-        Map<ShareClientRequest<K, S, V>, Set<K>> cRequestMap =
+    public void run(List<ShareClientRequest<K, V>> requests) {
+        Map<ShareClientRequest<K, V>, Set<K>> cRequestMap =
                 this.loadLock == null ? requests(requests) : this.runInLock(this.loadLock, () -> requests(requests));
         if (MapUtils.isEmpty(cRequestMap)) {
             return;
         }
         try {
-            Map<K, List<V>> datas =
+            Map<K, V> datas =
                     task.apply(this.sKey, cRequestMap.entrySet().stream().flatMap(e -> e.getValue().stream())
                             .collect(Collectors.toSet()));
             cRequestMap.keySet().forEach(request -> request.setValue(datas));
@@ -64,21 +62,21 @@ public class ShareCenter<K, S, V> {
         }
     }
 
-    public void clear(List<ShareClientRequest<K, S, V>> requests) {
+    public void clear(List<ShareClientRequest<K, V>> requests) {
         requests.forEach(iRequests::remove);
     }
 
-    private Map<ShareClientRequest<K, S, V>, Set<K>> requests(List<ShareClientRequest<K, S, V>> requests) {
-        Map<ShareClientRequest<K, S, V>, Set<K>> cRequestMap = new HashMap<>();
+    private Map<ShareClientRequest<K, V>, Set<K>> requests(List<ShareClientRequest<K, V>> requests) {
+        Map<ShareClientRequest<K, V>, Set<K>> cRequestMap = new HashMap<>();
         cRequestMap.put(empty, Sets.newHashSet());
         cRequestMap.remove(empty);
 
-        List<ShareClientRequest<K, S, V>> rRequests = Lists.newArrayList(this.iRequests.keySet());
+        List<ShareClientRequest<K, V>> rRequests = Lists.newArrayList(this.iRequests.keySet());
         int rRequestSize = rRequests.size();
 
         int cRequestSize = 0;
         for (int i = 0, len = requests.size(); i < len; i++) {
-            ShareClientRequest<K, S, V> request = requests.get(i);
+            ShareClientRequest<K, V> request = requests.get(i);
             Set<K> tKeys = this.iRequests.remove(request);
             if (tKeys != null) {
                 cRequestMap.put(request, tKeys);
@@ -88,7 +86,7 @@ public class ShareCenter<K, S, V> {
         if ((cRequestSize <= 0 || cRequestSize >= this.loadBatchSize) && rRequestSize < this.loadBatchThreshold) {
             return cRequestMap;
         }
-        for (ShareClientRequest<K, S, V> request : rRequests) {
+        for (ShareClientRequest<K, V> request : rRequests) {
             Set<K> tKeys = this.iRequests.remove(request);
             if (tKeys != null) {
                 cRequestMap.put(request, tKeys);
@@ -101,8 +99,8 @@ public class ShareCenter<K, S, V> {
         return cRequestMap;
     }
 
-    private Map<ShareClientRequest<K, S, V>, Set<K>> runInLock(Lock lock,
-            Supplier<Map<ShareClientRequest<K, S, V>, Set<K>>> supplier) {
+    private Map<ShareClientRequest<K, V>, Set<K>> runInLock(Lock lock,
+            Supplier<Map<ShareClientRequest<K, V>, Set<K>>> supplier) {
         try {
             lock.lock();
             return supplier.get();
