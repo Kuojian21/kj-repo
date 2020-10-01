@@ -34,6 +34,30 @@ import ognl.OgnlContext;
 @State(Scope.Benchmark)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 public class BenchmarkOgnl {
+    private static final DefaultMemberAccess MEMBER_ACCESS = new DefaultMemberAccess() {
+        @Override
+        public boolean isAccessible(Map context, Object target, Member member, String propertyName) {
+            return true;
+        }
+    };
+    private static final DefaultClassResolver CLASS_RESOLVER = new DefaultClassResolver();
+    private static final DefaultTypeConverter TYPE_CONVERTER = new DefaultTypeConverter();
+    private final Bean bean;
+    private final String expr = "#bean.bean()";
+    private final Object ognlExpr;
+    private final OgnlContext ognlContext;
+    public BenchmarkOgnl() {
+        bean = new Bean();
+        try {
+            ognlExpr = Ognl.parseExpression(expr);
+            ognlContext =
+                    (OgnlContext) Ognl.createDefaultContext(this, MEMBER_ACCESS, CLASS_RESOLVER, TYPE_CONVERTER);
+            ognlContext.put("bean", bean);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(BenchmarkOgnl.class.getSimpleName())
@@ -49,31 +73,6 @@ public class BenchmarkOgnl {
                 .syncIterations(true)
                 .build();
         new Runner(opt).run();
-    }
-
-    private static final DefaultMemberAccess MEMBER_ACCESS = new DefaultMemberAccess() {
-        @Override
-        public boolean isAccessible(Map context, Object target, Member member, String propertyName) {
-            return true;
-        }
-    };
-    private static final DefaultClassResolver CLASS_RESOLVER = new DefaultClassResolver();
-    private static final DefaultTypeConverter TYPE_CONVERTER = new DefaultTypeConverter();
-    private final Bean bean;
-    private final String expr = "#bean.bean()";
-    private final Object ognlExpr;
-    private final OgnlContext ognlContext;
-
-    public BenchmarkOgnl() {
-        bean = new Bean();
-        try {
-            ognlExpr = Ognl.parseExpression(expr);
-            ognlContext =
-                    (OgnlContext) Ognl.createDefaultContext(this, MEMBER_ACCESS, CLASS_RESOLVER, TYPE_CONVERTER);
-            ognlContext.put("bean", bean);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Benchmark

@@ -49,6 +49,7 @@ import ognl.OgnlContext;
 public class BenchmarkJIT {
     private static final double EARTH_RADIUS = 6378.137 * 1000;
     private static final double ALL_DEGREES = 180.0;
+    private ConcurrentMap<String, Double> map = Maps.newConcurrentMap();
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
@@ -135,8 +136,6 @@ public class BenchmarkJIT {
                 );
         bh.consume(MvelHelper.execute("it.distance(lat1,lng1,lat2,lng2)", vars));
     }
-
-    private ConcurrentMap<String, Double> map = Maps.newConcurrentMap();
 
     @Benchmark
     public void randomExecuteMap(Blackhole bh) {

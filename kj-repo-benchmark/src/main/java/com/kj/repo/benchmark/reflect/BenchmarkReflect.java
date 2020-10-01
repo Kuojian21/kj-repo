@@ -33,6 +33,20 @@ import org.openjdk.jmh.runner.options.WarmupMode;
 @Measurement(iterations = 1, time = 100, timeUnit = TimeUnit.SECONDS)
 @Threads(1)
 public class BenchmarkReflect {
+    private final Bean bean;
+    private final Method method1;
+    private final Method method2;
+    public BenchmarkReflect() {
+        try {
+            bean = new Bean();
+            method1 = Bean.class.getMethod("bean1");
+            method2 = Bean.class.getMethod("bean2");
+            method2.setAccessible(true);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static void main(String[] args) throws RunnerException, NoSuchMethodException {
         Options opt = new OptionsBuilder()
                 .include(BenchmarkReflect.class.getSimpleName())
@@ -50,21 +64,6 @@ public class BenchmarkReflect {
                 .addProfiler(CompilerProfiler.class)
                 .build();
         new Runner(opt).run();
-    }
-
-    private final Bean bean;
-    private final Method method1;
-    private final Method method2;
-
-    public BenchmarkReflect() {
-        try {
-            bean = new Bean();
-            method1 = Bean.class.getMethod("bean1");
-            method2 = Bean.class.getMethod("bean2");
-            method2.setAccessible(true);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @CompilerControl(CompilerControl.Mode.DONT_INLINE)

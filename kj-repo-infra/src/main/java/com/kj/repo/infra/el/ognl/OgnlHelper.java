@@ -19,12 +19,11 @@ import ognl.OgnlContext;
  * Created on 2020-07-30
  */
 public class OgnlHelper {
-    private static final Logger LOGGER = Log4j2Helper.getLogger(OgnlHelper.class);
-    private static final ConcurrentMap<String, Node> EXPR_MAP = Maps.newConcurrentMap();
     public static final DefaultMemberAccess DEFAULT_MEMBER_ACCESS = new DefaultMemberAccess();
     public static final DefaultClassResolver DEFAULT_CLASS_RESOLVER = new DefaultClassResolver();
     public static final DefaultTypeConverter DEFAULT_TYPE_CONVERTER = new DefaultTypeConverter();
-
+    private static final Logger LOGGER = Log4j2Helper.getLogger(OgnlHelper.class);
+    private static final ConcurrentMap<String, Node> EXPR_MAP = Maps.newConcurrentMap();
 
     public static <T> T execute(Object root, Map<String, Object> params, String expr, T defaultValue) {
         try {

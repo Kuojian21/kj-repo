@@ -15,34 +15,34 @@ public class LocalSupplier<T> {
     private static final LocalSupplier<ExecutorService> asyncExecutor = new LocalSupplier<>(
             () -> Executors.newFixedThreadPool(1));
 
-    private final Supplier<T> inner;
+    private final Supplier<T> delegate;
     private final Consumer<T> release;
-    private final T defaultValue;
+    private final Supplier<T> defValue;
     private final boolean async;
     private volatile boolean inited = false;
     private volatile T value;
 
-    public LocalSupplier(Supplier<T> inner) {
-        this(inner, null, null, false);
+    public LocalSupplier(Supplier<T> delegate) {
+        this(delegate, null, () -> null, false);
     }
 
-    public LocalSupplier(Supplier<T> inner, Consumer<T> release) {
-        this(inner, release, null, false);
+    public LocalSupplier(Supplier<T> delegate, Consumer<T> release) {
+        this(delegate, release, () -> null, false);
     }
 
-    public LocalSupplier(Supplier<T> inner, T defaultValue) {
-        this(inner, null, defaultValue, false);
+    public LocalSupplier(Supplier<T> delegate, Supplier<T> defValue) {
+        this(delegate, null, defValue, false);
     }
 
-    public LocalSupplier(Supplier<T> inner, Consumer<T> release, T defaultValue) {
-        this(inner, release, defaultValue, false);
+    public LocalSupplier(Supplier<T> delegate, Consumer<T> release, Supplier<T> defValue) {
+        this(delegate, release, defValue, false);
     }
 
-    public LocalSupplier(Supplier<T> inner, Consumer<T> release, T defaultValue, boolean async) {
+    public LocalSupplier(Supplier<T> delegate, Consumer<T> release, Supplier<T> defValue, boolean async) {
         super();
-        this.inner = inner;
+        this.delegate = delegate;
         this.release = release;
-        this.defaultValue = defaultValue;
+        this.defValue = defValue;
         this.async = async;
     }
 
@@ -50,18 +50,18 @@ public class LocalSupplier<T> {
         if (!this.inited) {
             synchronized (this) {
                 if (!this.inited) {
-                    this.value = this.inner.get();
+                    this.value = this.delegate.get();
                     this.inited = true;
                 }
             }
         }
-        return Optional.ofNullable(this.value).orElse(this.defaultValue);
+        return Optional.ofNullable(this.value).orElseGet(this.defValue);
     }
 
     public void refresh() {
         Runnable runnable = () -> {
             T oValue = this.value;
-            this.value = this.inner.get();
+            this.value = this.delegate.get();
             if (this.release != null && oValue != null) {
                 this.release.accept(oValue);
             }
@@ -71,6 +71,10 @@ public class LocalSupplier<T> {
         } else {
             runnable.run();
         }
+    }
+
+    public void warm() {
+        this.get();
     }
 
     public void release() {

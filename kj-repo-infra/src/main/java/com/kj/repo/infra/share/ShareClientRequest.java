@@ -19,11 +19,6 @@ public class ShareClientRequest<K, V> {
         this.value = new CompletableFuture<>();
     }
 
-    public void setValue(Map<K, V> valueMap) {
-        this.value.complete(this.keys.stream().filter(valueMap::containsKey)
-                .collect(Collectors.toMap(Function.identity(), valueMap::get)));
-    }
-
     public void setThrowable(Throwable throwable) {
         this.value.obtrudeException(throwable);
     }
@@ -34,5 +29,10 @@ public class ShareClientRequest<K, V> {
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void setValue(Map<K, V> valueMap) {
+        this.value.complete(this.keys.stream().filter(valueMap::containsKey)
+                .collect(Collectors.toMap(Function.identity(), valueMap::get)));
     }
 }
