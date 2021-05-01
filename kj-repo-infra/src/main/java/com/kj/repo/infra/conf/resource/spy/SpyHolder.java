@@ -6,7 +6,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 import com.beust.jcommander.internal.Lists;
-import com.kj.repo.infra.conf.base.Holder;
+import com.kj.repo.infra.conf.model.Holder;
 
 import net.spy.memcached.MemcachedClient;
 import net.spy.memcached.MemcachedClientIF;

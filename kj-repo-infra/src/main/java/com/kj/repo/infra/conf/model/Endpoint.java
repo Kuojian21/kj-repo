@@ -1,4 +1,4 @@
-package com.kj.repo.infra.conf.base;
+package com.kj.repo.infra.conf.model;
 
 /**
  * @author kj

@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import com.kj.repo.infra.conf.base.Holder;
+import com.kj.repo.infra.conf.model.Holder;
 
 /**
  * @author kj

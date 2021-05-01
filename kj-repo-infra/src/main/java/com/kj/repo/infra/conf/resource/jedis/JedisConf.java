@@ -1,6 +1,6 @@
 package com.kj.repo.infra.conf.resource.jedis;
 
-import com.kj.repo.infra.conf.base.Conf;
+import com.kj.repo.infra.conf.Conf;
 import com.kj.repo.infra.conf.register.RegisterHelper;
 
 /**

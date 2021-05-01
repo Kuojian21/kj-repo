@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.kj.repo.infra.conf.base.Conf;
+import com.kj.repo.infra.conf.Conf;
 import com.kj.repo.infra.conf.resource.config.Config;
 import com.kj.repo.infra.conf.resource.es.ElasticsearchHolder;
 import com.kj.repo.infra.conf.resource.jedis.JedisHolder;

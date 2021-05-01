@@ -2,7 +2,7 @@ package com.kj.repo.infra.conf.resource.es;
 
 import org.elasticsearch.client.RestClient;
 
-import com.kj.repo.infra.conf.base.Holder;
+import com.kj.repo.infra.conf.model.Holder;
 
 /**
  * @author kj

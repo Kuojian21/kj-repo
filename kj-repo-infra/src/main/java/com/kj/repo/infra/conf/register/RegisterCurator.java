@@ -2,8 +2,8 @@ package com.kj.repo.infra.conf.register;
 
 import java.util.function.Supplier;
 
-import com.kj.repo.infra.conf.base.Conf;
-import com.kj.repo.infra.conf.base.Curator;
+import com.kj.repo.infra.conf.Conf;
+import com.kj.repo.infra.conf.zk.Curator;
 import com.kj.repo.infra.conf.resource.config.Config;
 import com.kj.repo.infra.conf.resource.es.ElasticsearchConfig;
 import com.kj.repo.infra.conf.resource.es.ElasticsearchHolder;

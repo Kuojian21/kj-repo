@@ -2,7 +2,7 @@ package com.kj.repo.infra.conf.resource.mysql;
 
 import java.util.List;
 
-import com.kj.repo.infra.conf.base.Endpoint;
+import com.kj.repo.infra.conf.model.Endpoint;
 
 /**
  * @author kj

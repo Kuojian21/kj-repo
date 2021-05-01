@@ -2,7 +2,7 @@ package com.kj.repo.infra.conf.register;
 
 import java.util.function.Supplier;
 
-import com.kj.repo.infra.conf.base.Conf;
+import com.kj.repo.infra.conf.Conf;
 import com.kj.repo.infra.conf.resource.es.ElasticsearchHolder;
 import com.kj.repo.infra.conf.resource.jedis.JedisHolder;
 import com.kj.repo.infra.conf.resource.mysql.MysqlHolder;

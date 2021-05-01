@@ -423,8 +423,19 @@
             <artifactId>jackson-datatype-protobuf</artifactId>
             <version>0.9.10-jackson2.9-proto3</version>
         </dependency>
-
-
+        <!-- https://mvnrepository.com/artifact/org.mongodb/mongo-java-driver -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>3.12.7</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.openjdk.jol/jol-core -->
+        <dependency>
+            <groupId>org.openjdk.jol</groupId>
+            <artifactId>jol-core</artifactId>
+            <version>0.15</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <!--

@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-import com.kj.repo.infra.conf.base.Holder;
+import com.kj.repo.infra.conf.model.Holder;
 import com.kj.repo.infra.helper.EnhancerHelper;
 
 import redis.clients.jedis.JedisCommands;

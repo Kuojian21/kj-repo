@@ -1,6 +1,6 @@
 package com.kj.repo.infra.conf.resource.oracle;
 
-import com.kj.repo.infra.conf.base.Holder;
+import com.kj.repo.infra.conf.model.Holder;
 
 /**
  * @author kj
