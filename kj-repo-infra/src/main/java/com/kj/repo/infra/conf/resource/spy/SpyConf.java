@@ -1,7 +1,8 @@
 package com.kj.repo.infra.conf.resource.spy;
 
 import com.kj.repo.infra.conf.Conf;
-import com.kj.repo.infra.conf.register.RegisterHelper;
+import com.kj.repo.infra.conf.resource.ResourceRepository;
+import com.kj.repo.infra.conf.resource.oracle.OracleConf;
 
 /**
  * @author kj
@@ -10,6 +11,6 @@ import com.kj.repo.infra.conf.register.RegisterHelper;
 public interface SpyConf extends Conf<SpyHolder> {
     @Override
     default SpyHolder get() {
-        return RegisterHelper.spy(this).get();
+    	return ResourceRepository.get(SpyConf.class, this).get();
     }
 }

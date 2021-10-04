@@ -1,7 +1,7 @@
 package com.kj.repo.infra.conf.resource.oracle;
 
 import com.kj.repo.infra.conf.Conf;
-import com.kj.repo.infra.conf.register.RegisterHelper;
+import com.kj.repo.infra.conf.resource.ResourceRepository;
 
 /**
  * @author kj
@@ -10,6 +10,7 @@ import com.kj.repo.infra.conf.register.RegisterHelper;
 public interface OracleConf extends Conf<OracleHolder> {
     @Override
     default OracleHolder get() {
-        return RegisterHelper.oracle(this).get();
+    	return ResourceRepository.get(OracleConf.class, this).get();
+        
     }
 }

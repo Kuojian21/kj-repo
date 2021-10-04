@@ -9,7 +9,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Sets;
-import com.kj.repo.infra.net.http.HttpCompBuilder;
+import com.kj.repo.infra.utils.http.HttpCompBuilder;
 
 /**
  * @author kj

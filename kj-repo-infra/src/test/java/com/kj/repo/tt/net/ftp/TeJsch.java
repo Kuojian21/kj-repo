@@ -3,7 +3,7 @@ package com.kj.repo.tt.net.ftp;
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 
-import com.kj.repo.infra.net.ftp.Jsch;
+import com.kj.repo.infra.utils.ftp.Jsch;
 
 /**
  * @author kj

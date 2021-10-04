@@ -1,7 +1,7 @@
 package com.kj.repo.infra.conf.resource.es;
 
 import com.kj.repo.infra.conf.Conf;
-import com.kj.repo.infra.conf.register.RegisterHelper;
+import com.kj.repo.infra.conf.resource.ResourceRepository;
 
 /**
  * @author kj
@@ -10,6 +10,6 @@ import com.kj.repo.infra.conf.register.RegisterHelper;
 public interface ElasticsearchConf extends Conf<ElasticsearchHolder> {
     @Override
     default ElasticsearchHolder get() {
-        return RegisterHelper.es(this).get();
+    	return ResourceRepository.get(ElasticsearchHolder.class, this).get();
     }
 }
