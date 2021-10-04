@@ -12,7 +12,6 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 
 import com.google.common.util.concurrent.MoreExecutors;
-import com.kj.repo.infra.batch.buffer.Buffer;
 import com.kj.repo.infra.logger.LoggerHelper;
 
 /**
@@ -25,14 +24,14 @@ public class BatchTriggerImpl<E, T> implements BatchTrigger<E> {
     private final Consumer<List<T>> consumer;
     private final int batchsize;
     private final long linger;
-    private final Buffer<E, T> buffer;
+    private final BatchBuffer<E, T> buffer;
     private final BiConsumer<Throwable, List<T>> throwableHandler;
     private final ScheduledExecutorService scheduledExecutor;
     private final Executor workerExecutor;
     private final ReentrantLock lock = new ReentrantLock();
     private final AtomicBoolean running = new AtomicBoolean();
 
-    BatchTriggerImpl(Consumer<List<T>> consumer, int batchsize, long linger, Buffer<E, T> buffer,
+    BatchTriggerImpl(Consumer<List<T>> consumer, int batchsize, long linger, BatchBuffer<E, T> buffer,
             BiConsumer<Throwable, List<T>> throwableHandler, ScheduledExecutorService scheduledExecutor,
             Executor workerExecutor) {
         this.consumer = consumer;

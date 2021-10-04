@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
-import com.kj.repo.infra.base.ResultInfo;
+import com.kj.repo.infra.ResultInfo;
 import com.kj.repo.infra.logger.LoggerHelper;
 
 /**

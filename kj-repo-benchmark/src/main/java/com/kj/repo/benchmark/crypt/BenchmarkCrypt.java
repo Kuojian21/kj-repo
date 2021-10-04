@@ -25,11 +25,11 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
 import org.openjdk.jmh.runner.options.WarmupMode;
 
-import com.kj.repo.infra.base.function.Consumer;
+import com.kj.repo.infra.Consumer;
 import com.kj.repo.infra.crypt.CryptCipher;
 import com.kj.repo.infra.crypt.algoritm.AlgoritmCipher;
 import com.kj.repo.infra.crypt.key.CryptKey;
-import com.kj.repo.infra.helper.RunHelper;
+import com.kj.repo.infra.utils.RunUtil;
 
 /**
  * @author kj
@@ -93,7 +93,7 @@ public class BenchmarkCrypt {
     }
 
     public void run(Consumer<Integer> consumer) {
-        IntStream.range(0, count).boxed().forEach(j -> RunHelper.run(() -> {
+        IntStream.range(0, count).boxed().forEach(j -> RunUtil.run(() -> {
             consumer.accept(j);
             return null;
         }));

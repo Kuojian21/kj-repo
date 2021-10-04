@@ -1,6 +1,6 @@
 package com.kj.repo.tt.helper;
 
-import com.kj.repo.infra.helper.JavaHelper;
+import com.kj.repo.infra.utils.JavaUtil;
 
 /**
  * @author kj
@@ -12,10 +12,10 @@ public class TeJavaHelper {
     }
 
     public static void run() {
-        JavaHelper.stack(1).getClassName();
+        JavaUtil.stack(1).getClassName();
         System.out.println();
-        JavaHelper.stack(2).getClassName();
+        JavaUtil.stack(2).getClassName();
         System.out.println();
-        JavaHelper.stack(3).getClassName();
+        JavaUtil.stack(3).getClassName();
     }
 }

@@ -10,9 +10,9 @@ import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
-import com.kj.repo.infra.base.function.Consumer;
-import com.kj.repo.infra.base.function.Function;
-import com.kj.repo.infra.base.pool.Pool;
+import com.kj.repo.infra.Consumer;
+import com.kj.repo.infra.Function;
+import com.kj.repo.infra.Pool;
 
 /**
  * @author kj

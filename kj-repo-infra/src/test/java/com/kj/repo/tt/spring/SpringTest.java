@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.kj.repo.infra.logger.LoggerHelper;
-import com.kj.repo.infra.spring.BeanFactory;
+import com.kj.repo.infra.utils.SpringBeanFactoryUtil;
 
 /**
  *
@@ -14,7 +14,7 @@ public class SpringTest {
     private static final Logger logger = LoggerHelper.getLogger();
 
     public static void main(String[] args) {
-        BeanFactory.getBean(SpringTest.class).test();
+        SpringBeanFactoryUtil.getBean(SpringTest.class).test();
     }
 
     public void test() {

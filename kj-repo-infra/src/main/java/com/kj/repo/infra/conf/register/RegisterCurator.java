@@ -16,7 +16,7 @@ import com.kj.repo.infra.conf.resource.oracle.OracleHolder;
 import com.kj.repo.infra.conf.resource.spy.SpyConfig;
 import com.kj.repo.infra.conf.resource.spy.SpyHolder;
 import com.kj.repo.infra.curator.CuratorHelper;
-import com.kj.repo.infra.serializer.json.JsonHelper;
+import com.kj.repo.infra.utils.JsonUtil;
 
 /**
  * @author kj
@@ -25,33 +25,33 @@ import com.kj.repo.infra.serializer.json.JsonHelper;
 public class RegisterCurator implements Register {
     @Override
     public Supplier<JedisHolder> jedis(Conf<JedisHolder> conf) {
-        return new Curator<>("jedis", conf, CuratorHelper.curator(), bytes -> JedisHolder.of(JsonHelper.fromJSON(bytes,
+        return new Curator<>("jedis", conf, CuratorHelper.curator(), bytes -> JedisHolder.of(JsonUtil.fromJSON(bytes,
                 JedisConfig.class)), JedisHolder::close);
     }
 
     @Override
     public Supplier<SpyHolder> spy(Conf<SpyHolder> conf) {
-        return new Curator<>("spy", conf, CuratorHelper.curator(), bytes -> SpyHolder.of(JsonHelper.fromJSON(bytes,
+        return new Curator<>("spy", conf, CuratorHelper.curator(), bytes -> SpyHolder.of(JsonUtil.fromJSON(bytes,
                 SpyConfig.class)), SpyHolder::close);
     }
 
     @Override
     public Supplier<ElasticsearchHolder> es(Conf<ElasticsearchHolder> conf) {
         return new Curator<>("spy", conf, CuratorHelper.curator(),
-                bytes -> ElasticsearchHolder.of(JsonHelper.fromJSON(bytes, ElasticsearchConfig.class)),
+                bytes -> ElasticsearchHolder.of(JsonUtil.fromJSON(bytes, ElasticsearchConfig.class)),
                 ElasticsearchHolder::close);
     }
 
     @Override
     public Supplier<MysqlHolder> mysql(Conf<MysqlHolder> conf) {
         return new Curator<>("spy", conf, CuratorHelper.curator(),
-                bytes -> MysqlHolder.of(JsonHelper.fromJSON(bytes, MysqlConfig.class)), MysqlHolder::close);
+                bytes -> MysqlHolder.of(JsonUtil.fromJSON(bytes, MysqlConfig.class)), MysqlHolder::close);
     }
 
     @Override
     public Supplier<OracleHolder> oracle(Conf<OracleHolder> conf) {
         return new Curator<>("spy", conf, CuratorHelper.curator(),
-                bytes -> OracleHolder.of(JsonHelper.fromJSON(bytes, OracleConfig.class)), OracleHolder::close);
+                bytes -> OracleHolder.of(JsonUtil.fromJSON(bytes, OracleConfig.class)), OracleHolder::close);
     }
 
     @Override

@@ -1,6 +1,8 @@
 package com.kj.repo.benchmark.ognl;
 
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Member;
+import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -18,11 +20,11 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
 
 import com.google.common.collect.ImmutableMap;
-import com.kj.repo.infra.el.ognl.DefaultMemberAccess;
-import com.kj.repo.infra.el.ognl.OgnlHelper;
+import com.kj.repo.infra.utils.el.OgnlUtil;
 
 import ognl.DefaultClassResolver;
 import ognl.DefaultTypeConverter;
+import ognl.MemberAccess;
 import ognl.Ognl;
 import ognl.OgnlContext;
 
@@ -104,8 +106,58 @@ public class BenchmarkOgnl {
 
     @Benchmark
     public void run6(Blackhole bh) throws Exception {
-        bh.consume(OgnlHelper.execute(this, ImmutableMap.of("bean", new Bean()),
+        bh.consume(OgnlUtil.execute(this, ImmutableMap.of("bean", new Bean()),
                 "#bean.getVal() == 1 ? new com.kj.repo.benchmark.ognl.Bean1() : new com.kj.repo.benchmark.ognl"
                         + ".Bean2()", null));
+    }
+}
+
+class DefaultMemberAccess implements MemberAccess {
+    private boolean allowPrivate = true;
+    private boolean allowProtected = true;
+    private boolean allowDefault = true;
+
+    public DefaultMemberAccess() {
+        this(false, false, false);
+    }
+
+    public DefaultMemberAccess(boolean allowPrivate, boolean allowProtected, boolean allowDefault) {
+        this.allowPrivate = allowPrivate;
+        this.allowProtected = allowProtected;
+        this.allowDefault = allowDefault;
+    }
+
+    @Override
+    public Object setup(Map context, Object target, Member member, String propertyName) {
+        Object result = null;
+        if (isAccessible(context, target, member, propertyName)) {
+            AccessibleObject accessible = (AccessibleObject) member;
+            if (!accessible.isAccessible()) {
+                result = Boolean.TRUE;
+                accessible.setAccessible(true);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public void restore(Map context, Object target, Member member, String propertyName, Object state) {
+        if (state != null) {
+            ((AccessibleObject) member).setAccessible((Boolean) state);
+        }
+    }
+
+    @Override
+    public boolean isAccessible(Map context, Object target, Member member, String propertyName) {
+        int modifiers = member.getModifiers();
+        if (Modifier.isPublic(modifiers)) {
+            return true;
+        } else if (Modifier.isPrivate(modifiers)) {
+            return allowPrivate;
+        } else if (Modifier.isProtected(modifiers)) {
+            return allowProtected;
+        } else {
+            return allowDefault;
+        }
     }
 }

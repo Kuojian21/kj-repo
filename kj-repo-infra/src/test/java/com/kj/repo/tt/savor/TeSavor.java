@@ -21,12 +21,12 @@ import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.collect.Lists;
+import com.kj.repo.infra.dao.DAO;
+import com.kj.repo.infra.dao.annotation.Model;
+import com.kj.repo.infra.dao.annotation.Property;
+import com.kj.repo.infra.dao.model.ShardHolder;
+import com.kj.repo.infra.dao.sql.ParamsBuilder;
 import com.kj.repo.infra.logger.LoggerHelper;
-import com.kj.repo.infra.savor.Savor;
-import com.kj.repo.infra.savor.annotation.Model;
-import com.kj.repo.infra.savor.annotation.Property;
-import com.kj.repo.infra.savor.model.ShardHolder;
-import com.kj.repo.infra.savor.sql.ParamsBuilder;
 import com.mysql.cj.jdbc.Driver;
 
 @SuppressWarnings("unchecked")
@@ -66,33 +66,33 @@ public class TeSavor {
                             random.nextInt(100)))
                     .collect(Collectors.toList()));
         });
-        this.select("after-insert-1", dao, Savor.Helper.newHashMap());
-        this.select("after-insert-1", dao, Savor.Helper.newHashMap("name", "zkj", "sex", "male"));
+        this.select("after-insert-1", dao, DAO.Helper.newHashMap());
+        this.select("after-insert-1", dao, DAO.Helper.newHashMap("name", "zkj", "sex", "male"));
     }
 
     public void update(SavorTestDao<?> dao) {
         this.select("before-update", dao,
-                Savor.Helper.newHashMap("id", IntStream.range(0, 10).boxed().collect(Collectors.toList())));
+                DAO.Helper.newHashMap("id", IntStream.range(0, 10).boxed().collect(Collectors.toList())));
         IntStream.range(0, 5).boxed().forEach(i -> {
-            Map<String, Object> params = Savor.Helper.newHashMap("id", 10);
-            Map<String, Object> values = Savor.Helper.newHashMap("age#sub", 5, "name", "kj");
+            Map<String, Object> params = DAO.Helper.newHashMap("id", 10);
+            Map<String, Object> values = DAO.Helper.newHashMap("age#sub", 5, "name", "kj");
             logger.info("update values:{} params:{} {}", values, params, dao.update(values, params));
         });
-        this.select("after-update", dao, Savor.Helper.newHashMap("name", "kj"));
+        this.select("after-update", dao, DAO.Helper.newHashMap("name", "kj"));
     }
 
     public <T extends SavorTest> void upsert(SavorTestDao<T> dao) throws SQLException {
-        this.select("before-upsert", dao, Savor.Helper.newHashMap("id#>", 94));
+        this.select("before-upsert", dao, DAO.Helper.newHashMap("id#>", 94));
         List<T> objs = (List<T>) LongStream.range(95, 96).boxed().map(SavorShardTest::new).collect(Collectors.toList());
         List<String> names = Lists.newArrayList("hashKey");
         logger.info("upsert data:{} names:{} {}", objs, names, dao.upsert(objs, names));
-        this.select("after-upsert", dao, Savor.Helper.newHashMap("id#GT", 94));
-        Map<String, Object> values = Savor.Helper.newHashMap("age#+", 1);
+        this.select("after-upsert", dao, DAO.Helper.newHashMap("id#GT", 94));
+        Map<String, Object> values = DAO.Helper.newHashMap("age#+", 1);
         logger.info("upsert data:{} values:{} {}", objs, values, dao.upsert(objs, values));
-        this.select("after-upsert", dao, Savor.Helper.newHashMap("id#GT", 94));
-        values = Savor.Helper.newHashMap("age#sub", 3);
+        this.select("after-upsert", dao, DAO.Helper.newHashMap("id#GT", 94));
+        values = DAO.Helper.newHashMap("age#sub", 3);
         logger.info("upsert data:{} values:{} {}", objs, values, dao.upsert(objs, values));
-        this.select("after-upsert", dao, Savor.Helper.newHashMap("id#GT", 94));
+        this.select("after-upsert", dao, DAO.Helper.newHashMap("id#GT", 94));
     }
 
     public void select(SavorTestDao<?> dao) {
@@ -111,24 +111,24 @@ public class TeSavor {
                         return Lists.newArrayList(rs.getLong("id"), rs.getString("sex"), rs.getInt("count(1)"));
                     }
                 }));
-        this.select("select", dao, Savor.Helper.newHashMap("id#!", 10));
+        this.select("select", dao, DAO.Helper.newHashMap("id#!", 10));
     }
 
     public void delete(SavorTestDao<?> dao) {
-        this.select("delete-before", dao, Savor.Helper.newHashMap("id#<=", 10));
+        this.select("delete-before", dao, DAO.Helper.newHashMap("id#<=", 10));
         IntStream.range(0, 11).boxed().forEach(i -> {
             if (new Random().nextInt() % 2 == 0) {
-                dao.delete(Savor.Helper.newHashMap("id", i));
+                dao.delete(DAO.Helper.newHashMap("id", i));
             }
         });
-        this.select("delete-after", dao, Savor.Helper.newHashMap("id#<=", 10));
+        this.select("delete-after", dao, DAO.Helper.newHashMap("id#<=", 10));
     }
 
     public void select(String module, SavorTestDao<?> dao, Map<String, Object> params) {
         logger.info("{} params:{} {}", module, JSON.toJSONString(params), dao.select(params));
     }
 
-    public static class SavorTestDao<T> extends Savor<T> {
+    public static class SavorTestDao<T> extends DAO<T> {
 
         private final NamedParameterJdbcTemplate jdbcTemplate1;
         private final NamedParameterJdbcTemplate jdbcTemplate2;

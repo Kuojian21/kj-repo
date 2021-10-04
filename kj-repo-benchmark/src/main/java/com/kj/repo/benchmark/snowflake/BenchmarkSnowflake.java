@@ -21,7 +21,8 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.openjdk.jmh.runner.options.TimeValue;
 import org.openjdk.jmh.runner.options.WarmupMode;
 
-import com.kj.repo.infra.algorithm.Snowflake;
+import com.kj.repo.demo.algorithm.Snowflake;
+
 
 /**
  * @author kj

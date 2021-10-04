@@ -9,8 +9,8 @@ import org.apache.commons.collections4.CollectionUtils;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.kj.repo.infra.batch.BatchBuffer;
 import com.kj.repo.infra.batch.BatchTrigger;
-import com.kj.repo.infra.batch.buffer.Buffer;
 import com.kj.repo.infra.perf.model.Perf;
 import com.kj.repo.infra.perf.model.PerfBuilder;
 import com.kj.repo.infra.perf.model.PerfLog;
@@ -68,7 +68,7 @@ public abstract class PerfLogger {
     private final BatchTrigger<PerfBuilder> batchTrigger =
             BatchTrigger.<PerfBuilder, Map.Entry<PerfLog, Perf>> builder()
                     .setConsumer(this::display).setBuffer(
-                    Buffer.map(PerfBuilder::getPerfLog, e -> new Perf(e.getCount(), e.getMicro()),
+                    BatchBuffer.map(PerfBuilder::getPerfLog, e -> new Perf(e.getCount(), e.getMicro()),
                             (v1, v2) -> {
                                 v1.accept(v2.getCount(), v2.getMicro());
                                 return v1;

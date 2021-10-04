@@ -3,7 +3,7 @@ package com.kj.repo.infra.logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.kj.repo.infra.helper.JavaHelper;
+import com.kj.repo.infra.utils.JavaUtil;
 
 /**
  * @author kj
@@ -12,15 +12,15 @@ import com.kj.repo.infra.helper.JavaHelper;
 public class CommonsHelper {
 
     public static Log getLogger() {
-        return getLogger(JavaHelper.stack(2).getClassName());
+        return getLogger(JavaUtil.stack(2).getClassName());
     }
 
     public static Log asyncLogger() {
-        return getLogger(JavaHelper.stack(2).getClassName());
+        return getLogger(JavaUtil.stack(2).getClassName());
     }
 
     public static Log syncLogger() {
-        return getLogger("sync." + JavaHelper.stack(2).getClassName());
+        return getLogger("sync." + JavaUtil.stack(2).getClassName());
     }
 
     public static Log getLogger(Class<?> clazz) {

@@ -8,13 +8,11 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.kj.repo.infra.base.builder.Builder;
-import com.kj.repo.infra.batch.buffer.Buffer;
 
 /**
  * @author kj
  */
-public class BatchTriggerBuilder<E, T> implements Builder<BatchTriggerImpl<E, T>> {
+public class BatchTriggerBuilder<E, T> {
 
     private static final int DEFAULT_BATCHSIZE = 100;
     private static final long DEFAULT_LINGER = 1000;
@@ -22,7 +20,7 @@ public class BatchTriggerBuilder<E, T> implements Builder<BatchTriggerImpl<E, T>
     private Consumer<List<T>> consumer;
     private int batchsize = DEFAULT_BATCHSIZE;
     private long linger = DEFAULT_LINGER;
-    private Buffer<E, T> buffer;
+    private BatchBuffer<E, T> buffer;
     private BiConsumer<Throwable, List<T>> throwableHandler;
     private ScheduledExecutorService scheduledExecutor;
     private Executor workerExecutor;
@@ -42,7 +40,7 @@ public class BatchTriggerBuilder<E, T> implements Builder<BatchTriggerImpl<E, T>
         return this;
     }
 
-    public BatchTriggerBuilder<E, T> setBuffer(Buffer<E, T> buffer) {
+    public BatchTriggerBuilder<E, T> setBuffer(BatchBuffer<E, T> buffer) {
         this.buffer = buffer;
         return this;
     }
@@ -61,14 +59,13 @@ public class BatchTriggerBuilder<E, T> implements Builder<BatchTriggerImpl<E, T>
         this.workerExecutor = workerExecutor;
         return this;
     }
-
-    @Override
-    public BatchTriggerImpl<E, T> doBuild() {
+    
+    public BatchTriggerImpl<E, T> build() {
+    	ensure();
         return new BatchTriggerImpl<>(consumer, batchsize, linger, buffer, throwableHandler, scheduledExecutor,
                 workerExecutor);
     }
 
-    @Override
     public void ensure() {
         if (this.scheduledExecutor == null) {
             this.scheduledExecutor = Executors.newSingleThreadScheduledExecutor(

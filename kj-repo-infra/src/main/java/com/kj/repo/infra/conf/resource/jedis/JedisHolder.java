@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import com.kj.repo.infra.conf.model.Holder;
-import com.kj.repo.infra.helper.EnhancerHelper;
+import com.kj.repo.infra.utils.EnhancerUtil;
 
 import redis.clients.jedis.JedisCommands;
 import redis.clients.jedis.JedisShardInfo;
@@ -54,7 +54,7 @@ public class JedisHolder extends Holder {
     }
 
     public JedisCommands jedis() {
-        return EnhancerHelper.enhancer(JedisCommands.class, (method, args) -> {
+        return EnhancerUtil.enhancer(JedisCommands.class, (method, args) -> {
             try (ShardedJedis jedis = pool.getResource()) {
                 return method.invoke(jedis, args);
             } catch (IllegalAccessException | InvocationTargetException e) {

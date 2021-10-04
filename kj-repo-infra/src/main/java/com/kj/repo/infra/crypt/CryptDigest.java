@@ -7,10 +7,10 @@ import javax.crypto.SecretKey;
 
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
-import com.kj.repo.infra.base.function.Consumer;
-import com.kj.repo.infra.base.function.Function;
-import com.kj.repo.infra.base.pool.Pool;
-import com.kj.repo.infra.helper.GenericPoolHelper;
+import com.kj.repo.infra.Consumer;
+import com.kj.repo.infra.Function;
+import com.kj.repo.infra.Pool;
+import com.kj.repo.infra.utils.GenericPoolUtil;
 
 /**
  * @author kj
@@ -26,7 +26,7 @@ public abstract class CryptDigest<T> extends Pool<T> {
     }
 
     public static CryptDigest<Mac> mac(String algorithm, SecretKey key) {
-        return new CryptDigest<Mac>(GenericPoolHelper.wrap(() -> {
+        return new CryptDigest<Mac>(GenericPoolUtil.wrap(() -> {
             Mac mac = Mac.getInstance(algorithm);
             mac.init(key);
             return mac;
@@ -43,7 +43,7 @@ public abstract class CryptDigest<T> extends Pool<T> {
 
     public static CryptDigest<MessageDigest> digest(String algorithm) {
         return new CryptDigest<MessageDigest>(
-                GenericPoolHelper.wrap(() -> MessageDigest.getInstance(algorithm), MessageDigest::reset),
+                GenericPoolUtil.wrap(() -> MessageDigest.getInstance(algorithm), MessageDigest::reset),
                 MessageDigest::reset) {
             @Override
             public byte[] digest(byte[] src) throws Exception {

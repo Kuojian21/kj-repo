@@ -4,7 +4,7 @@ import java.net.URL;
 
 import org.slf4j.Logger;
 
-import com.kj.repo.infra.helper.JavaHelper;
+import com.kj.repo.infra.utils.JavaUtil;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.joran.JoranConfigurator;
@@ -50,15 +50,15 @@ public class LogbackHelper {
     }
 
     public static Logger getLogger() {
-        return getLogger(JavaHelper.stack(2).getClassName());
+        return getLogger(JavaUtil.stack(2).getClassName());
     }
 
     public static Logger asyncLogger() {
-        return getLogger(JavaHelper.stack(2).getClassName());
+        return getLogger(JavaUtil.stack(2).getClassName());
     }
 
     public static Logger syncLogger() {
-        return getLogger("sync." + JavaHelper.stack(2).getClassName());
+        return getLogger("sync." + JavaUtil.stack(2).getClassName());
     }
 
     public static Logger getLogger(Class<?> clazz) {

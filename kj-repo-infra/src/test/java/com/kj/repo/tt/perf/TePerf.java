@@ -6,7 +6,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.google.common.collect.Maps;
-import com.kj.repo.infra.helper.RunHelper;
+import com.kj.repo.infra.utils.RunUtil;
 
 /**
  * @author kj
@@ -18,10 +18,10 @@ public class TePerf {
         AtomicLong count = new AtomicLong(0);
         CountDownLatch latch = new CountDownLatch(1);
         for (int j = 0; j < 200; j++) {
-            new Thread(() -> RunHelper.run(() -> {
+            new Thread(() -> RunUtil.run(() -> {
                 latch.await();
                 for (int i = 0; i < Integer.MAX_VALUE; i++) {
-                    RunHelper.run(() -> {
+                    RunUtil.run(() -> {
                         count.addAndGet(map.entrySet().stream().limit(10).count());
                         Thread.sleep(ThreadLocalRandom.current().nextLong(100));
                         return null;
@@ -30,11 +30,11 @@ public class TePerf {
                 System.out.println(count.get());
                 return null;
             })).start();
-            new Thread(() -> RunHelper.run(() -> {
+            new Thread(() -> RunUtil.run(() -> {
                 latch.await();
                 for (int i = 0; i < Integer.MAX_VALUE; i++) {
                     int t = i;
-                    RunHelper.run(() -> {
+                    RunUtil.run(() -> {
                         map.put(t, t);
                         Thread.sleep(ThreadLocalRandom.current().nextLong(100));
                         return null;

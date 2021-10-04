@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns="http://www.springframework.org/schema/beans"
+
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+    <!-- <tx:annotation-driven /> <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <saProperty name="dataSource" ref="dataSource" /> </bean> -->
+    <aop:config proxy-target-class="true"/>
+    <aop:config>
+        <aop:aspect id="aspect" ref="logger" order="1">
+            <aop:pointcut id="pointcut"
+                          expression="execution(* com.kj.repo.demo.aop.AopTarget.*(..))"/>
+            <aop:before method="before" pointcut-ref="pointcut"/>
+            <aop:after method="after" pointcut-ref="pointcut"/>
+        </aop:aspect>
+    </aop:config>
+    <bean id="logger" class="com.kj.repo.tt.aop.AopAspect"></bean>
+</beans>

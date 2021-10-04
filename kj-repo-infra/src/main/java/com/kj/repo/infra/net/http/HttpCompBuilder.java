@@ -37,17 +37,18 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.util.CollectionUtils;
 
+import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
-import com.kj.repo.infra.base.LocalSupplier;
-import com.kj.repo.infra.base.function.Function;
-import com.kj.repo.infra.helper.RunHelper;
+import com.kj.repo.infra.Function;
+import com.kj.repo.infra.LocalSupplier;
+import com.kj.repo.infra.utils.RunUtil;
 
 /**
  * @author kj
  */
 public class HttpCompBuilder {
 
-    private static final LocalSupplier<CloseableHttpClient> SYNC = new LocalSupplier<>(() -> RunHelper.run(() -> {
+    private static final Supplier<CloseableHttpClient> SYNC = new LocalSupplier<>(() -> RunUtil.run(() -> {
         PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
         connManager.setDefaultMaxPerRoute(20);
         connManager.setMaxTotal(200);
@@ -59,7 +60,7 @@ public class HttpCompBuilder {
     }));
 
     private static final LocalSupplier<CloseableHttpAsyncClient> ASYNC = new LocalSupplier<>(
-            () -> RunHelper.run(() -> {
+            () -> RunUtil.run(() -> {
                 PoolingNHttpClientConnectionManager connManager = new PoolingNHttpClientConnectionManager(
                         new DefaultConnectingIOReactor(IOReactorConfig.DEFAULT, Executors.defaultThreadFactory()));
                 connManager.setDefaultMaxPerRoute(20);

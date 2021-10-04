@@ -6,10 +6,10 @@ import java.security.Signature;
 
 import org.apache.commons.pool2.impl.GenericObjectPool;
 
-import com.kj.repo.infra.base.function.Consumer;
-import com.kj.repo.infra.base.function.Function;
-import com.kj.repo.infra.base.pool.Pool;
-import com.kj.repo.infra.helper.GenericPoolHelper;
+import com.kj.repo.infra.Consumer;
+import com.kj.repo.infra.Function;
+import com.kj.repo.infra.Pool;
+import com.kj.repo.infra.utils.GenericPoolUtil;
 
 /**
  * @author kj
@@ -21,7 +21,7 @@ public abstract class CryptSign extends Pool<Signature> {
     }
 
     public static Sign sign(String algorithm, PrivateKey privateKey) {
-        return new Sign(GenericPoolHelper.wrap(() -> {
+        return new Sign(GenericPoolUtil.wrap(() -> {
             Signature signature = Signature.getInstance(algorithm);
             signature.initSign(privateKey);
             return signature;
@@ -29,7 +29,7 @@ public abstract class CryptSign extends Pool<Signature> {
     }
 
     public static Verify verify(String algorithm, PublicKey publicKey) {
-        return new Verify(GenericPoolHelper.wrap(() -> {
+        return new Verify(GenericPoolUtil.wrap(() -> {
             Signature signature = Signature.getInstance(algorithm);
             signature.initVerify(publicKey);
             return signature;

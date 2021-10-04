@@ -3,12 +3,10 @@ package com.kj.repo.infra.perf.model;
 import java.util.List;
 
 import com.google.common.collect.Lists;
-import com.kj.repo.infra.base.builder.Builder;
-
 /**
  * @author kj
  */
-public class PerfLogBuilder implements Builder<PerfLog> {
+public class PerfLogBuilder {
     private String namespace;
     private String tag;
     private List<Object> extras = Lists.newArrayList();
@@ -30,8 +28,7 @@ public class PerfLogBuilder implements Builder<PerfLog> {
         return this;
     }
 
-    @Override
-    public PerfLog doBuild() {
+    public PerfLog build() {
         return new PerfLog(namespace, tag, extras);
     }
 }

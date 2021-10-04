@@ -1,8 +1,8 @@
 package com.kj.repo.benchmark.jit;
 
-import static com.kj.repo.infra.el.ognl.OgnlHelper.DEFAULT_CLASS_RESOLVER;
-import static com.kj.repo.infra.el.ognl.OgnlHelper.DEFAULT_MEMBER_ACCESS;
-import static com.kj.repo.infra.el.ognl.OgnlHelper.DEFAULT_TYPE_CONVERTER;
+import static com.kj.repo.infra.utils.el.OgnlUtil.DEFAULT_CLASS_RESOLVER;
+import static com.kj.repo.infra.utils.el.OgnlUtil.DEFAULT_MEMBER_ACCESS;
+import static com.kj.repo.infra.utils.el.OgnlUtil.DEFAULT_TYPE_CONVERTER;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
@@ -30,8 +30,8 @@ import org.openjdk.jmh.runner.options.WarmupMode;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.kj.repo.infra.el.mvel.MvelHelper;
-import com.kj.repo.infra.el.ognl.OgnlHelper;
+import com.kj.repo.infra.utils.el.MvelUtil;
+import com.kj.repo.infra.utils.el.OgnlUtil;
 
 import ognl.Ognl;
 import ognl.OgnlContext;
@@ -111,7 +111,7 @@ public class BenchmarkJIT {
                         "lat2", 56.4321 + ThreadLocalRandom.current().nextInt(1000),
                         "lng2", 54.5353 + ThreadLocalRandom.current().nextInt(1000)
                 );
-        bh.consume(OgnlHelper.execute(this, params, "distance(#lat1, #lng1, #lat2, #lng2)", 0d));
+        bh.consume(OgnlUtil.execute(this, params, "distance(#lat1, #lng1, #lat2, #lng2)", 0d));
     }
 
     @Benchmark
@@ -134,7 +134,7 @@ public class BenchmarkJIT {
                         "lng2", 54.5353 + ThreadLocalRandom.current().nextInt(1000),
                         "it", this
                 );
-        bh.consume(MvelHelper.execute("it.distance(lat1,lng1,lat2,lng2)", vars));
+        bh.consume(MvelUtil.execute("it.distance(lat1,lng1,lat2,lng2)", vars));
     }
 
     @Benchmark

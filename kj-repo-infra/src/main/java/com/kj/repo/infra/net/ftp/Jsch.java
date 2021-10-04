@@ -10,10 +10,10 @@ import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import com.kj.repo.infra.base.function.Consumer;
-import com.kj.repo.infra.base.function.Function;
-import com.kj.repo.infra.base.pool.Pool;
-import com.kj.repo.infra.helper.GenericPoolHelper;
+import com.kj.repo.infra.Consumer;
+import com.kj.repo.infra.Function;
+import com.kj.repo.infra.Pool;
+import com.kj.repo.infra.utils.GenericPoolUtil;
 
 /**
  * @author kj
@@ -54,7 +54,7 @@ public class Jsch extends Pool<ChannelSftp> {
 
     public static Jsch jsch(String host, int port, String username, String password) {
         return new Jsch(
-                GenericPoolHelper.wrap(() -> sftp(host, port, username, password), obj -> {
+                GenericPoolUtil.wrap(() -> sftp(host, port, username, password), obj -> {
                     obj.getSession().disconnect();
                     obj.disconnect();
                 }));
@@ -63,7 +63,7 @@ public class Jsch extends Pool<ChannelSftp> {
     public static Jsch jsch(String host, int port, String username, String prvfile, String pubfile,
             byte[] passphrase) {
         return new Jsch(
-                GenericPoolHelper.wrap(() -> sftp(host, port, username, prvfile, pubfile, passphrase), obj -> {
+                GenericPoolUtil.wrap(() -> sftp(host, port, username, prvfile, pubfile, passphrase), obj -> {
                     obj.getSession().disconnect();
                     obj.disconnect();
                 }));

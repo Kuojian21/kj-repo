@@ -7,10 +7,10 @@ import java.util.stream.IntStream;
 import org.apache.logging.log4j.spi.Provider;
 
 import com.alibaba.fastjson.JSON;
-import com.kj.repo.infra.helper.JavaHelper;
-import com.kj.repo.infra.helper.RunHelper;
 import com.kj.repo.infra.logger.Log4j2Helper;
 import com.kj.repo.infra.logger.LogbackHelper;
+import com.kj.repo.infra.utils.JavaUtil;
+import com.kj.repo.infra.utils.RunUtil;
 
 import ch.qos.logback.classic.spi.Configurator;
 
@@ -45,15 +45,15 @@ public class TeLogger {
     }
 
     public void relate() {
-        for (URL url : RunHelper.run(() -> JavaHelper.resources("log4j2.component.properties"))) {
+        for (URL url : RunUtil.run(() -> JavaUtil.resources("log4j2.component.properties"))) {
             LogbackHelper.getLogger().info("{}", url.toString());
         }
-        for (URL url : RunHelper.run(() -> JavaHelper.resources("org/slf4j/impl/StaticLoggerBinder.class"))) {
+        for (URL url : RunUtil.run(() -> JavaUtil.resources("org/slf4j/impl/StaticLoggerBinder.class"))) {
             LogbackHelper.getLogger().info("{}", url.toString());
         }
-        for (Configurator configurator : JavaHelper.services(Configurator.class)) {
+        for (Configurator configurator : JavaUtil.services(Configurator.class)) {
             LogbackHelper.getLogger()
-                    .info("{} {}", configurator.getClass().getName(), JavaHelper.location(configurator.getClass()));
+                    .info("{} {}", configurator.getClass().getName(), JavaUtil.location(configurator.getClass()));
         }
         for (Provider provider : ServiceLoader.load(Provider.class)) {
             Log4j2Helper.getLogger()
